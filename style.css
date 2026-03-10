@@ -29,28 +29,34 @@
         * { scrollbar-width: thin; scrollbar-color: rgba(105, 58, 5, 0.15) transparent; }
 
         #coffee-shop-wheel {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            width: 100%; min-height: 100vh; 
-            background: var(--locus-bg);
-            display: flex; flex-direction: column;
-            overflow: visible; color: var(--locus-dark);
-            position: relative; 
-        }
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    width: 100%;
+    height: 100vh; /* ИЗМЕНЕНО: теперь жестко 100% высоты экрана */
+    background: var(--locus-bg);
+    display: flex; 
+    flex-direction: column;
+    overflow: hidden; /* ИЗМЕНЕНО: запрещаем выпадать за пределы Тильды */
+    color: var(--locus-dark);
+    position: relative; 
+}
 
         #coffee-shop-wheel a { color: inherit; text-decoration: none; border-bottom: none; }
 
         @media (min-width: 768px) {
-            #coffee-shop-wheel { flex-direction: row; align-items: flex-start; }
+            #coffee-shop-wheel { 
+        flex-direction: row; 
+        align-items: stretch; /* Растягиваем левую и правую часть одинаково */
+    }
         }
 
         /* Зона колеса */
-        .wheel-area {
-            position: relative; width: 100%; height: 38vh; 
-            background: #F2EFE9; overflow: hidden;
-            cursor: grab; touch-action: none; user-select: none;
-            flex-shrink: 0; border-bottom: 1px solid var(--locus-border);
-            z-index: 10;
-        }
+        .wheel-area { 
+        width: 45%; 
+        height: 100vh; 
+        border-bottom: none; 
+        border-right: 1px solid var(--locus-border);
+        position: relative; /* Убрали sticky, он здесь больше не нужен */
+    }
 
         @media (min-width: 768px) {
             .wheel-area { 
@@ -71,9 +77,15 @@
 
         /* Инфо-панель */
         .info-area {
-            flex: 1; background: var(--locus-bg);
-            padding: 20px; display: flex; flex-direction: column; z-index: 2;
-        }
+    flex: 1; 
+    background: var(--locus-bg);
+    padding: 20px 20px 60px 20px; /* ИЗМЕНЕНО: добавили отступ снизу */
+    display: flex; 
+    flex-direction: column; 
+    z-index: 2;
+    overflow-y: auto; /* ВАЖНО: включаем внутренний скролл для текста */
+    overscroll-behavior: contain; /* Блокируем прокрутку фона самой Тильды */
+}
 
         @media (max-width: 640px) {
             #coffee-shop-wheel {
@@ -87,7 +99,10 @@
         }
 
         @media (min-width: 768px) { 
-            .info-area { padding: 40px 60px; min-height: 100vh; } 
+            .info-area { 
+        padding: 40px 60px 80px 60px; /* Красивый отступ снизу */
+        height: 100vh; /* Фиксируем высоту для скролла */
+    }
         }
 
         .info-card {
