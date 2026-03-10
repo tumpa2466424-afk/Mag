@@ -31,40 +31,62 @@
         #coffee-shop-wheel {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     width: 100%;
-    height: 100vh; /* ИЗМЕНЕНО: теперь жестко 100% высоты экрана */
+    min-height: 100vh; 
     background: var(--locus-bg);
     display: flex; 
     flex-direction: column;
-    overflow: hidden; /* ИЗМЕНЕНО: запрещаем выпадать за пределы Тильды */
     color: var(--locus-dark);
     position: relative; 
+    overflow-x: hidden; 
 }
 
-        #coffee-shop-wheel a { color: inherit; text-decoration: none; border-bottom: none; }
+#coffee-shop-wheel a { color: inherit; text-decoration: none; border-bottom: none; }
 
-        @media (min-width: 768px) {
-            #coffee-shop-wheel { 
+/* Зона колеса (МОБИЛЬНАЯ ВЕРСИЯ) */
+.wheel-area {
+    position: relative; 
+    width: 100%; 
+    height: 38vh; /* На мобилках колесо занимает только верхнюю часть экрана */
+    background: #F2EFE9; 
+    overflow: hidden;
+    cursor: grab; touch-action: none; user-select: none;
+    flex-shrink: 0; border-bottom: 1px solid var(--locus-border);
+    z-index: 10;
+}
+
+/* Инфо-панель (МОБИЛЬНАЯ ВЕРСИЯ) */
+.info-area {
+    flex: 1; 
+    background: var(--locus-bg);
+    padding: 20px 15px 60px 15px; 
+    display: flex; 
+    flex-direction: column; 
+    z-index: 2;
+}
+
+/* АДАПТАЦИЯ ДЛЯ КОМПЬЮТЕРОВ (СПЛИТ-ЭКРАН) */
+@media (min-width: 768px) {
+    #coffee-shop-wheel { 
         flex-direction: row; 
-        align-items: stretch; /* Растягиваем левую и правую часть одинаково */
+        align-items: stretch;
+        height: 100vh; /* Жестко фиксируем высоту экрана */
+        overflow: hidden; /* Блокируем общий скролл страницы */
     }
-        }
-
-        /* Зона колеса */
-        .wheel-area { 
+    .wheel-area { 
         width: 45%; 
         height: 100vh; 
         border-bottom: none; 
         border-right: 1px solid var(--locus-border);
-        position: relative; /* Убрали sticky, он здесь больше не нужен */
+        position: relative; 
     }
-
-        @media (min-width: 768px) {
-            .wheel-area { 
-                width: 45%; height: 100vh; 
-                border-bottom: none; border-right: 1px solid var(--locus-border);
-                position: sticky; top: 0; 
-            }
-        }
+    .info-area { 
+        width: 55%;
+        height: 100vh; 
+        padding: 40px 60px 80px 60px; 
+        overflow-y: auto; /* Включаем независимый скролл для текста */
+        overscroll-behavior: contain;
+    } 
+}
 
         .wheel-spinner {
             position: absolute; top: 50%; left: 0; 
@@ -79,12 +101,11 @@
         .info-area {
     flex: 1; 
     background: var(--locus-bg);
-    padding: 20px 20px 60px 20px; /* ИЗМЕНЕНО: добавили отступ снизу */
+    padding: 20px 15px 60px 15px; 
     display: flex; 
     flex-direction: column; 
     z-index: 2;
-    overflow-y: auto; /* ВАЖНО: включаем внутренний скролл для текста */
-    overscroll-behavior: contain; /* Блокируем прокрутку фона самой Тильды */
+    /* Убрали overflow-y: auto, теперь мобильная версия скроллится целиком */
 }
 
         @media (max-width: 640px) {
