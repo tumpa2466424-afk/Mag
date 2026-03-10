@@ -70,7 +70,9 @@
     flex-direction: column; 
     z-index: 2;
 }
-
+#default-msg {
+    text-align: center; 
+}
 /* 4. МАГИЯ ДЛЯ КОМПЬЮТЕРОВ (От 768px и шире) */
 @media (min-width: 768px) {
     #coffee-shop-wheel { 
