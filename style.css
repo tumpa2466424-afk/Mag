@@ -70,6 +70,7 @@
     flex-direction: column; 
     z-index: 2;
 }
+
 #default-msg {
     text-align: center; 
 }
