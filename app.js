@@ -265,24 +265,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     updatePriceDisplay();
                     
                     const grid = document.getElementById('cupping-data');
-                    if (grid) grid.innerHTML = `
-                        <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span><span class="cupping-value">${r.cuppingDate || '-'}</span></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Степень обжарки</span>${getScale(r.roast)}</div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Интенсивность запаха</span>${getScale(r.smellInt)}</div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Интенсивность аромата</span>${getScale(r.aromaInt)}</div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание запаха и аромата</span><span class="cupping-value">${r.aromaDesc || '-'}</span></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Заметки о запахе и аромате</span><span class="cupping-notes">${r.aromaNotes || '-'}</span></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность букета</span>${getScale(r.flavorInt)}</div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность послевкусия</span>${getScale(r.atInt)}</div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span><span class="cupping-value">${r.flavorDesc || '-'}</span></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Основные вкусы</span><span class="cupping-value flavor-text">${r.mainFlavors || '-'}</span></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Заметки о букете и послевкусии</span><span class="cupping-notes">${r.flavorNotes || '-'}</span></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность кислотности</span>${getScale(r.acidInt)}<span class="cupping-label" style="margin-top:10px;">Заметки о кислотности</span><span class="cupping-notes">${r.acidNotes || '-'}</span></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность сладости</span>${getScale(r.sweetInt)}<span class="cupping-label" style="margin-top:10px;">Заметки о сладости</span><span class="cupping-notes">${r.sweetNotes || '-'}</span></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность тактильности</span>${getScale(r.bodyInt)}</div>
-                        <div class="cupping-item"><span class="cupping-label">Описание тактильности</span><span class="cupping-value">${r.bodyDesc || '-'}</span></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Заметки о тактильности</span><span class="cupping-notes">${r.bodyNotes || '-'}</span></div>
-                    `;
+if (grid) grid.innerHTML = `
+    <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span><span class="cupping-value">${r.cuppingDate || '-'}</span></div>
+    
+    <div class="cupping-item"><span class="cupping-label">Степень обжарки</span>${getScale(r.roast)}</div>
+    <div class="cupping-item"><span class="cupping-label">Интенсивность запаха</span>${getScale(r.smellInt)}</div>
+    
+    <div class="cupping-item"><span class="cupping-label">Интенсивность аромата</span>${getScale(r.aromaInt)}</div>
+    <div class="cupping-item"><span class="cupping-label">Интенсивность букета</span>${getScale(r.flavorInt)}</div>
+    
+    <div class="cupping-item full-width"><span class="cupping-label">Описание запаха и аромата</span><span class="cupping-value">${r.aromaDesc || '-'}</span></div>
+    <div class="cupping-item full-width"><span class="cupping-label">Заметки о запахе и аромате</span><span class="cupping-notes">${r.aromaNotes || '-'}</span></div>
+    
+    <div class="cupping-item"><span class="cupping-label">Интенсивность кислотности</span>${getScale(r.acidInt)}</div>
+    <div class="cupping-item"><span class="cupping-label">Интенсивность сладости</span>${getScale(r.sweetInt)}</div>
+    
+    <div class="cupping-item"><span class="cupping-label">Интенсивность тактильности</span>${getScale(r.bodyInt)}</div>
+    <div class="cupping-item"><span class="cupping-label">Интенсивность послевкусия</span>${getScale(r.atInt)}</div>
+    
+    <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span><span class="cupping-value">${r.flavorDesc || '-'}</span></div>
+    <div class="cupping-item full-width"><span class="cupping-label">Основные вкусы</span><span class="cupping-value flavor-text">${r.mainFlavors || '-'}</span></div>
+    <div class="cupping-item full-width"><span class="cupping-label">Заметки о букете и послевкусии</span><span class="cupping-notes">${r.flavorNotes || '-'}</span></div>
+    
+    <div class="cupping-item full-width"><span class="cupping-label">Заметки о кислотности</span><span class="cupping-notes">${r.acidNotes || '-'}</span></div>
+    <div class="cupping-item full-width"><span class="cupping-label">Заметки о сладости</span><span class="cupping-notes">${r.sweetNotes || '-'}</span></div>
+    
+    <div class="cupping-item full-width"><span class="cupping-label">Описание тактильности</span><span class="cupping-value">${r.bodyDesc || '-'}</span></div>
+    <div class="cupping-item full-width"><span class="cupping-label">Заметки о тактильности</span><span class="cupping-notes">${r.bodyNotes || '-'}</span></div>
+`;
 
                     // НОВЫЙ БЛОК: ВНЕШНЕЕ ОПИСАНИЕ (Extrinsic Data на Русском)
                     const extGrid = document.getElementById('extrinsic-data');
@@ -2190,7 +2200,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
             
             switchAdminTab: function(tabName) {
-                ['users', 'promos', 'subs', 'costs', 'actions', 'messages', 'ws-orders'].forEach(t => {
+                ['catalog','users', 'promos', 'subs', 'costs', 'actions', 'messages', 'ws-orders'].forEach(t => {
                     const sec = document.getElementById(`admin-sec-${t}`);
                     if(sec) sec.classList.remove('active');
                 });
