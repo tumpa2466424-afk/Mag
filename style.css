@@ -128,10 +128,10 @@
         }
         .mini-stat-item { display: flex; flex-direction: column; }
         .mini-stat-label {
-            font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
             font-weight: 700; color: var(--locus-accent); margin-bottom: 4px;
         }
-        .mini-stats-grid .scale-cell { width: 100%; flex: 1; height: 8px; font-size: 6px; }
+        .mini-stats-grid .scale-cell { width: 100%; flex: 1; height: 8px; font-size: 10px; }
         .mini-stats-grid .intensity-scale { width: 100%; }
         .mini-stats-grid .scale-group { flex: 1; }
 
