@@ -243,12 +243,19 @@
         /* Верхние иконки */
         .top-controls { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 15px; align-items: center; }
         @media (max-width: 768px) { 
+            /* --- 1. Убираем белые поля Тильды по бокам --- */
+            #coffee-shop-wheel {
+                width: 100vw !important;
+                margin-left: calc(50% - 50vw) !important;
+            }
+
+            /* --- 2. Настраиваем иконки меню --- */
             .top-controls { 
-                right: 15px; /* Чуть отодвигаем от самого края для аккуратности */
+                right: 15px; 
                 top: 15px; 
-                gap: 12px; /* Увеличиваем расстояние, чтобы было удобно попадать пальцем */
-                flex-direction: column; /* ВАЖНО: выстраиваем кнопки сверху вниз */
-                align-items: flex-end; /* Выравниваем их по правому краю */
+                gap: 15px; 
+                flex-direction: column-reverse; /* Переворачиваем порядок кнопок (ЛК будет сверху) */
+                align-items: center; /* Центрируем иконки и букву "А" ровно друг под другом */
             } 
             .auth-text { display: none; } 
         }
