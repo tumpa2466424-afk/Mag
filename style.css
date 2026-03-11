@@ -243,7 +243,13 @@
         /* Верхние иконки */
         .top-controls { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 15px; align-items: center; }
         @media (max-width: 768px) { 
-            .top-controls { right: 5px; top: 10px; gap: 4px; } 
+            .top-controls { 
+                right: 15px; /* Чуть отодвигаем от самого края для аккуратности */
+                top: 15px; 
+                gap: 12px; /* Увеличиваем расстояние, чтобы было удобно попадать пальцем */
+                flex-direction: column; /* ВАЖНО: выстраиваем кнопки сверху вниз */
+                align-items: flex-end; /* Выравниваем их по правому краю */
+            } 
             .auth-text { display: none; } 
         }
         .icon-btn { background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
