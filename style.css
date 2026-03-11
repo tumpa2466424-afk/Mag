@@ -193,10 +193,11 @@
         @media (max-width: 600px) { .cupping-grid { grid-template-columns: 1fr; } }
         .cupping-item { display: flex; flex-direction: column; border-bottom: 1px solid rgba(105, 58, 5, 0.05); padding-bottom: 8px; }
         .full-width { grid-column: 1 / -1; }
-        .cupping-label { font-weight: 700; text-transform: uppercase; font-size: 8px; letter-spacing: 1.2px; color: var(--locus-accent); margin-bottom: 6px; }
-        .cupping-value { font-size: 13px; color: var(--locus-dark); margin-bottom: 4px; line-height: 1.4; }
+        /* Увеличенные шрифты для Подробного и Внешнего описания */
+        .cupping-label { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 1.2px; color: var(--locus-accent); margin-bottom: 6px; }
+        .cupping-value { font-size: 18px; color: var(--locus-dark); margin-bottom: 4px; line-height: 1.4; }
         .flavor-text { font-weight: 400 !important; }
-        .cupping-notes { font-size: 11px; color: var(--locus-dark); font-style: italic; opacity: 1; line-height: 1.35; font-weight: 500; }
+        .cupping-notes { font-size: 16px; color: var(--locus-dark); font-style: italic; opacity: 1; line-height: 1.45; font-weight: 500; }
 
         /* Шкала */
         .intensity-scale { display: flex; gap: 2px; margin: 4px 0 6px 0; }
@@ -470,3 +471,8 @@
         .btn-save-cat { background: #187a30 !important; color: white !important; border: 1px solid #187a30 !important; }
         .btn-del-cat { background: transparent !important; color: #B66A58 !important; border: 1px solid #B66A58 !important; }
         .empty-msg { font-size: 12px; color: var(--locus-accent); text-align: center; padding: 20px; font-style: italic; background: rgba(255, 255, 255, 0.4); border-radius: 8px; }
+/* Увеличенный шрифт для Истории Аины */
+        #ai-story-content {
+            font-size: 18px !important;
+            line-height: 1.6 !important;
+        }
