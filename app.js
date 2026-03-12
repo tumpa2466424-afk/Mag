@@ -3407,48 +3407,64 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         });
                     };
                     renderList('user-subscription-list', u.subscription, true);
-                   // --- НОВАЯ ОТРИСОВКА ИСТОРИИ (С ПОДДЕРЖКОЙ ЗАКАЗОВ) ---
+                   // --- НОВАЯ ОТРИСОВКА ИСТОРИИ И ОПТА ---
                     const histCont = document.getElementById('user-history-list');
-                    if(histCont) {
-                        histCont.innerHTML = '';
-                        if(!u.history || u.history.length === 0) {
-                            histCont.innerHTML = '<div style="opacity:0.5; font-size:11px">Список пуст</div>';
-                        } else {
-                            const itemsToShow = [...u.history].reverse().slice(0, 15);
-                            itemsToShow.forEach(hItem => {
-                                if (hItem.isOrder) {
-                                    // Отрисовка НОВОГО БЛОКА ЗАКАЗА
-                                    const el = document.createElement('div');
-                                    el.style.cssText = 'border: 1px solid var(--locus-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff; box-shadow: 0 4px 10px rgba(105,58,5,0.03);';
+                    const wsHistCont = document.getElementById('user-ws-history-list');
 
-                                    let itemsHtml = hItem.items.map(i => {
-                                        const grindText = i.grind && i.grind !== 'Зерно' ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${i.grind}</span>` : '';
-                                        return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:8px;">
-                                            <span><b style="font-weight:600;">${i.item}</b> (${i.weight}г)${grindText} x${i.qty}</span>
-                                            <span style="white-space:nowrap; font-weight:600;">${i.price * i.qty} ₽</span>
-                                        </div>`;
-                                    }).join('');
+                    const renderOrdersList = (container, itemsFilterFn, isWholesale) => {
+                        if(!container) return;
+                        container.innerHTML = '';
+                        const filteredItems = (u.history || []).filter(itemsFilterFn);
+                        
+                        if(filteredItems.length === 0) {
+                            container.innerHTML = '<div style="opacity:0.5; font-size:11px">Список пуст</div>';
+                            return;
+                        }
+                        
+                        const itemsToShow = [...filteredItems].reverse().slice(0, 15);
+                        itemsToShow.forEach(hItem => {
+                            if (hItem.isOrder || hItem.isWholesaleOrder) {
+                                const el = document.createElement('div');
+                                el.style.cssText = 'border: 1px solid var(--locus-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff; box-shadow: 0 4px 10px rgba(105,58,5,0.03);';
 
-                                    el.innerHTML = `
-                                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 15px; border-bottom: 1px solid var(--locus-border); padding-bottom: 12px;">
-                                            <div>
-                                                <div style="font-weight:700; font-size:13px; color:var(--locus-dark); text-transform:uppercase;">Заказ № ${hItem.orderId}</div>
-                                                <div style="font-size:10px; color:gray; margin-top:3px;">${hItem.date}</div>
-                                            </div>
-                                            <div style="font-weight:700; font-size:16px;">${hItem.total} ₽</div>
-                                        </div>
-                                        <div style="margin-bottom:15px;">
-                                            ${itemsHtml}
-                                        </div>
-                                        <div style="display:flex; gap:10px; justify-content:flex-end;">
-                                            <button class="btn-small-reorder btn-repeat-order" style="padding:8px 15px; font-size:10px;">Повторить заказ</button>
-                                            <button class="btn-small-reorder btn-remove-sub" style="font-size:12px; padding:8px 12px;">&times; Удалить</button>
-                                        </div>
-                                    `;
+                                let itemsHtml = hItem.items.map(i => {
+                                    const grindText = i.grind && i.grind !== 'Зерно' ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${i.grind}</span>` : '';
+                                    return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:8px;">
+                                        <span><b style="font-weight:600;">${i.item}</b> (${i.weight}г)${grindText} x${i.qty}</span>
+                                        <span style="white-space:nowrap; font-weight:600;">${i.price * i.qty} ₽</span>
+                                    </div>`;
+                                }).join('');
 
-                                    // Обработчик "Повторить весь заказ"
-                                    el.querySelector('.btn-repeat-order').onclick = (e) => {
-                                        e.preventDefault(); e.stopImmediatePropagation();
+                                el.innerHTML = `
+                                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 15px; border-bottom: 1px solid var(--locus-border); padding-bottom: 12px;">
+                                        <div>
+                                            <div style="font-weight:700; font-size:13px; color:var(--locus-dark); text-transform:uppercase;">Заказ № ${hItem.orderId}</div>
+                                            <div style="font-size:10px; color:gray; margin-top:3px;">${hItem.date}</div>
+                                        </div>
+                                        <div style="font-weight:700; font-size:16px;">${hItem.total} ₽</div>
+                                    </div>
+                                    <div style="margin-bottom:15px;">
+                                        ${itemsHtml}
+                                    </div>
+                                    <div style="display:flex; gap:10px; justify-content:flex-end;">
+                                        <button class="btn-small-reorder btn-repeat-order" style="padding:8px 15px; font-size:10px;">Повторить заказ</button>
+                                        <button class="btn-small-reorder btn-remove-sub" style="font-size:12px; padding:8px 12px;">&times; Удалить</button>
+                                    </div>
+                                `;
+
+                                el.querySelector('.btn-repeat-order').onclick = (e) => {
+                                    e.preventDefault(); e.stopImmediatePropagation();
+                                    if (isWholesale) {
+                                        this.toggleModal(true, 'wholesale'); // Открываем опт
+                                        setTimeout(() => {
+                                            document.querySelectorAll('.ws-qty-input').forEach(input => input.value = '');
+                                            hItem.items.forEach(i => {
+                                                const input = document.querySelector(`.ws-qty-input[data-item="${i.item}"][data-weight="${i.weight}"]`);
+                                                if(input) input.value = i.qty;
+                                            });
+                                            this.updateWholesaleTotal();
+                                        }, 300); // Ждем пока отрисуется таблица
+                                    } else {
                                         hItem.items.forEach(i => {
                                             const existing = this.localCart.find(cartItem => cartItem.item === i.item && cartItem.weight == i.weight && cartItem.grind === i.grind);
                                             if(existing) existing.qty += i.qty;
@@ -3457,44 +3473,46 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                         this.saveCart(true);
                                         this.updateCartBadge();
                                         this.toggleModal(true, 'cart');
-                                    };
-
-                                    // Обработчик "Удалить заказ из истории"
-                                    el.querySelector('.btn-remove-sub').onclick = (e) => {
-                                        e.preventDefault(); e.stopImmediatePropagation();
-                                        if(confirm('Удалить этот заказ из истории?')) this.removeOrderFromHistory(hItem.orderId);
-                                    };
-
-                                    histCont.appendChild(el);
-                                } else {
-                                    // СОХРАНЕНИЕ СТАРОГО ФОРМАТА (Для старых покупок)
-                                    const productInStock = ALL_PRODUCTS_CACHE.find(p => String(hItem.item).toLowerCase().includes(String(p.sample).toLowerCase().split(' (')[0]));
-                                    const el = document.createElement('div');
-                                    el.className = 'product-list-item';
-                                    const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
-                                    const gDisplay = hItem.grind && hItem.grind !== 'Зерно' ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${hItem.grind}</span>` : '';
-                                    
-                                    el.innerHTML = `
-                                        <div style="display:flex; align-items:center;">
-                                            <div class="pli-info"><div class="pli-name">${hItem.item}${wDisplay}${gDisplay} x${hItem.qty || 1}</div><div class="pli-meta">${hItem.date} • ${hItem.price} ₽</div></div>
-                                        </div>
-                                        <div style="display:flex; gap:5px; align-items:center;">
-                                            ${productInStock ? `<button class="btn-small-reorder btn-action-reorder">Повторить</button>` : ''}
-                                            <button class="btn-small-reorder btn-remove-sub" style="font-size:16px; padding:4px 8px; line-height:1;">&times;</button>
-                                        </div>
-                                    `;
-                                    if(productInStock) {
-                                        el.querySelector('.btn-action-reorder').onclick = () => {
-                                            this.addToCart(productInStock.sample, hItem.weight || 250, hItem.grind || 'Зерно');
-                                            this.toggleModal(true, 'cart');
-                                        };
                                     }
-                                    el.querySelector('.btn-remove-sub').onclick = () => { if(confirm('Удалить?')) this.removeFromHistory(hItem); };
-                                    histCont.appendChild(el);
+                                };
+
+                                el.querySelector('.btn-remove-sub').onclick = (e) => {
+                                    e.preventDefault(); e.stopImmediatePropagation();
+                                    if(confirm('Удалить этот заказ из истории?')) this.removeOrderFromHistory(hItem.orderId);
+                                };
+
+                                container.appendChild(el);
+                            } else if (!isWholesale) {
+                                // Старые одиночные розничные покупки (совместимость)
+                                const productInStock = ALL_PRODUCTS_CACHE.find(p => String(hItem.item).toLowerCase().includes(String(p.sample).toLowerCase().split(' (')[0]));
+                                const el = document.createElement('div');
+                                el.className = 'product-list-item';
+                                const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
+                                const gDisplay = hItem.grind && hItem.grind !== 'Зерно' ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${hItem.grind}</span>` : '';
+                                el.innerHTML = `
+                                    <div style="display:flex; align-items:center;">
+                                        <div class="pli-info"><div class="pli-name">${hItem.item}${wDisplay}${gDisplay} x${hItem.qty || 1}</div><div class="pli-meta">${hItem.date} • ${hItem.price} ₽</div></div>
+                                    </div>
+                                    <div style="display:flex; gap:5px; align-items:center;">
+                                        ${productInStock ? `<button class="btn-small-reorder btn-action-reorder">Повторить</button>` : ''}
+                                        <button class="btn-small-reorder btn-remove-sub" style="font-size:16px; padding:4px 8px; line-height:1;">&times;</button>
+                                    </div>
+                                `;
+                                if(productInStock) {
+                                    el.querySelector('.btn-action-reorder').onclick = () => {
+                                        this.addToCart(productInStock.sample, hItem.weight || 250, hItem.grind || 'Зерно');
+                                        this.toggleModal(true, 'cart');
+                                    };
                                 }
-                            });
-                        }
-                    }
+                                el.querySelector('.btn-remove-sub').onclick = () => { if(confirm('Удалить?')) this.removeFromHistory(hItem); };
+                                container.appendChild(el);
+                            }
+                        });
+                    };
+
+                    // Вызываем отрисовку для двух списков раздельно
+                    renderOrdersList(histCont, h => !h.isWholesaleOrder, false); // Розничные
+                    renderOrdersList(wsHistCont, h => h.isWholesaleOrder, true); // Оптовые
                     // -----------------------------------------------------------------
                     this.renderRecommendations();
                 } catch(e) { console.error(e); }
