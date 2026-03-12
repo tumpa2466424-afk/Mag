@@ -2361,10 +2361,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(history.length > 0) {
                             const counts = {};
                             history.forEach(h => { 
-                                const name = h.item.split(' (')[0];
-                                counts[name] = (counts[name] || 0) + 1; 
+                                // Проверяем: это новый формат (Заказ) или старый (отдельная пачка)
+                                if (h.isOrder && Array.isArray(h.items)) {
+                                    h.items.forEach(i => {
+                                        if (i.item) {
+                                            const name = i.item.split(' (')[0];
+                                            counts[name] = (counts[name] || 0) + (i.qty || 1); 
+                                        }
+                                    });
+                                } else if (h.item) { // Старый формат
+                                    const name = h.item.split(' (')[0];
+                                    counts[name] = (counts[name] || 0) + (h.qty || 1); 
+                                }
                             });
-                            fav = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                            
+                            if (Object.keys(counts).length > 0) {
+                                fav = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                            }
                         }
 
                         let discount = Math.floor(spent / 3000);
