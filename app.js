@@ -1988,7 +1988,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const widget = new window.CDEKWidget({
                     from: { city: 'Орёл' },
                     root: 'cdek-map',
-                    apiKey: 'f54a746a-3e67-40fc-84eb-787e9f7be4b4', 
+                    // apiKey: 'f54a746a-3e67-40fc-84eb-787e9f7be4b4', 
                     // МЕНЯЕМ СТРОКУ НИЖЕ НА ТВОЮ НОВУЮ ФУНКЦИЮ
                     servicePath: 'https://functions.yandexcloud.net/d4e5dal47a38n862fndt', 
                     goods: goods,
