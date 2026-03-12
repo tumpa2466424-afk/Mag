@@ -2702,8 +2702,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     };
                     data.orders.sort((a,b) => getMs(b.createdAt) - getMs(a.createdAt));
                     
-                    // Ограничиваем ширину колонки "Дата" (70px), чтобы дать больше места Описанию и Реквизитам
-                    let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th>Заказ и Клиент</th><th>Состав и Сумма</th><th style="width: 120px;">Статус</th></tr></thead><tbody>';
+                    // ИЗМЕНЕНИЕ 1: Жестко задаем ширину колонок (25%, 55%, 20%)
+                    let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th style="width: 25%;">Заказ и Клиент</th><th style="width: 55%;">Состав и Сумма</th><th style="width: 20%; min-width: 110px;">Статус</th></tr></thead><tbody>';
                     
                     data.orders.forEach(o => {
                         let d = new Date(o.createdAt);
@@ -2728,7 +2728,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                         html += `<tr style="${rowStyle}">
                             <td style="vertical-align:top; padding-top:10px; font-size:12px; line-height:1.4;">
-                                <b style="font-size:13px;">№ ${o.id}</b><br>
+                                <b style="font-size:13px;">№ ${String(o.id).replace('ws_', '')}</b><br>
                                 <span style="font-size:10px; color:gray;">${dateStrHTML}</span><br>
                                 <div style="margin-top:8px;"><b>${email}</b></div>
                                 <div style="color:gray;">${phone}</div>
@@ -2814,6 +2814,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                     <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Отправлен</option>
                                     <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Выполнен</option>
                                 </select>
+                                <div style="text-align:right;">
+                                    <button onclick="UserSystem.deleteRetailOrder('${o.id}')" style="color:#B66A58; border:none; background:none; cursor:pointer; font-size:11px; text-decoration:underline;">Удалить заказ</button>
+                                </div>
                             </td>
                         </tr>`;
                     });
@@ -2831,6 +2834,30 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     });
                     this.loadRetailOrders();
                 } catch(e) { alert('Ошибка обновления статуса'); }
+            },
+            deleteRetailOrder: async function(orderId) {
+                if(!confirm('ВНИМАНИЕ! Вы точно хотите безвозвратно удалить этот розничный заказ из базы?')) return;
+                
+                const token = localStorage.getItem('locus_token');
+                if(!token) return alert('Пожалуйста, авторизуйтесь');
+
+                try {
+                    const res = await fetch(LOCUS_API_URL + '?action=deleteOrder', {
+                        method: 'POST',
+                        headers: { 'X-Auth-Token': token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'deleteOrder', orderId: orderId })
+                    });
+                    const data = await res.json();
+                    
+                    if(data.success) {
+                        this.loadRetailOrders(); // Перезагружаем таблицу
+                    } else {
+                        alert('Ошибка: ' + (data.error || 'Не удалось удалить заказ'));
+                    }
+                } catch(e) {
+                    console.error("Ошибка при удалении заказа:", e);
+                    alert('Произошла ошибка при удалении заказа');
+                }
             },
             updateOrderStatus: async function(orderId, newStatus) {
                 const token = localStorage.getItem('locus_token');
@@ -3438,7 +3465,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 el.innerHTML = `
                                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 15px; border-bottom: 1px solid var(--locus-border); padding-bottom: 12px;">
                                         <div>
-                                            <div style="font-weight:700; font-size:13px; color:var(--locus-dark); text-transform:uppercase;">Заказ № ${hItem.orderId}</div>
+                                            <div style="font-weight:700; font-size:13px; color:var(--locus-dark); text-transform:uppercase;">Заказ № ${String(hItem.orderId).replace('ws_', '')}</div>
                                             <div style="font-size:10px; color:gray; margin-top:3px;">${hItem.date}</div>
                                         </div>
                                         <div style="font-weight:700; font-size:16px;">${hItem.total} ₽</div>
