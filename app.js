@@ -1972,9 +1972,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 return packages;
             },
 
-           // --- НАЧАЛО: ЗАМЕНА СДЭК И СИНХРОНИЗАЦИИ ---
-           // --- НАЧАЛО: СДЭК И РУЧНОЙ ВВОД ---
-            // --- НАЧАЛО: СДЭК И РУЧНОЙ ВВОД (Адаптировано под облачную v2.0) ---
             // --- НАЧАЛО: СДЭК И РУЧНОЙ ВВОД (Версия 3.0 с облачным service.php) ---
             initCDEK: function() {
                 const mapEl = document.getElementById('cdek-map');
@@ -1992,8 +1989,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     from: { city: 'Орёл' },
                     root: 'cdek-map',
                     apiKey: 'e72957b4-0490-449e-8798-299f023023e3', 
-                    // ТВОЯ НАХОДКА: перенаправляем запросы на серверы СДЭК
-                    servicePath: 'https://widget.cdek.ru/service.php', 
+                    // МЕНЯЕМ СТРОКУ НИЖЕ НА ТВОЮ НОВУЮ ФУНКЦИЮ
+                    servicePath: 'https://functions.yandexcloud.net/d4e5dal47a38n862fndt', 
                     goods: goods,
                     defaultLocation: 'Москва',
                     onChoose: (type, tariff, address) => {
