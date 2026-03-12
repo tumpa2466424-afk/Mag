@@ -1973,37 +1973,166 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             // --- НАЧАЛО: СДЭК И РУЧНОЙ ВВОД (Версия 3.0 с облачным service.php) ---
+            // --- НАЧАЛО: ЛЕГКИЙ ИНТЕРФЕЙС СДЭК БЕЗ КАРТЫ ---
             initCDEK: function() {
-                const mapEl = document.getElementById('cdek-map');
-                if(!mapEl || this.cdekInitialized) return; 
-                mapEl.innerHTML = ''; 
-                
+                const cityInput = document.getElementById('cdek-city-input');
+                const pvzSelect = document.getElementById('cdek-pvz-select');
                 const manualInput = document.getElementById('manual-address');
+                
                 if (manualInput) {
                     manualInput.addEventListener('input', (e) => this.setManualAddress(e.target.value));
                 }
 
-                const goods = this.calculatePackage();
-                
-                // ВСТАВЛЯЕМ НАСТРОЙКИ ВИДЖЕТА СЮДА:
-                const widget = new window.CDEKWidget({
-                    from: { city: 'Орёл' }, 
-                    root: 'cdek-map',
-                    
-                    // Твой правильный ключ
-                    apiKey: 'f54a746a-3e67-40fc-84eb-787e9f7be4b4', 
-                    
-                    servicePath: 'https://functions.yandexcloud.net/d4e5dal47a38n862fndt', 
-                    goods: goods,
-                    defaultLocation: [55.7558, 37.6173], 
-                    onChoose: (type, tariff, address) => {
-                        this.handleCdekChoice(type, tariff, address);
-                        if (manualInput) manualInput.value = ''; 
-                    }
-                });
-                
+                if(cityInput && !this.cdekInitialized) {
+                    let debounceTimer;
+                    cityInput.addEventListener('input', (e) => {
+                        clearTimeout(debounceTimer);
+                        const query = e.target.value.trim();
+                        if(query.length < 3) {
+                            document.getElementById('cdek-city-results').style.display = 'none';
+                            document.getElementById('cdek-pvz-wrapper').style.display = 'none';
+                            return;
+                        }
+                        debounceTimer = setTimeout(() => this.searchCdekCity(query), 600);
+                    });
+
+                    // Скрываем список городов при клике вне него
+                    document.addEventListener('click', (e) => {
+                        if(e.target !== cityInput) document.getElementById('cdek-city-results').style.display = 'none';
+                    });
+                }
+
+                if(pvzSelect && !this.cdekInitialized) {
+                    pvzSelect.addEventListener('change', (e) => {
+                        const selectedOption = e.target.options[e.target.selectedIndex];
+                        if(selectedOption.value) {
+                            const pvzCode = selectedOption.value;
+                            const address = selectedOption.text;
+                            const cityCode = selectedOption.getAttribute('data-city-code');
+                            this.selectCdekPvz(pvzCode, address, cityCode);
+                        }
+                    });
+                }
                 this.cdekInitialized = true;
             },
+
+            searchCdekCity: async function(query) {
+                const resultsDiv = document.getElementById('cdek-city-results');
+                resultsDiv.innerHTML = '<div style="padding: 12px; font-size: 12px; opacity: 0.6;">Поиск города...</div>';
+                resultsDiv.style.display = 'block';
+
+                try {
+                    const res = await fetch(`https://functions.yandexcloud.net/d4e5dal47a38n862fndt?action=city&city=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+
+                    if(data && data.length > 0) {
+                        resultsDiv.innerHTML = '';
+                        data.forEach(city => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.style.cssText = 'padding: 12px; font-size: 12px; cursor: pointer; border-bottom: 1px solid rgba(105,58,5,0.1); transition: 0.2s;';
+                            div.onmouseover = () => div.style.background = '#F4F1EA';
+                            div.onmouseout = () => div.style.background = 'transparent';
+                            
+                            div.textContent = `${city.city}, ${city.region}`;
+                            div.onclick = () => {
+                                document.getElementById('cdek-city-input').value = city.city;
+                                resultsDiv.style.display = 'none';
+                                this.loadCdekPvzs(city.city_code);
+                            };
+                            resultsDiv.appendChild(div);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = '<div style="padding: 12px; font-size: 12px;">Ничего не найдено</div>';
+                    }
+                } catch(e) {
+                    resultsDiv.innerHTML = '<div style="padding: 12px; font-size: 12px; color: red;">Ошибка поиска</div>';
+                }
+            },
+
+            loadCdekPvzs: async function(cityCode) {
+                const pvzWrapper = document.getElementById('cdek-pvz-wrapper');
+                const pvzSelect = document.getElementById('cdek-pvz-select');
+                pvzWrapper.style.display = 'block';
+                pvzSelect.innerHTML = '<option value="">Загрузка списка ПВЗ...</option>';
+                pvzSelect.disabled = true;
+
+                try {
+                    const res = await fetch(`https://functions.yandexcloud.net/d4e5dal47a38n862fndt?action=offices&city_code=${cityCode}`);
+                    const data = await res.json();
+
+                    pvzSelect.innerHTML = '<option value="">Выберите удобный пункт выдачи...</option>';
+                    if(data && data.length > 0) {
+                        data.forEach(pvz => {
+                            const opt = document.createElement('option');
+                            opt.value = pvz.code;
+                            opt.text = pvz.location.address;
+                            opt.setAttribute('data-city-code', cityCode);
+                            pvzSelect.appendChild(opt);
+                        });
+                        pvzSelect.disabled = false;
+                    } else {
+                        pvzSelect.innerHTML = '<option value="">Нет ПВЗ в этом городе</option>';
+                    }
+                } catch(e) {
+                    pvzSelect.innerHTML = '<option value="">Ошибка загрузки ПВЗ</option>';
+                }
+            },
+
+            selectCdekPvz: async function(pvzCode, address, cityCode) {
+                const cityInput = document.getElementById('cdek-city-input').value;
+                const statusEl = document.getElementById('cdek-status');
+                const manualInput = document.getElementById('manual-address');
+                if (manualInput) manualInput.value = ''; // Очищаем ручной ввод, если выбрали ПВЗ
+                
+                if(statusEl) {
+                    statusEl.innerHTML = `<b>ПВЗ:</b> ${cityInput}, ${address} <br><span style="font-size: 10px; opacity: 0.7;">Рассчитываем стоимость доставки...</span>`;
+                    statusEl.style.color = 'var(--locus-dark)';
+                }
+
+                try {
+                    const packages = this.calculatePackage();
+                    // Запрос тарифа (код 136 - Посылка склад-склад)
+                    const tariffReq = {
+                        type: 1, 
+                        currency: 1,
+                        tariff_code: 136, 
+                        from_location: { city: 'Орёл' }, 
+                        to_location: { code: parseInt(cityCode) },
+                        packages: packages
+                    };
+
+                    const res = await fetch(`https://functions.yandexcloud.net/d4e5dal47a38n862fndt?action=calculate`, {
+                        method: 'POST',
+                        body: JSON.stringify(tariffReq)
+                    });
+                    const data = await res.json();
+
+                    let price = 350; // Страховочная цена
+                    if(data && data.delivery_sum) {
+                        price = Math.ceil(data.delivery_sum);
+                    } else if (data && data.requests && data.requests.length > 0 && data.requests[0].errors) {
+                        console.error('Ошибка СДЭК тарифа:', data.requests[0].errors);
+                    }
+
+                    this.cdekInfo = {
+                        type: 'PVZ', tariff: 136, city: cityInput,
+                        address: address, pvzCode: pvzCode, rawPrice: price
+                    };
+
+                    if(statusEl) {
+                        statusEl.innerHTML = `<b>Доставка в ПВЗ:</b><br>${cityInput}, ${address}`;
+                        statusEl.style.color = '#187a30';
+                    }
+
+                    this.calculateDeliveryCost(price);
+
+                } catch(e) {
+                    console.error("Error calculating tariff", e);
+                    this.calculateDeliveryCost(350); // Fallback
+                }
+            },
+            // --- КОНЕЦ: ЛЕГКИЙ ИНТЕРФЕЙС СДЭК БЕЗ КАРТЫ ---
 
             handleCdekChoice: function(type, tariff, address) {
                 const price = parseInt(address.price) || 0;
