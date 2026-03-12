@@ -291,6 +291,7 @@
             display: flex; flex-direction: column;
         }
         .locus-modal.wide .locus-modal-content { max-width: 800px; }
+        .locus-modal.admin-wide .locus-modal-content { max-width: 1200px; }
         .locus-modal.active .locus-modal-content { transform: translateY(0); }
 
         .modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--locus-dark); }
@@ -486,4 +487,21 @@
         #ai-story-content {
             font-size: 16px !important;
             line-height: 1.6 !important;
+        }
+        /* Анимация свайпа для таблиц на мобильных */
+        .scroll-hint-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(244, 241, 234, 0.85); display: flex; align-items: center; justify-content: center;
+            z-index: 10; opacity: 1; transition: opacity 0.5s ease; pointer-events: none; border-radius: 8px;
+        }
+        .scroll-hint-icon {
+            color: var(--locus-dark); display: flex; flex-direction: column; align-items: center; gap: 8px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            animation: swipeAnim 2s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes swipeAnim {
+            0% { transform: translateX(30px); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateX(-30px); opacity: 0; }
         }
