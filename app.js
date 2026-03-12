@@ -1972,7 +1972,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 return packages;
             },
 
-            // --- НАЧАЛО: СДЭК И РУЧНОЙ ВВОД (Версия 3.0 с облачным service.php) ---
             // --- НАЧАЛО: ЛЕГКИЙ ИНТЕРФЕЙС СДЭК БЕЗ КАРТЫ ---
             initCDEK: function() {
                 const cityInput = document.getElementById('cdek-city-input');
