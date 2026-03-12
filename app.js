@@ -1720,7 +1720,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         hintHtml = `
                             <div class="scroll-hint-overlay" id="ws-scroll-hint">
                                 <div class="scroll-hint-icon">
-                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v4.5l1.68-.56a1.94 1.94 0 0 1 2.45 1.12l2.6 6.5A3 3 0 0 1 19.92 23H10a3 3 0 0 1-2.92-2.31L5 13.5v-2c0-.55.45-1 1-1h2.81L9 11.24z"/><path d="M14 18l-4-4"/></svg>
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="8 16 4 12 8 8"></polyline>
+                                        <line x1="4" y1="12" x2="20" y2="12"></line>
+                                        <polyline points="16 8 20 12 16 16"></polyline>
+                                    </svg>
                                     <span>Листайте вбок</span>
                                 </div>
                             </div>
