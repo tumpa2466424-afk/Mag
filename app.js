@@ -2096,7 +2096,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         type: 1, 
                         currency: 1,
                         tariff_code: 136, 
-                        from_location: { city: 'Орёл' }, 
+                        from_location: { code: 269 }, // 269 - это точный код Орла в базе СДЭК
                         to_location: { code: parseInt(cityCode) },
                         packages: packages
                     };
