@@ -1990,17 +1990,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     from: { city: 'Орёл' }, 
                     root: 'cdek-map',
                     
-                    // Твой настоящий ключ Яндекса
+                    // Твой правильный ключ
                     apiKey: 'f54a746a-3e67-40fc-84eb-787e9f7be4b4', 
                     
-                    // Твоя функция-прокси в Яндекс Облаке
                     servicePath: 'https://functions.yandexcloud.net/d4e5dal47a38n862fndt', 
-                    
                     goods: goods,
-                    
-                    // ХАК: Передаем координаты центра Москвы вместо слова 'Москва'
                     defaultLocation: [55.7558, 37.6173], 
-                    
                     onChoose: (type, tariff, address) => {
                         this.handleCdekChoice(type, tariff, address);
                         if (manualInput) manualInput.value = ''; 
