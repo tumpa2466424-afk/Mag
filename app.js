@@ -2028,11 +2028,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             div.onmouseover = () => div.style.background = '#F4F1EA';
                             div.onmouseout = () => div.style.background = 'transparent';
                             
-                            div.textContent = `${city.city}, ${city.region}`;
+                            // Формируем красивое название с регионом
+                            const regionText = city.region ? `, ${city.region}` : '';
+                            div.textContent = `${city.city}${regionText}`;
+                            
                             div.onclick = () => {
                                 document.getElementById('cdek-city-input').value = city.city;
                                 resultsDiv.style.display = 'none';
-                                this.loadCdekPvzs(city.city_code);
+                                
+                                // ИСПРАВЛЕНИЕ: Берем правильное поле city.code
+                                this.loadCdekPvzs(city.code);
                             };
                             resultsDiv.appendChild(div);
                         });
