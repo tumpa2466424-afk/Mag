@@ -2303,7 +2303,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
             
             switchAdminTab: function(tabName) {
-                ['catalog','users', 'promos', 'subs', 'costs', 'actions', 'messages', 'ws-orders'].forEach(t => {
+                ['catalog','users', 'promos', 'subs', 'costs', 'actions', 'messages', 'ws-orders', 'orders'].forEach(t => {
                     const sec = document.getElementById(`admin-sec-${t}`);
                     if(sec) sec.classList.remove('active');
                 });
@@ -2322,6 +2322,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 if (tabName === 'messages') MessageSystem.loadMessagesForAdmin();
                 if (tabName === 'ws-orders') this.loadWholesaleOrders();
                 if (tabName === 'catalog') CatalogSystem.loadData();
+                if (tabName === 'orders') this.loadRetailOrders();
             },
 
             // --- НАЧАЛО: АДМИНКА - ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ ИЗ YDB ---
@@ -2701,7 +2702,84 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     container.innerHTML = html;
                 } catch(e) { container.innerHTML = '<div style="color:red; font-size:12px;">Ошибка загрузки</div>'; console.error(e); }
             },
+            loadRetailOrders: async function() {
+                const container = document.getElementById('admin-orders-list');
+                if(!container) return;
+                container.innerHTML = '<div class="loader" style="position:relative; top:0; color:var(--locus-dark);">Загрузка заказов...</div>';
+                
+                const token = localStorage.getItem('locus_token');
+                try {
+                    // Используем тот же API, но запрашиваем розничные заказы. 
+                    // ВНИМАНИЕ: Для этого твоя Яндекс Функция должна поддерживать action=getAdminOrders
+                    const res = await fetch(LOCUS_API_URL + '?action=getAdminOrders', { headers: { 'X-Auth-Token': token } });
+                    const data = await res.json();
+                    if(!data.success) throw new Error(data.error);
+                    
+                    if(data.orders.length === 0) {
+                        container.innerHTML = '<div style="opacity:0.5; text-align:center; padding:20px;">Новых розничных заказов пока нет</div>';
+                        return;
+                    }
+                    
+                    // Сортировка (новые сверху)
+                    data.orders.sort((a,b) => b.invId - a.invId);
+                    
+                    let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th>Заказ и Клиент</th><th>Состав и Сумма</th><th>Адрес доставки</th><th style="width: 100px;">Статус</th></tr></thead><tbody>';
+                    
+                    data.orders.forEach(o => {
+                        const datePart = new Date(o.invId * 1000).toLocaleString('ru-RU');
+                        const customer = o.customer || {};
+                        const delivery = o.delivery || {};
+                        
+                        const itemsHtml = (o.items || []).map(i => `<span style="font-weight:600">${i.item}</span> <span style="font-size:10px; color:gray;">(${i.weight}г, ${i.grind})</span> x ${i.qty} шт.`).join('<br>');
+                        
+                        let rowStyle = '';
+                        if (o.status === 'pending_payment') rowStyle = 'background-color:#fef6f5;';
+                        else if (o.status === 'completed' || o.status === 'shipped') rowStyle = 'background-color:#f0f0f0; opacity: 0.6;'; 
 
+                        html += `<tr style="${rowStyle}">
+                            <td style="vertical-align:top; padding-top:10px; font-size:12px; line-height:1.4;">
+                                <b style="font-size:13px;">№ ${o.id}</b><br>
+                                <span style="font-size:10px; color:gray;">${datePart}</span><br>
+                                <div style="margin-top:8px;"><b>${customer.name || 'Без ФИО'}</b></div>
+                                <div style="color:gray;">${customer.phone || ''}</div>
+                                <div style="color:gray;">${customer.email || ''}</div>
+                            </td>
+                            <td style="vertical-align:top; padding-top:10px; font-size:12px; line-height:1.5;">
+                                ${itemsHtml}
+                                <div style="margin-top:8px; font-weight:bold; font-size:14px;">Итого: ${o.total.toLocaleString('ru-RU')} ₽</div>
+                            </td>
+                            <td style="vertical-align:top; padding-top:10px; font-size:11px; line-height:1.4;">
+                                <b>${delivery.type === 'PVZ' ? 'СДЭК ПВЗ' : (delivery.type === 'MANUAL' ? 'Ручной ввод' : 'Курьер')}</b><br>
+                                ${delivery.city || ''}<br>
+                                ${delivery.address || ''}<br>
+                                <span style="color:gray; font-size:10px;">Стоимость: ${delivery.finalCost} ₽</span>
+                            </td>
+                            <td style="vertical-align:top; padding-top:10px;">
+                                <select class="lc-input" style="padding:4px; font-size:11px; margin:0; width:100%;" onchange="UserSystem.updateRetailOrderStatus('${o.id}', this.value)">
+                                    <option value="pending_payment" ${o.status === 'pending_payment' ? 'selected' : ''}>Не оплачен</option>
+                                    <option value="paid" ${o.status === 'paid' ? 'selected' : ''}>Оплачен</option>
+                                    <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>В сборке</option>
+                                    <option value="shipped" ${o.status === 'shipped' ? 'selected' : ''}>Отправлен</option>
+                                    <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Выполнен</option>
+                                </select>
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                } catch(e) { container.innerHTML = '<div style="color:red; font-size:12px;">Ошибка загрузки</div>'; console.error(e); }
+            },
+
+            updateRetailOrderStatus: async function(orderId, newStatus) {
+                const token = localStorage.getItem('locus_token');
+                try {
+                    await fetch(LOCUS_API_URL + '?action=updateOrderStatus', {
+                        method: 'POST', headers: { 'X-Auth-Token': token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'updateOrderStatus', orderId: orderId, status: newStatus })
+                    });
+                    this.loadRetailOrders();
+                } catch(e) { alert('Ошибка обновления статуса'); }
+            },
             updateOrderStatus: async function(orderId, newStatus) {
                 const token = localStorage.getItem('locus_token');
                 try {
@@ -2801,6 +2879,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     list.appendChild(el);
                 });
                 this.updateCartTotals();
+                // Автозаполнение Email
+                const emailInput = document.getElementById('order-email');
+                if (emailInput && !emailInput.value && this.currentUser && this.currentUser.email) {
+                    emailInput.value = this.currentUser.email;
+                }
             },
 
             updateItemQty: function(idx, delta) {
@@ -2876,14 +2959,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 
                 const name = document.getElementById('order-name').value.trim();
                 const phone = document.getElementById('order-phone').value.trim();
+                const emailInput = document.getElementById('order-email');
+                const email = emailInput ? emailInput.value.trim() : this.currentUser.email;
                 const policy = document.getElementById('policy-check').checked;
                 
                 // ЖЕСТКАЯ ВАЛИДАЦИЯ
-                if(!name || !phone) return alert('Заполните имя и телефон');
+                if(!name || !phone || !email) return alert('Заполните ФИО, телефон и e-mail');
                 
-                const nameRegex = /^[a-zA-Zа-яА-ЯёЁ\s\-]{2,50}$/;
-                if(!nameRegex.test(name) || /(.)\1{3,}/.test(name)) {
-                    return alert('Пожалуйста, введите корректное имя (без цифр и странных символов).');
+                const nameRegex = /^[a-zA-Zа-яА-ЯёЁ\s\-]{2,100}$/;
+                if(!nameRegex.test(name)) {
+                    return alert('Пожалуйста, введите корректное ФИО (без цифр и странных символов).');
                 }
 
                 const phoneDigits = phone.replace(/\D/g, '');
@@ -2930,15 +3015,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const invId = Math.floor(Date.now() / 1000);
                     const orderId = invId.toString();
 
-                    // Формируем чистую историю, чтобы ЛК не "ломался" при чтении
-                    const historyItems = this.localCart.map(i => ({ 
-                        item: i.item, 
-                        weight: i.weight,
-                        grind: i.grind,
-                        price: i.price, 
-                        qty: i.qty, 
-                        date: new Date().toLocaleDateString() 
-                    }));
+                    // Формируем новый ОБЪЕКТ ЗАКАЗА для истории
+                    const historyOrder = {
+                        isOrder: true,
+                        orderId: orderId,
+                        date: new Date().toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }),
+                        total: total,
+                        items: JSON.parse(JSON.stringify(this.localCart)) // Копируем товары из корзины
+                    };
 
                     const orderData = {
                         id: orderId,
@@ -2947,10 +3031,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         discountPercent: discountPercent,
                         promo: this.activePromo ? this.activePromo.code : '',
                         status: 'pending_payment',
-                        customer: { name, phone, email: this.currentUser.email },
+                        customer: { name, phone, email: email },
                         delivery: { ...this.cdekInfo, finalCost: shippingCost },
                         items: this.localCart,
-                        historyItems: historyItems
+                        historyItems: [historyOrder] // Отправляем как заказ
                     };
 
                     const token = localStorage.getItem('locus_token');
@@ -2964,9 +3048,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const data = await res.json();
                     if (data.error || data.errorMessage) throw new Error(data.error || data.errorMessage);
 
-                    // СРАЗУ добавляем в локальную историю, чтобы ЛК обновился мгновенно
+                    // Добавляем ЗАКАЗ в локальную историю
                     if(!this.currentUser.history) this.currentUser.history = [];
-                    this.currentUser.history.push(...historyItems);
+                    this.currentUser.history.push(historyOrder);
 
                     this.localCart = [];
                     this.activePromo = null;
