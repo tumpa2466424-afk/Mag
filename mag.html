@@ -439,9 +439,24 @@
                         <input type="tel" id="order-phone" class="lc-input" placeholder="Телефон">
                         
                         <div class="section-header" style="margin-top:15px;">Доставка (СДЭК)</div>
-                        <div id="cdek-map"></div>
-                        <div id="cdek-status" style="font-size:11px; margin-bottom:15px; color:var(--locus-dark);">
-                            <span style="opacity:0.6">Выберите способ доставки на карте</span>
+                        
+                        <div id="custom-cdek-widget" style="background: rgba(255,255,255,0.6); padding: 15px; border: 1px solid var(--locus-border); border-radius: 8px; margin-bottom: 15px;">
+                            <label class="lc-label">1. Город доставки</label>
+                            <div style="position: relative; margin-bottom: 15px;">
+                                <input type="text" id="cdek-city-input" class="lc-input" placeholder="Начните вводить город..." autocomplete="off" style="margin-bottom: 0;">
+                                <div id="cdek-city-results" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--locus-border); border-top: none; z-index: 100; max-height: 200px; overflow-y: auto; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-radius: 0 0 8px 8px;"></div>
+                            </div>
+
+                            <div id="cdek-pvz-wrapper" style="display: none;">
+                                <label class="lc-label">2. Пункт выдачи</label>
+                                <select id="cdek-pvz-select" class="lc-input" style="padding: 10px 0; margin-bottom: 0; background: transparent;">
+                                    <option value="">Выберите пункт выдачи...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="cdek-status" style="font-size:12px; margin-bottom:15px; color:var(--locus-dark); line-height: 1.4;">
+                            <span style="opacity:0.6">Стоимость доставки рассчитается после выбора ПВЗ</span>
                         </div>
                         
                         <div id="manual-delivery-block" style="margin-bottom: 15px;">
