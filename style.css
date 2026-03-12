@@ -505,3 +505,38 @@
             80% { opacity: 1; }
             100% { transform: translateX(-30px); opacity: 0; }
         }
+        /* --- МАКСИМАЛЬНОЕ РАСШИРЕНИЕ ЭКРАНОВ ДЛЯ МОБИЛЬНЫХ --- */
+        @media (max-width: 768px) {
+            /* 1. Уменьшаем внешние отступы (от краев телефона до самого окна) */
+            .locus-modal {
+                padding: 10px !important; 
+            }
+            
+            /* 2. Уменьшаем огромные внутренние отступы внутри белого окна */
+            .locus-modal-content {
+                padding: 15px 12px !important; /* Было сильно больше */
+                width: 100% !important;
+                border-radius: 12px !important;
+            }
+            
+            /* 3. Расширяем внутренние блоки в админке и ЛК (убираем двойные рамки-отступы) */
+            .admin-content-section > div, 
+            #admin-sec-orders > div {
+                padding: 10px 8px !important;
+            }
+
+            /* 4. Делаем таблицы чуть компактнее, чтобы текст меньше переносился на новые строки */
+            .admin-table th, .admin-table td {
+                padding: 8px 4px !important;
+            }
+            
+            /* 5. Делаем шапку модалки (где крестик закрытия) более компактной */
+            .modal-header {
+                margin-bottom: 15px !important;
+            }
+            
+            /* 6. Поля ввода на мобильных тоже делаем на всю ширину */
+            .lc-input {
+                padding: 10px 12px !important;
+            }
+        }
