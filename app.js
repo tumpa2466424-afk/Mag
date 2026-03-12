@@ -2142,29 +2142,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 this.calculateDeliveryCost(price);
             },
 
-            setManualAddress: function(address) {
-                if (!address || address.trim() === '') {
-                    this.cdekInfo = null;
-                    this.cdekPrice = 0;
-                    const statusEl = document.getElementById('cdek-status');
-                    if(statusEl) {
-                        statusEl.innerHTML = '<span style="opacity:0.6">Выберите способ доставки на карте или введите вручную</span>';
-                        statusEl.style.color = 'var(--locus-dark)';
-                    }
-                } else {
-                    this.cdekInfo = {
-                        type: 'MANUAL', tariff: 0, city: 'Введено вручную',
-                        address: address, pvzCode: 'MANUAL', rawPrice: 350
-                    };
-                    const statusEl = document.getElementById('cdek-status');
-                    if(statusEl) {
-                        statusEl.innerHTML = `<b>Адрес доставки:</b> ${address}`;
-                        statusEl.style.color = '#187a30';
-                    }
-                    this.calculateDeliveryCost(350); 
-                }
-            },
-
             calculateDeliveryCost: function(basePrice) {
                 let subtotal = 0;
                 this.localCart.forEach(i => subtotal += (i.price * i.qty));
