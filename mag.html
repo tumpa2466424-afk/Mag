@@ -204,7 +204,13 @@
                     <div id="cont-hist" class="collapsible-content">
                         <div id="user-history-list" style="margin-bottom: 20px;"></div>
                     </div>
-
+                    <div class="collapsible-header" onclick="UserSystem.toggleSection('ws-hist')">
+                        <div class="section-header" style="margin:0;">Оптовые заказы</div>
+                        <span class="arrow-indicator" id="arrow-ws-hist">▼</span>
+                    </div>
+                    <div id="cont-ws-hist" class="collapsible-content hidden">
+                        <div id="user-ws-history-list" style="margin-bottom: 20px;"></div>
+                    </div>
                     <div class="section-header" style="margin-top:20px;">Рекомендуем вам</div>
                     <div id="user-recommendations-list"></div>
                     <div class="feedback-area">
@@ -360,7 +366,7 @@
 
                     <div id="admin-sec-ws-orders" class="admin-content-section">
                         <div style="padding: 20px; background: #fff; border-radius: 8px; border:1px solid var(--locus-border);">
-                            <div class="section-header">Управление оптовыми заказами</div>
+                            <div class="section-header">Оптовые заказы</div>
                             <div id="admin-ws-orders-list">Загрузка...</div>
                         </div>
                     </div>
@@ -426,13 +432,13 @@
                             </div>
                         </div>
 
-                        <div style="text-align:right;">
+                        <div style="text-align:center; display:flex; flex-direction:column; align-items:center;">
                             <div style="margin-bottom:12px; font-size:16px;">
                                 <span style="margin-right:20px;">Общий вес: <span id="ws-total-weight">0</span> кг</span>
                                 <span>Сумма: <span id="ws-total-cost">0</span> ₽</span>
                             </div>
                             <div id="ws-warning" style="color:#B66A58; font-size:12px; margin-bottom:12px; display:block;">Оптовый заказ доступен от 5 кг</div>
-                            <button id="ws-btn-order" class="lc-btn" disabled onclick="UserSystem.submitWholesaleOrder()" style="width:auto; padding:10px 25px;">Оформить оптовый заказ</button>
+                            <button id="ws-btn-order" class="lc-btn" disabled onclick="UserSystem.submitWholesaleOrder()" style="width:100%; max-width:300px; padding:10px 25px;">Оформить оптовый заказ</button>
                         </div>
                     </div>
 
