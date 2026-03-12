@@ -1976,12 +1976,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             initCDEK: function() {
                 const cityInput = document.getElementById('cdek-city-input');
                 const pvzSelect = document.getElementById('cdek-pvz-select');
-                const manualInput = document.getElementById('manual-address');
                 
-                if (manualInput) {
-                    manualInput.addEventListener('input', (e) => this.setManualAddress(e.target.value));
-                }
-
                 if(cityInput && !this.cdekInitialized) {
                     let debounceTimer;
                     cityInput.addEventListener('input', (e) => {
