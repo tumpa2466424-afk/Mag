@@ -1715,7 +1715,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 let html = '';
 
                 if (itemsList.length > 0) {
-                    html += `<div style="overflow-x:auto; padding-bottom:10px;">
+                    let hintHtml = '';
+                    if (window.innerWidth <= 768) {
+                        hintHtml = `
+                            <div class="scroll-hint-overlay" id="ws-scroll-hint">
+                                <div class="scroll-hint-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v4.5l1.68-.56a1.94 1.94 0 0 1 2.45 1.12l2.6 6.5A3 3 0 0 1 19.92 23H10a3 3 0 0 1-2.92-2.31L5 13.5v-2c0-.55.45-1 1-1h2.81L9 11.24z"/><path d="M14 18l-4-4"/></svg>
+                                    <span>Листайте вбок</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    html += `<div style="position:relative;">${hintHtml}
+                        <div style="overflow-x:auto; padding-bottom:10px;" onscroll="document.getElementById('ws-scroll-hint') ? document.getElementById('ws-scroll-hint').style.opacity='0' : null">
                         <table class="admin-table" style="width:100%; min-width:650px;">
                         <thead><tr>
                             <th style="width: 28%;">Название</th>
@@ -1751,7 +1764,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             </td>
                         </tr>`;
                     });
-                    html += `</tbody></table></div>`;
+                    html += `</tbody></table></div>`
 
                     html += `<div style="font-size: 10px; color: gray; margin-top: 10px;">Не является публичной офертой.</div>`;
                     html += `<button class="lc-btn" onclick="UserSystem.generatePDF()" style="margin-top: 15px; margin-bottom: 20px; background:#8B7E66; width:auto; padding:10px 25px; display:inline-block;">Скачать прайс</button>`;
@@ -1866,8 +1879,28 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const data = await res.json();
                     if(!data.success) throw new Error(data.error);
                     
-                    alert('Оптовый заказ успешно оформлен! Он передан администратору.');
-                    
+                    alert('Оптовый заказ успешно оформлен!');
+                    // СОХРАНЕНИЕ В ЛИЧНЫЙ КАБИНЕТ (Если авторизован)
+                    if (this.uid && this.currentUser) {
+                        const historyOrder = {
+                            isWholesaleOrder: true,
+                            orderId: orderData.id,
+                            date: new Date().toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }),
+                            total: totalCost,
+                            items: items
+                        };
+                        if(!this.currentUser.history) this.currentUser.history = [];
+                        this.currentUser.history.push(historyOrder);
+                        
+                        if(token) {
+                            await fetch(LOCUS_API_URL + '?action=updateUser', {
+                                method: 'POST',
+                                headers: { 'X-Auth-Token': token, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'updateUser', field: 'history', data: this.currentUser.history })
+                            });
+                        }
+                    }
+
                     // Очистка формы после успешного заказа
                     document.querySelectorAll('.ws-qty-input').forEach(input => input.value = ''); 
                     if(document.getElementById('ws-urgent-order')) document.getElementById('ws-urgent-order').checked = false;
@@ -2264,6 +2297,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         this.switchView('cart'); 
                     } 
                     else if (initialView === 'admin') { 
+                        m.classList.add('admin-wide');
                         m.classList.add('wide');
                         this.switchView('admin'); 
                         
@@ -2273,9 +2307,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         PromotionSystem.loadActionsList();
                         MessageSystem.loadMessagesForAdmin();
                     }
-                    else if(initialView === 'wholesale') { this.switchView('wholesale'); }
-                    else if(this.uid) { this.renderDashboard(); this.switchView('dashboard'); } 
-                    else { this.switchView('login'); }
+                    else if(initialView === 'wholesale') { 
+                        m.classList.add('wide'); 
+                        m.classList.remove('admin-wide');
+                        this.switchView('wholesale'); 
+                    }
+                    else if(this.uid) { 
+                        m.classList.remove('wide'); m.classList.remove('admin-wide');
+                        this.renderDashboard(); this.switchView('dashboard'); 
+                    } 
+                    else { 
+                        m.classList.remove('wide'); m.classList.remove('admin-wide');
+                        this.switchView('login'); 
+                    }
                 } else { 
                     document.body.style.overflow = '';
                     m.classList.remove('active'); 
@@ -2659,28 +2703,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     data.orders.sort((a,b) => getMs(b.createdAt) - getMs(a.createdAt));
                     
                     // Ограничиваем ширину колонки "Дата" (70px), чтобы дать больше места Описанию и Реквизитам
-                    let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th style="width: 70px;">Дата</th><th>Клиент</th><th>Состав заказа</th><th>Сумма</th><th style="width: 70px;">Статус</th><th style="width: 50px; text-align:center;">Удалить</th></tr></thead><tbody>';
+                    let html = '<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th>Заказ и Клиент</th><th>Состав и Сумма</th><th style="width: 120px;">Статус</th></tr></thead><tbody>';
                     
                     data.orders.forEach(o => {
-                        // 1. Исправление бага 1970 года
                         let d = new Date(o.createdAt);
                         const ts = Number(o.createdAt);
-                        // Если это секунды (значение меньше 3 миллиардов), переводим в миллисекунды
-                        if (!isNaN(ts) && ts > 0 && ts < 3000000000) {
-                            d = new Date(ts * 1000); 
-                        } else if (!isNaN(ts) && ts >= 3000000000) {
-                            d = new Date(ts);
-                        }
-                        if (isNaN(d.getTime())) d = new Date(); // Запасной вариант
+                        if (!isNaN(ts) && ts > 0 && ts < 3000000000) d = new Date(ts * 1000); 
+                        else if (!isNaN(ts) && ts >= 3000000000) d = new Date(ts);
+                        if (isNaN(d.getTime())) d = new Date();
 
-                        // 2. Жесткая привязка к Московскому времени (GMT+3)
                         const datePart = d.toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' });
                         const timePart = d.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
-                        
-                        // 3. Перенос времени под дату
-                        const dateStrHTML = `${datePart}<br><span style="font-size:10px; opacity:0.6;">${timePart}</span>`;
+                        const dateStrHTML = `${datePart} ${timePart}`;
 
-                        const itemsHtml = o.items.map(i => `<span style="font-weight:600">${i.item}</span>: ${i.weight}г x ${i.qty} шт.`).join('<br>');
+                        const itemsHtml = o.items.map(i => `<span style="font-weight:600">${i.item}</span> <span style="font-size:10px; color:gray;">(${i.weight}г)</span> x ${i.qty} шт.`).join('<br>');
                         
                         const phone = o.customer && o.customer.phone ? o.customer.phone : 'Не указан';
                         const email = o.customer && o.customer.email ? o.customer.email : 'Не указан';
@@ -2690,24 +2726,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if (o.status === 'wholesale_new') rowStyle = 'background-color:#fef6f5;';
                         else if (o.status === 'completed') rowStyle = 'background-color:#f0f0f0; opacity: 0.6;'; 
 
-                        // Выравниваем контент по верхнему краю (vertical-align:top), чтобы из-за блока реквизитов другие ячейки не "уплывали" вниз
                         html += `<tr style="${rowStyle}">
-                            <td style="font-size:11px; white-space:nowrap; vertical-align:top; padding-top:10px;">${dateStrHTML}</td>
-                            <td style="font-size:12px; vertical-align:top; padding-top:10px;">
-                                ${email}<br><span style="color:gray">${phone}</span>
+                            <td style="vertical-align:top; padding-top:10px; font-size:12px; line-height:1.4;">
+                                <b style="font-size:13px;">№ ${o.id}</b><br>
+                                <span style="font-size:10px; color:gray;">${dateStrHTML}</span><br>
+                                <div style="margin-top:8px;"><b>${email}</b></div>
+                                <div style="color:gray;">${phone}</div>
                                 ${reqs ? `<div style="margin-top:6px; font-size:10px; line-height:1.3; color:#444; background:rgba(255,255,255,0.7); padding:6px; border-radius:4px; border:1px dashed #ccc; max-height:60px; overflow-y:auto;"><b>Реквизиты:</b><br>${reqs.replace(/\n/g, '<br>')}</div>` : ''}
                             </td>
-                            <td style="font-size:11px; line-height:1.4; vertical-align:top; padding-top:10px;">${itemsHtml}</td>
-                            <td style="font-weight:bold; vertical-align:top; padding-top:10px;">${o.total.toLocaleString('ru-RU')} ₽</td>
-                            <td style="vertical-align:top; padding-top:6px;">
-                                <select class="lc-input" style="padding:4px; font-size:11px; margin:0; min-width:60px; max-width:80px; width:100%;" onchange="UserSystem.updateOrderStatus('${o.id}', this.value)">
+                            <td style="vertical-align:top; padding-top:10px; font-size:12px; line-height:1.5;">
+                                ${itemsHtml}
+                                <div style="margin-top:8px; font-weight:bold; font-size:14px;">Итого: ${o.total.toLocaleString('ru-RU')} ₽</div>
+                            </td>
+                            <td style="vertical-align:top; padding-top:10px;">
+                                <select class="lc-input" style="padding:4px; font-size:11px; margin:0; width:100%; margin-bottom: 10px;" onchange="UserSystem.updateOrderStatus('${o.id}', this.value)">
                                     <option value="wholesale_new" ${o.status === 'wholesale_new' ? 'selected' : ''}>Новый</option>
                                     <option value="wholesale_processed" ${o.status === 'wholesale_processed' ? 'selected' : ''}>В работе</option>
                                     <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Выполнено</option>
                                 </select>
-                            </td>
-                            <td style="text-align:center; vertical-align:top; padding-top:8px;">
-                                <button onclick="UserSystem.deleteWholesaleOrder('${o.id}')" style="color:#B66A58; border:1px solid #B66A58; background:transparent; border-radius:4px; cursor:pointer; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='#B66A58'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#B66A58';">&times;</button>
+                                <div style="text-align:right;">
+                                    <button onclick="UserSystem.deleteWholesaleOrder('${o.id}')" style="color:#B66A58; border:none; background:none; cursor:pointer; font-size:11px; text-decoration:underline;">Удалить заказ</button>
+                                </div>
                             </td>
                         </tr>`;
                     });
