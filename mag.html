@@ -227,6 +227,7 @@
                     <button class="admin-tab" onclick="UserSystem.switchAdminTab('messages')">Сообщения</button>
                     <button class="admin-tab" onclick="UserSystem.switchAdminTab('subs')">Подписки</button>
                     <button class="admin-tab" onclick="UserSystem.switchAdminTab('costs')">Расходы</button>
+                    <button class="admin-tab" onclick="UserSystem.switchAdminTab('orders')">Заказы</button>
                     <button class="admin-tab" onclick="UserSystem.switchAdminTab('ws-orders')">Оптовые заказы</button>
                 </div>
                 <div class="scroll-area">
@@ -363,7 +364,19 @@
                             <div id="admin-ws-orders-list">Загрузка...</div>
                         </div>
                     </div>
-
+                    <div id="admin-sec-orders" class="admin-content-section">
+                        <div style="padding: 20px; background: #fff; border-radius: 8px; border:1px solid var(--locus-border);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                <div class="section-header" style="margin:0;">Розничные заказы</div>
+                                <button class="icon-btn" onclick="UserSystem.loadRetailOrders()" title="Обновить">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--locus-dark)">
+                                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="admin-orders-list">Загрузка...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -435,8 +448,9 @@
                     
                     <div class="cart-summary" id="cart-summary-block">
                         <div class="section-header" style="margin-top:0;">Оформление</div>
-                        <input type="text" id="order-name" class="lc-input" placeholder="Ваше имя">
+                        <input type="text" id="order-name" class="lc-input" placeholder="Ваши ФИО">
                         <input type="tel" id="order-phone" class="lc-input" placeholder="Телефон">
+                        <input type="email" id="order-email" class="lc-input" placeholder="Ваш e-mail">
                         
                         <div class="section-header" style="margin-top:15px;">Доставка (СДЭК)</div>
                         
