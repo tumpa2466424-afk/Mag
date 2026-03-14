@@ -3465,7 +3465,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 const checked = item.active !== false ? 'checked' : '';
                                 checkBoxHTML = `<input type="checkbox" class="sub-active-check" ${checked} style="margin-right:10px; accent-color:var(--locus-dark); transform:scale(1.2);">`;
                             }
-
+                            
                             el.innerHTML = `
                                 <div style="display:flex; align-items:center;">
                                     ${checkBoxHTML}
@@ -3527,11 +3527,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                     </div>`;
                                 }).join('');
 
+                                // --- НАШ НОВЫЙ БЛОК СО СТАТУСАМИ ---
+                                const statusMap = {
+                                    'pending_payment': '<span style="color:#B66A58;">Не оплачен</span>',
+                                    'paid': '<span style="color:#187a30;">Оплачен</span>',
+                                    'processing': '<span style="color:#8B7E66;">В сборке</span>',
+                                    'shipped': '<span style="color:#187a30;">Отправлен</span>',
+                                    'completed': '<span style="color:gray;">Выполнен</span>'
+                                };
+                                const displayStatus = hItem.status ? (statusMap[hItem.status] || hItem.status) : '<span style="color:#B66A58;">Не оплачен</span>';
+                                // -----------------------------------
+
                                 el.innerHTML = `
                                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 15px; border-bottom: 1px solid var(--locus-border); padding-bottom: 12px;">
                                         <div>
                                             <div style="font-weight:700; font-size:13px; color:var(--locus-dark); text-transform:uppercase;">Заказ № ${String(hItem.orderId).replace('ws_', '')}</div>
-                                            <div style="font-size:10px; color:gray; margin-top:3px;">${hItem.date}</div>
+                                            <div style="font-size:10px; color:gray; margin-top:3px;">${hItem.date} • ${displayStatus}</div>
                                         </div>
                                         <div style="font-weight:700; font-size:16px;">${hItem.total} ₽</div>
                                     </div>
@@ -3581,6 +3592,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 el.className = 'product-list-item';
                                 const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
                                 const gDisplay = hItem.grind && hItem.grind !== 'Зерно' ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${hItem.grind}</span>` : '';
+                                
                                 el.innerHTML = `
                                     <div style="display:flex; align-items:center;">
                                         <div class="pli-info"><div class="pli-name">${hItem.item}${wDisplay}${gDisplay} x${hItem.qty || 1}</div><div class="pli-meta">${hItem.date} • ${hItem.price} ₽</div></div>
