@@ -2,20 +2,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment, addDoc, collection, deleteDoc, getDocs, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- КОНФИГУРАЦИЯ FIREBASE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDoqPrYFegCZRyTlrqbZe7VZoChdW_lS4g",
-            authDomain: "locus-coffee.firebaseapp.com",
-            projectId: "locus-coffee",
-            storageBucket: "locus-coffee.firebasestorage.app",
-            messagingSenderId: "539438290999",
-            appId: "1:539438290999:web:eb6d5a2090d811bcf2c7b2",
-            measurementId: "G-WT6BE6YS1F"
-        };
-
-        const ROBOKASSA_LOGIN = "LocusCoffee"; 
-        const ROBOKASSA_PASS1 = "VB3Js1HjXRqp5ahHe4p7"; 
-        const ROBOKASSA_PASS2 = "j4zmL54MKN0SZ7tRiufa"; 
+        // // --- КОНФИГУРАЦИЯ FIREBASE ---
+        // const firebaseConfig = {
+        //     apiKey: "AIzaSyDoqPrYFegCZRyTlrqbZe7VZoChdW_lS4g",
+        //     authDomain: "locus-coffee.firebaseapp.com",
+        //     projectId: "locus-coffee",
+        //     storageBucket: "locus-coffee.firebasestorage.app",
+        //     messagingSenderId: "539438290999",
+        //     appId: "1:539438290999:web:eb6d5a2090d811bcf2c7b2",
+        //     measurementId: "G-WT6BE6YS1F"
+        // };
 
         let app, auth, db;
         try {
@@ -3153,6 +3149,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const historyOrder = {
                         isOrder: true,
                         orderId: orderId,
+                        status: 'pending_payment',
                         date: new Date().toLocaleDateString('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' }),
                         total: total,
                         items: JSON.parse(JSON.stringify(this.localCart)) // Копируем товары из корзины
@@ -3191,11 +3188,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     this.saveCart(false);
                     this.updateCartBadge();
                     
-                    const outSum = total.toString();
-                    const signatureValue = CryptoJS.MD5(`${ROBOKASSA_LOGIN}:${outSum}:${invId}:${ROBOKASSA_PASS1}`).toString();
-                    const robokassaUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin=${ROBOKASSA_LOGIN}&OutSum=${outSum}&InvId=${invId}&Description=CoffeeOrder&SignatureValue=${signatureValue}&Email=${this.currentUser.email}`;
-
-                    window.location.href = robokassaUrl;
+                    // Переход по безопасной ссылке, сгенерированной на сервере
+                    if (data.paymentUrl) {
+                        window.location.href = data.paymentUrl;
+                    } else {
+                        alert('Ошибка генерации ссылки на оплату');
+                    }
                 } catch (e) {
                     console.error(e);
                     alert('Ошибка создания заказа: ' + e.message);
