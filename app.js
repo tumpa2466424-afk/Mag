@@ -3171,11 +3171,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                         localStorage.setItem('locus_token', data.token);
                         this.uid = data.user.id;
-                        // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: пропускаем данные через нашу умную функцию
+                        
                         await this.fetchUserData(); 
                         
                         this.updateUIState();
                         this.switchView('dashboard');
+                        this.renderDashboard(); // ПРИНУДИТЕЛЬНАЯ ОТРИСОВКА ЛК
+                        
                         alert('Регистрация успешна!');
                     } catch (e) { alert('Ошибка: ' + e.message); }
                 },
@@ -3197,11 +3199,21 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                         localStorage.setItem('locus_token', data.token);
                         this.uid = data.user.id;
-                        // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: пропускаем данные через нашу умную функцию
+                        
                         await this.fetchUserData(); 
                         
                         this.updateUIState();
                         this.switchView('dashboard');
+                        this.renderDashboard(); // ПРИНУДИТЕЛЬНАЯ ОТРИСОВКА ЛК
+                        
+                        // Мгновенное появление кнопки админки без перезагрузки
+                        if(email === 'info@locus.coffee') {
+                            const btnAdmin = document.getElementById('btn-open-admin');
+                            if(btnAdmin) { 
+                                btnAdmin.style.display = 'flex';
+                                btnAdmin.onclick = () => this.toggleModal(true, 'admin');
+                            }
+                        }
                     } catch (e) { alert('Ошибка: ' + e.message); }
                 },
 
