@@ -333,7 +333,7 @@
 
         .cart-items-wrapper { overflow-y: visible; margin-bottom: 20px; }
         .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(105, 58, 5, 0.1); }
-        .cart-item-info { flex: 1; }
+        .cart-item-info { flex: 1; text-align: left; }
         .cart-item-title { font-weight: 600; font-size: 13px; }
         .cart-item-meta { font-size: 11px; opacity: 0.7; margin-top: 4px; }
         .cart-controls { display: flex; align-items: center; gap: 10px; }
