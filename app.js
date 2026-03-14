@@ -3,15 +3,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment, addDoc, collection, deleteDoc, getDocs, query, orderBy, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // // --- КОНФИГУРАЦИЯ FIREBASE ---
-        // const firebaseConfig = {
-        //     apiKey: "AIzaSyDoqPrYFegCZRyTlrqbZe7VZoChdW_lS4g",
-        //     authDomain: "locus-coffee.firebaseapp.com",
-        //     projectId: "locus-coffee",
-        //     storageBucket: "locus-coffee.firebasestorage.app",
-        //     messagingSenderId: "539438290999",
-        //     appId: "1:539438290999:web:eb6d5a2090d811bcf2c7b2",
-        //     measurementId: "G-WT6BE6YS1F"
-        // };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoqPrYFegCZRyTlrqbZe7VZoChdW_lS4g",
+            authDomain: "locus-coffee.firebaseapp.com",
+            projectId: "locus-coffee",
+            storageBucket: "locus-coffee.firebasestorage.app",
+            messagingSenderId: "539438290999",
+            appId: "1:539438290999:web:eb6d5a2090d811bcf2c7b2",
+            measurementId: "G-WT6BE6YS1F"
+        };
 
         let app, auth, db;
         try {
