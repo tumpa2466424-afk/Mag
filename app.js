@@ -2613,6 +2613,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             // --- КОНЕЦ: ПРОМОКОДЫ YDB ---
 
             // --- НАЧАЛО: АДМИНКА - ОТОБРАЖЕНИЕ ПОДПИСОК YDB ---
+            // --- НАЧАЛО: АДМИНКА - ОТОБРАЖЕНИЕ ПОДПИСОК С ГРУППИРОВКОЙ ---
             loadActiveSubs: async function() {
                 const container = document.getElementById('admin-sec-subs');
                 if(!container) return;
@@ -2634,39 +2635,89 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         return;
                     }
 
-                    // Сортируем: сначала самые новые
-                    data.subs.sort((a, b) => {
-                        const [d1,m1,y1] = a.dateAdded.split('.');
-                        const [d2,m2,y2] = b.dateAdded.split('.');
-                        return new Date(`${y2}-${m2}-${d2}`) - new Date(`${y1}-${m1}-${d1}`);
+                    // 1. ГРУППИРУЕМ ЛОТЫ ПО EMAIL И ИЩЕМ САМУЮ СВЕЖУЮ ДАТУ
+                    const groupedSubs = {};
+
+                    data.subs.forEach(s => {
+                        if (!groupedSubs[s.email]) {
+                            groupedSubs[s.email] = {
+                                email: s.email,
+                                lots: [],
+                                latestDateObj: new Date(0), // Стартовая пустая дата
+                                displayDate: 'Неизвестно',
+                                totalMonthlyPrice: 0
+                            };
+                        }
+
+                        // Добавляем лот в группу пользователя
+                        groupedSubs[s.email].lots.push(s);
+                        groupedSubs[s.email].totalMonthlyPrice += (Number(s.price) || 0);
+
+                        // Парсим дату формата ДД.ММ.ГГГГ для поиска самого последнего добавления
+                        if (s.dateAdded && s.dateAdded.includes('.')) {
+                            const [day, month, year] = s.dateAdded.split('.');
+                            const parsedDate = new Date(`${year}-${month}-${day}`);
+                            
+                            // Если дата текущего лота свежее, обновляем дату всей подписки
+                            if (parsedDate > groupedSubs[s.email].latestDateObj) {
+                                groupedSubs[s.email].latestDateObj = parsedDate;
+                                groupedSubs[s.email].displayDate = s.dateAdded;
+                            }
+                        } else if (groupedSubs[s.email].displayDate === 'Неизвестно') {
+                            groupedSubs[s.email].displayDate = s.dateAdded;
+                        }
                     });
 
+                    // 2. ПРЕВРАЩАЕМ ОБЪЕКТ В МАССИВ И СОРТИРУЕМ (самые свежие подписки сверху)
+                    const groupedArray = Object.values(groupedSubs);
+                    groupedArray.sort((a, b) => b.latestDateObj - a.latestDateObj);
+
+                    let totalLots = data.subs.length;
+                    let totalUsers = groupedArray.length;
+
+                    // 3. ОТРИСОВЫВАЕМ ТАБЛИЦУ
                     let html = `
                         <div style="margin-bottom: 15px; font-size: 14px; color: var(--locus-dark);">
-                            Всего активных лотов в подписках: <b>${data.subs.length}</b>
+                            Подписчиков: <b>${totalUsers}</b> | Всего лотов в подписках: <b>${totalLots}</b>
                         </div>
                         <div style="overflow-x:auto;">
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>Клиент</th>
-                                    <th>Лот</th>
-                                    <th>Детали</th>
-                                    <th>Цена</th>
-                                    <th>Добавлен</th>
+                                    <th style="width: 25%;">Клиент (Email)</th>
+                                    <th style="width: 50%;">Состав подписки</th>
+                                    <th style="width: 15%;">Сумма / мес.</th>
+                                    <th style="width: 10%;">Обновлена</th>
                                 </tr>
                             </thead>
                             <tbody>
                     `;
 
-                    data.subs.forEach(s => {
+                    groupedArray.forEach(group => {
+                        // Собираем все лоты клиента в единый красивый блок
+                        const lotsHtml = group.lots.map(lot => {
+                            const grindText = lot.grind && lot.grind !== 'Зерно' ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${lot.grind}</span>` : '';
+                            return `<div style="margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #eee; font-size:12px;">
+                                <span style="font-weight:600; color:var(--locus-dark);">${lot.item}</span>
+                                <span style="font-size:10px; color:gray; margin-left:5px;">(${lot.weight} г)</span>${grindText}
+                                <span style="float:right; font-weight:600;">${lot.price} ₽</span>
+                            </div>`;
+                        }).join('');
+
                         html += `
                             <tr>
-                                <td><div style="font-weight:600; font-size:12px;">${s.email}</div></td>
-                                <td style="font-weight:bold; color:var(--locus-dark);">${s.item}</td>
-                                <td style="font-size:11px; opacity:0.8;">${s.weight} г<br>${s.grind}</td>
-                                <td style="font-weight:bold;">${s.price} ₽</td>
-                                <td style="font-size:10px; color:gray;">${s.dateAdded}</td>
+                                <td style="vertical-align:top; padding-top:10px;">
+                                    <div style="font-weight:600; font-size:13px; word-break:break-all;">${group.email}</div>
+                                </td>
+                                <td style="vertical-align:top; padding-top:10px; padding-right:15px;">
+                                    ${lotsHtml}
+                                </td>
+                                <td style="vertical-align:top; padding-top:10px; font-weight:bold; font-size:14px; color:var(--locus-dark);">
+                                    ${group.totalMonthlyPrice} ₽
+                                </td>
+                                <td style="vertical-align:top; padding-top:10px; font-size:11px; color:gray;">
+                                    ${group.displayDate}
+                                </td>
                             </tr>
                         `;
                     });
@@ -2679,8 +2730,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     container.innerHTML = `<div style="color:#B66A58">Ошибка: ${e.message}</div>`;
                 }
             },
-            // --- КОНЕЦ: АДМИНКА - ОТОБРАЖЕНИЕ ПОДПИСОК YDB ---
-
+            // --- КОНЕЦ: АДМИНКА - ОТОБРАЖЕНИЕ ПОДПИСОК С ГРУППИРОВКОЙ ---
+            
             // --- НАЧАЛО: АДМИНКА - ОПТОВЫЕ ЗАКАЗЫ ---
             loadWholesaleOrders: async function() {
                 const container = document.getElementById('admin-ws-orders-list');
