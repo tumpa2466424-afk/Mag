@@ -3178,21 +3178,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     });
                     const data = await res.json();
                     if (data.error || data.errorMessage) throw new Error(data.error || data.errorMessage);
-
-                    // Добавляем ЗАКАЗ в локальную историю
-                    if(!this.currentUser.history) this.currentUser.history = [];
-                    this.currentUser.history.push(historyOrder);
-
-                    this.localCart = [];
-                    this.activePromo = null;
-                    this.saveCart(false);
-                    this.updateCartBadge();
                     
                     // Переход по безопасной ссылке, сгенерированной на сервере
                     if (data.paymentUrl) {
                         window.location.href = data.paymentUrl;
                     } else {
                         alert('Ошибка генерации ссылки на оплату');
+                        if(btn) { btn.disabled = false; btn.textContent = 'Оформить и оплатить'; }
                     }
                 } catch (e) {
                     console.error(e);
