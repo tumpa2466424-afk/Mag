@@ -421,14 +421,20 @@
                             <textarea id="ws-order-reqs" class="lc-input" placeholder="ИНН, КПП, Название компании, Юридический адрес..." style="height:60px; resize:vertical; padding-top:10px;"></textarea>
                         </div>
                         
-                        <div style="text-align:left; margin-bottom: 20px; border-bottom: 1px solid var(--locus-border); padding-bottom: 20px;">
-                            <label style="font-size:14px; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
-                                <input type="checkbox" id="ws-urgent-order" onchange="UserSystem.updateWholesaleTotal()">
-                                <span>Срочный заказ (+20% к стоимости)</span>
-                            </label>
-                            <div style="margin-top: 10px; opacity: 0.8; line-height: 1.5; font-size: 10px;">
-                                Срочный заказ — это приоритетный заказ, который выполняется первым в день заказа, и выполняется даже если он поступил после 18 часов.<br>
-                                Отправляется заказчику в день заказа и с утра следующего дня, если он поступил после 18 часов.
+                        <div style="text-align:left; margin-bottom: 20px; border-bottom: 1px solid var(--locus-border); padding-bottom: 10px;">
+                            <div class="collapsible-header" onclick="UserSystem.toggleSection('ws-urgent')" style="padding: 5px 0; border: none; margin: 0;">
+                                <div style="font-size: 13px; font-weight: 600; color: var(--locus-dark);">Дополнительные опции (Срочный заказ)</div>
+                                <span class="arrow-indicator rotated" id="arrow-ws-urgent">▼</span>
+                            </div>
+                            <div id="cont-ws-urgent" class="collapsible-content hidden" style="padding-top: 15px; padding-bottom: 10px;">
+                                <label style="font-size:14px; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+                                    <input type="checkbox" id="ws-urgent-order" onchange="UserSystem.updateWholesaleTotal()">
+                                    <span>Срочный заказ (+20% к стоимости)</span>
+                                </label>
+                                <div style="margin-top: 10px; opacity: 0.8; line-height: 1.5; font-size: 10px;">
+                                    Срочный заказ — это приоритетный заказ, который выполняется первым в день заказа, и выполняется даже если он поступил после 18 часов.<br>
+                                    Отправляется заказчику в день заказа и с утра следующего дня, если он поступил после 18 часов.
+                                </div>
                             </div>
                         </div>
 
@@ -460,6 +466,10 @@
                         
                         <div class="section-header" style="margin-top:15px;">Доставка (СДЭК)</div>
                         
+                        <div id="cdek-status" style="font-size:12px; margin-bottom:15px; color:var(--locus-dark); line-height: 1.4;">
+                            <span style="opacity:0.6">Стоимость доставки рассчитается после выбора ПВЗ</span>
+                        </div>
+
                         <div id="custom-cdek-widget" style="background: rgba(255,255,255,0.6); padding: 15px; border: 1px solid var(--locus-border); border-radius: 8px; margin-bottom: 15px;">
                             <label class="lc-label">1. Город доставки</label>
                             <div style="position: relative; margin-bottom: 15px;">
@@ -475,10 +485,6 @@
                             </div>
                         </div>
 
-                        <div id="cdek-status" style="font-size:12px; margin-bottom:15px; color:var(--locus-dark); line-height: 1.4;">
-                            <span style="opacity:0.6">Стоимость доставки рассчитается после выбора ПВЗ</span>
-                        </div>
-
                         <div id="self-pickup-block" style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.6); border: 1px solid var(--locus-border); border-radius: 8px;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--locus-dark); margin: 0;">
                                 <input type="checkbox" id="self-pickup-checkbox" onchange="UserSystem.toggleSelfPickup()" style="width: 18px; height: 18px; accent-color: #187a30;">
@@ -489,11 +495,6 @@
                                 <span style="font-size: 12px; color: gray;">Ваш код для открытия ячейки с заказом:</span>
                                 <div id="self-pickup-code" style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #187a30; margin-top: 5px;"></div>
                             </div>
-                        </div>
-                        
-                        <div class="checkbox-row">
-                            <input type="checkbox" id="policy-check">
-                            <label for="policy-check">Я согласен с обработкой персональных данных согласно <a href="#" style="text-decoration:underline;">Политики конфиденциальности</a>.</label>
                         </div>
 
                         <div class="promo-block">
@@ -507,7 +508,13 @@
                         <div class="summary-row" id="row-promo-discount" style="display:none; color:#187a30;"><span>Промокод</span><span id="cart-promo-val">-0 ₽</span></div>
                         
                         <div class="summary-row total"><span>Итого</span><span id="cart-total">0 ₽</span></div>
-                        <button class="lc-btn" id="btn-checkout" style="background: #187a30; margin-top: 15px;">Оформить и оплатить</button>
+                        
+                        <div class="checkbox-row" style="margin-top: 20px; margin-bottom: 20px;">
+                            <input type="checkbox" id="policy-check">
+                            <label for="policy-check">Я согласен с обработкой персональных данных согласно <br><a href="#" style="text-decoration:underline;">Политики конфиденциальности</a></label>
+                        </div>
+
+                        <button class="lc-btn" id="btn-checkout" style="background: #187a30; margin-top: 0;">Оформить и оплатить</button>
                     </div>
                 </div>
             </div>
