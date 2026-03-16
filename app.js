@@ -584,7 +584,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             const brand = document.createElementNS(svgNS, "text");
             brand.setAttribute("x", cx); brand.setAttribute("y", cy);
             brand.setAttribute("class", "brand-logo-center");
-            brand.textContent = "LOCUS";
+            brand.textContent = "LOCUS COFFEE";
             svg.appendChild(brand);
 
             spin.style.opacity = "1";
