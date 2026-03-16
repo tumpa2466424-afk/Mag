@@ -1232,6 +1232,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             getEditHtml: function(r) {
+                // Определяем, нужно ли скрывать специфичные кофейные атрибуты
+                const catName = (r.category || '').toLowerCase();
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                const extraStyle = isSpecial ? 'display: none;' : 'display: contents;';
+
                 return `
                     <div class="cupping-grid">
                         <div class="cupping-item full-width">
@@ -1259,14 +1264,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         </div>
 
                         <div class="cupping-item full-width">
-                            <span class="cupping-label">Текстовое описание (HTML)</span>
+                            <span class="cupping-label">Текстовое описание (HTML или обычный текст с абзацами)</span>
                             <textarea id="cat-edit-customDesc-${r.id}" class="edit-textarea" style="height:100px;">${r.customDesc || ''}</textarea>
                         </div>
                         
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Дата каппинга</span>
-                            <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}">
-                        </div>
+                        <div style="${extraStyle}">
+                            <div class="cupping-item full-width" style="margin-top: 10px;">
+                                <span class="cupping-label" style="color: var(--locus-accent); font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; display: block;">Кофейные атрибуты (Скрыто для аксессуаров)</span>
+                            </div>
+                            <div class="cupping-item full-width">
+                                <span class="cupping-label">Дата каппинга</span>
+                                <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}">
+                            </div>
                         <div class="cupping-item full-width">
                             <span class="cupping-label">Степень обжарки (1-15)</span>
                             <input type="number" min="1" max="15" id="cat-edit-roast-${r.id}" class="edit-input" value="${r.roast || ''}">
@@ -1313,7 +1322,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     <div class="edit-actions">
                         <button class="lc-btn btn-del-cat" onclick="CatalogSystem.cancelEdit('${r.id}')">Отмена</button>
                         <button class="lc-btn btn-save-cat" id="cat-btn-save-${r.id}" onclick="CatalogSystem.saveEdit('${r.id}')">Сохранить</button>
-                    </div>
+                    </div></div>
                 `;
             },
 
