@@ -246,13 +246,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                     const toggleAiBtn = document.getElementById('btn-toggle-ai'); // Находим кнопку AI
 
+                    // Находим кнопки и блоки для скрытия (Вес, Подписка)
+                    const weightSelector = document.getElementById('weight-selector-block');
+                    const subBtn = document.getElementById('btn-subscription');
+                    const cartBtn = document.getElementById('btn-cart');
+
                     if (isSpecial) {
                         // 1. АКСЕССУАРЫ И ИНФО (Кастомное фото и выровненное описание)
                         let descHtml = '';
                         if (r.imageUrl) descHtml += `<img src="${r.imageUrl}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover;">`;
                         
-                        // ДОБАВЛЕНО: Оборачиваем текст в div с выравниванием по ширине (justify)
-                        descHtml += `<div style="text-align: justify; line-height: 1.5;">${r.customDesc || r.flavorDesc || ''}</div>`;
+                        // ДОБАВЛЕНО: white-space: pre-wrap для сохранения абзацев
+                        descHtml += `<div style="text-align: justify; line-height: 1.5; white-space: pre-wrap;">${r.customDesc || r.flavorDesc || ''}</div>`;
                         
                         document.getElementById('p-simple-desc').innerHTML = descHtml;
 
@@ -262,6 +267,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleExtBtn) toggleExtBtn.style.display = 'none';
                         if(toggleAiBtn) toggleAiBtn.style.display = 'none';
                         document.getElementById('grind-selector-block').style.display = 'none';
+                        
+                        // Скрываем кнопки веса и подписки
+                        if(weightSelector) weightSelector.style.display = 'none';
+                        if(subBtn) subBtn.style.display = 'none';
+                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'center';
                         
                         const grid = document.getElementById('cupping-data');
                         if(grid) grid.innerHTML = ''; // Убираем таблицу каппинга
@@ -276,6 +286,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleExtBtn) toggleExtBtn.style.display = 'none';
                         if(toggleAiBtn) toggleAiBtn.style.display = 'none'; // Скрываем AI историю для аромы
                         document.getElementById('grind-selector-block').style.display = 'none';
+
+                        // Возвращаем кнопки веса и подписки
+                        if(weightSelector) weightSelector.style.display = 'flex';
+                        if(subBtn) subBtn.style.display = 'flex';
+                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'space-between';
 
                     } else {
                         // 3. ОБЫЧНЫЙ КОФЕ (Всё включено)
@@ -296,6 +311,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleExtBtn) toggleExtBtn.style.display = 'flex';
                         if(toggleAiBtn) toggleAiBtn.style.display = 'flex';
                         document.getElementById('grind-selector-block').style.display = 'block';
+
+                        // Возвращаем кнопки веса и подписки
+                        if(weightSelector) weightSelector.style.display = 'flex';
+                        if(subBtn) subBtn.style.display = 'flex';
+                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'space-between';
                     }
 
                     // ЛОГИКА КНОПКИ ПОКУПКИ (Скрываем для раздела Инфо с ценой 0)
@@ -1232,7 +1252,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             getEditHtml: function(r) {
-                // Определяем, нужно ли скрывать специфичные кофейные атрибуты
                 const catName = (r.category || '').toLowerCase();
                 const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
                 const extraStyle = isSpecial ? 'display: none;' : 'display: contents;';
@@ -1276,49 +1295,45 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 <span class="cupping-label">Дата каппинга</span>
                                 <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}">
                             </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Степень обжарки (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-roast-${r.id}" class="edit-input" value="${r.roast || ''}">
-                        </div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Степень обжарки (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-roast-${r.id}" class="edit-input" value="${r.roast || ''}"></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность запаха (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-smellInt-${r.id}" class="edit-input" value="${r.smellInt || ''}"></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность аромата (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-aromaInt-${r.id}" class="edit-input" value="${r.aromaInt || ''}"></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание запаха и аромата</span>
-                            <textarea id="cat-edit-aromaDesc-${r.id}" class="edit-textarea">${r.aromaDesc || ''}</textarea></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Заметки о запахе и аромате</span>
-                            <textarea id="cat-edit-aromaNotes-${r.id}" class="edit-textarea">${r.aromaNotes || ''}</textarea></div>
-                        
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность букета (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-flavorInt-${r.id}" class="edit-input" value="${r.flavorInt || ''}"></div>
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность послевкусия (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-atInt-${r.id}" class="edit-input" value="${r.atInt || ''}"></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span>
-                            <textarea id="cat-edit-flavorDesc-${r.id}" class="edit-textarea">${r.flavorDesc || ''}</textarea></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Основные вкусы</span>
-                            <input type="text" id="cat-edit-mainFlavors-${r.id}" class="edit-input" value="${r.mainFlavors || ''}"></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Заметки о букете и послевкусии</span>
-                            <textarea id="cat-edit-flavorNotes-${r.id}" class="edit-textarea">${r.flavorNotes || ''}</textarea></div>
-                        
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность кислотности (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-acidInt-${r.id}" class="edit-input" value="${r.acidInt || ''}"></div>
-                        <div class="cupping-item"><span class="cupping-label">Заметки о кислотности</span>
-                            <textarea id="cat-edit-acidNotes-${r.id}" class="edit-textarea">${r.acidNotes || ''}</textarea></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Степень обжарки (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-roast-${r.id}" class="edit-input" value="${r.roast || ''}"></div>
+                            <div class="cupping-item"><span class="cupping-label">Интенсивность запаха (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-smellInt-${r.id}" class="edit-input" value="${r.smellInt || ''}"></div>
+                            <div class="cupping-item"><span class="cupping-label">Интенсивность аромата (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-aromaInt-${r.id}" class="edit-input" value="${r.aromaInt || ''}"></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Описание запаха и аромата</span>
+                                <textarea id="cat-edit-aromaDesc-${r.id}" class="edit-textarea">${r.aromaDesc || ''}</textarea></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Заметки о запахе и аромате</span>
+                                <textarea id="cat-edit-aromaNotes-${r.id}" class="edit-textarea">${r.aromaNotes || ''}</textarea></div>
                             
-                        <div class="cupping-item"><span class="cupping-label">Интенсивность сладости (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-sweetInt-${r.id}" class="edit-input" value="${r.sweetInt || ''}"></div>
-                        <div class="cupping-item"><span class="cupping-label">Заметки о сладости</span>
-                            <textarea id="cat-edit-sweetNotes-${r.id}" class="edit-textarea">${r.sweetNotes || ''}</textarea></div>
-                        
-                        <div class="cupping-item full-width"><span class="cupping-label">Интенсивность тактильности (1-15)</span>
-                            <input type="number" min="1" max="15" id="cat-edit-bodyInt-${r.id}" class="edit-input" value="${r.bodyInt || ''}"></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание тактильности</span>
-                            <textarea id="cat-edit-bodyDesc-${r.id}" class="edit-textarea">${r.bodyDesc || ''}</textarea></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Заметки о тактильности</span>
-                            <textarea id="cat-edit-bodyNotes-${r.id}" class="edit-textarea">${r.bodyNotes || ''}</textarea></div>
-                    </div>
+                            <div class="cupping-item"><span class="cupping-label">Интенсивность букета (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-flavorInt-${r.id}" class="edit-input" value="${r.flavorInt || ''}"></div>
+                            <div class="cupping-item"><span class="cupping-label">Интенсивность послевкусия (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-atInt-${r.id}" class="edit-input" value="${r.atInt || ''}"></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span>
+                                <textarea id="cat-edit-flavorDesc-${r.id}" class="edit-textarea">${r.flavorDesc || ''}</textarea></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Основные вкусы</span>
+                                <input type="text" id="cat-edit-mainFlavors-${r.id}" class="edit-input" value="${r.mainFlavors || ''}"></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Заметки о букете и послевкусии</span>
+                                <textarea id="cat-edit-flavorNotes-${r.id}" class="edit-textarea">${r.flavorNotes || ''}</textarea></div>
+                            
+                            <div class="cupping-item"><span class="cupping-label">Интенсивность кислотности (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-acidInt-${r.id}" class="edit-input" value="${r.acidInt || ''}"></div>
+                            <div class="cupping-item"><span class="cupping-label">Заметки о кислотности</span>
+                                <textarea id="cat-edit-acidNotes-${r.id}" class="edit-textarea">${r.acidNotes || ''}</textarea></div>
+                                
+                            <div class="cupping-item"><span class="cupping-label">Интенсивность сладости (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-sweetInt-${r.id}" class="edit-input" value="${r.sweetInt || ''}"></div>
+                            <div class="cupping-item"><span class="cupping-label">Заметки о сладости</span>
+                                <textarea id="cat-edit-sweetNotes-${r.id}" class="edit-textarea">${r.sweetNotes || ''}</textarea></div>
+                            
+                            <div class="cupping-item full-width"><span class="cupping-label">Интенсивность тактильности (1-15)</span>
+                                <input type="number" min="1" max="15" id="cat-edit-bodyInt-${r.id}" class="edit-input" value="${r.bodyInt || ''}"></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Описание тактильности</span>
+                                <textarea id="cat-edit-bodyDesc-${r.id}" class="edit-textarea">${r.bodyDesc || ''}</textarea></div>
+                            <div class="cupping-item full-width"><span class="cupping-label">Заметки о тактильности</span>
+                                <textarea id="cat-edit-bodyNotes-${r.id}" class="edit-textarea">${r.bodyNotes || ''}</textarea></div>
+                        </div> </div>
                     <div class="edit-actions">
                         <button class="lc-btn btn-del-cat" onclick="CatalogSystem.cancelEdit('${r.id}')">Отмена</button>
                         <button class="lc-btn btn-save-cat" id="cat-btn-save-${r.id}" onclick="CatalogSystem.saveEdit('${r.id}')">Сохранить</button>
