@@ -3364,12 +3364,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === itemName.trim());
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
 
-                // Подтягиваем расчет из базы
+                // Подтягиваем расчет из базы или фиксированную цену
                 const rawGreen = parseFloat(product.rawGreenPrice || product.raw_green_price) || 0;
-                const prices = this.calculateRetailPrices(rawGreen);
-                const weightPrice = weight === 1000 ? prices.p1000 : prices.p250;
+                let weightPrice = 0;
                 
-                if (weightPrice === 0) return alert("Цена для этого лота еще не рассчитана (в Extrinsic форме нет цены).");
+                if (rawGreen > 0) {
+                    const prices = this.calculateRetailPrices(rawGreen);
+                    weightPrice = weight === 1000 ? prices.p1000 : prices.p250;
+                } else if (product.price && parseFloat(product.price) > 0) {
+                    const fixedPrice = parseFloat(product.price) || 0;
+                    weightPrice = weight === 1000 ? fixedPrice * 4 : fixedPrice;
+                }
+                
+                if (weightPrice === 0) return alert("Цена для этого лота еще не рассчитана (нет данных Extrinsic и не задана фиксированная цена в каталоге).");
                 
                 const subPrice = weightPrice > 50 ? weightPrice - 50 : weightPrice;
 
