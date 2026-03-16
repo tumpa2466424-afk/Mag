@@ -141,9 +141,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             // 1. ИЩЕМ ПОЛНЫЕ ДАННЫЕ В КЭШЕ
             const sampleName = currentActiveProduct.sample_no || currentActiveProduct.sample;
             let rawGreen = 0;
+            let fullProduct = null; // ИСПРАВЛЕНИЕ: Вынесли переменную наружу, чтобы её видели все блоки!
             
             if (typeof ALL_PRODUCTS_CACHE !== 'undefined') {
-                const fullProduct = ALL_PRODUCTS_CACHE.find(p => p.sample === sampleName || p.sample_no === sampleName);
+                fullProduct = ALL_PRODUCTS_CACHE.find(p => p.sample === sampleName || p.sample_no === sampleName);
                 if (fullProduct) {
                     rawGreen = parseFloat(fullProduct.rawGreenPrice || fullProduct.raw_green_price) || 0;
                 }
