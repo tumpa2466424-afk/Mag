@@ -149,11 +149,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 }
             }
             
-            // 2. СЧИТАЕМ РОЗНИЧНУЮ ЦЕНУ
+            // 2. СЧИТАЕМ РОЗНИЧНУЮ ЦЕНУ ИЛИ БЕРЕМ ФИКСИРОВАННУЮ
             let basePrice = 0;
-            if (typeof UserSystem !== 'undefined' && UserSystem.calculateRetailPrices) {
+            if (rawGreen > 0 && typeof UserSystem !== 'undefined' && UserSystem.calculateRetailPrices) {
+                // Если есть зеленое зерно, считаем по классической формуле
                 const prices = UserSystem.calculateRetailPrices(rawGreen);
                 basePrice = currentWeight === 1000 ? prices.p1000 : prices.p250;
+            } else if (fullProduct && fullProduct.price && parseFloat(fullProduct.price) > 0) {
+                // Если зерна нет, берем фиксированную цену (для Аксессуаров и Инфо)
+                const fixedPrice = parseFloat(fullProduct.price) || 0;
+                // Считаем, что фиксированная цена указана за 1 штуку (250г). Для 1кг (4шт) умножаем на 4.
+                basePrice = currentWeight === 1000 ? fixedPrice * 4 : fixedPrice;
             }
             
             // 3. УЧИТЫВАЕМ СКИДКУ ПОКУПАТЕЛЯ
@@ -1159,16 +1165,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             getEditHtml: function(r) {
                 return `
                     <div class="cupping-grid">
-                        <div class="cupping-item full-width"><span class="cupping-label">Название / Номер лота</span>
-                        <div class="cupping-item full-width"><span class="cupping-label">Категория (Аксессуары, Информация и др.)</span>
-                            <input type="text" id="cat-edit-category-${r.id}" class="edit-input" value="${r.category || ''}"></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Фиксированная цена (₽)</span>
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Название / Номер лота</span>
+                            <input type="text" id="cat-edit-sample-${r.id}" class="edit-input" value="${r.sample || ''}">
+                        </div>
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Категория (Аксессуары, Информация и др.)</span>
+                            <input type="text" id="cat-edit-category-${r.id}" class="edit-input" value="${r.category || ''}">
+                        </div>
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Фиксированная цена (₽)</span>
                             <input type="number" id="cat-edit-price-${r.id}" class="edit-input" value="${r.price || ''}">
                             <div style="font-size:10px; margin-top:6px; color:var(--locus-dark); cursor:pointer; text-decoration:underline;" onclick="CatalogSystem.pullExtrinsicPrice('${r.id}', '${r.sample}')">Подтянуть расчетную цену из Extrinsic</div>
                         </div>
-                            <input type="text" id="cat-edit-sample-${r.id}" class="edit-input" value="${r.sample || ''}"></div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span>
-                            <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}"></div>
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Дата каппинга</span>
+                            <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}">
+                        </div>
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Степень обжарки (1-15)</span>
+                            <input type="number" min="1" max="15" id="cat-edit-roast-${r.id}" class="edit-input" value="${r.roast || ''}">
+                        </div>
                         <div class="cupping-item full-width"><span class="cupping-label">Степень обжарки (1-15)</span>
                             <input type="number" min="1" max="15" id="cat-edit-roast-${r.id}" class="edit-input" value="${r.roast || ''}"></div>
                         <div class="cupping-item"><span class="cupping-label">Интенсивность запаха (1-15)</span>
@@ -3000,12 +3017,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const isAroma = (product.category && product.category.toLowerCase().includes('ароматизация'));
                 if (isAroma) grind = "Зерно (Ароматизация)";
                 
-                // Подтягиваем расчет из базы
+                // Подтягиваем расчет из базы или фиксированную цену
                 const rawGreen = parseFloat(product.rawGreenPrice || product.raw_green_price) || 0;
-                const prices = this.calculateRetailPrices(rawGreen);
-                const truePrice = weight === 1000 ? prices.p1000 : prices.p250;
+                let truePrice = 0;
+                
+                if (rawGreen > 0) {
+                    const prices = this.calculateRetailPrices(rawGreen);
+                    truePrice = weight === 1000 ? prices.p1000 : prices.p250;
+                } else if (product.price && parseFloat(product.price) > 0) {
+                    const fixedPrice = parseFloat(product.price) || 0;
+                    truePrice = weight === 1000 ? fixedPrice * 4 : fixedPrice;
+                }
 
-                if (truePrice === 0) return alert("Цена для этого лота еще не рассчитана (в Extrinsic форме нет цены).");
+                if (truePrice === 0) return alert("Цена для этого лота еще не рассчитана (нет данных Extrinsic и не задана фиксированная цена в каталоге).");
 
                 const existing = this.localCart.find(i => i.item === item && i.weight == weight && i.grind === grind);
                 if(existing) existing.qty++;
