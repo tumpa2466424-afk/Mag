@@ -238,17 +238,46 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     document.getElementById('p-title').textContent = r.sample;
                     document.getElementById('p-cat-desc').textContent = '';
                     
-                    document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}`;
+                    // Определяем категории
+                    const isAroma = (r.category && r.category.toLowerCase().includes('ароматизац'));
+                    const isAcc = (r.category && r.category.toLowerCase().includes('аксессуар'));
+                    const isInfo = (r.category && r.category.toLowerCase().includes('информац'));
+                    const isSpecial = isAcc || isInfo;
 
-                    const isAroma = (r.category && r.category.toLowerCase().includes('ароматизация'));
-                    
-                    if (isAroma) {
+                    const toggleAiBtn = document.getElementById('btn-toggle-ai'); // Находим кнопку AI
+
+                    if (isSpecial) {
+                        // 1. АКСЕССУАРЫ И ИНФО (Кастомное фото и описание, без статов)
+                        let descHtml = '';
+                        if (r.imageUrl) descHtml += `<img src="${r.imageUrl}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover;">`;
+                        descHtml += r.customDesc || r.flavorDesc || '';
+                        document.getElementById('p-simple-desc').innerHTML = descHtml;
+
                         document.getElementById('p-mini-stats').innerHTML = ''; 
                         document.getElementById('p-mini-stats').style.display = 'none';
                         if(toggleBtn) toggleBtn.style.display = 'none';
                         if(toggleExtBtn) toggleExtBtn.style.display = 'none';
+                        if(toggleAiBtn) toggleAiBtn.style.display = 'none';
                         document.getElementById('grind-selector-block').style.display = 'none';
+                        
+                        const grid = document.getElementById('cupping-data');
+                        if(grid) grid.innerHTML = ''; // Убираем таблицу каппинга
+                        
+                    } else if (isAroma) {
+                        // 2. АРОМАТИЗАЦИЯ (Оставляем описание, убираем статы и AI)
+                        document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}`;
+
+                        document.getElementById('p-mini-stats').innerHTML = ''; 
+                        document.getElementById('p-mini-stats').style.display = 'none';
+                        if(toggleBtn) toggleBtn.style.display = 'none';
+                        if(toggleExtBtn) toggleExtBtn.style.display = 'none';
+                        if(toggleAiBtn) toggleAiBtn.style.display = 'none'; // Скрываем AI историю для аромы
+                        document.getElementById('grind-selector-block').style.display = 'none';
+
                     } else {
+                        // 3. ОБЫЧНЫЙ КОФЕ (Всё включено)
+                        document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}`;
+
                         document.getElementById('p-mini-stats').style.display = 'grid';
                         const miniStatsHTML = `
                             <div class="mini-stats-grid">
@@ -259,12 +288,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             </div>
                         `;
                         document.getElementById('p-mini-stats').innerHTML = miniStatsHTML;
+                        
                         if(toggleBtn) toggleBtn.style.display = 'flex';
                         if(toggleExtBtn) toggleExtBtn.style.display = 'flex';
+                        if(toggleAiBtn) toggleAiBtn.style.display = 'flex';
                         document.getElementById('grind-selector-block').style.display = 'block';
                     }
 
-                    document.getElementById('p-buy-area').style.display = 'flex';
+                    // ЛОГИКА КНОПКИ ПОКУПКИ (Скрываем для раздела Инфо с ценой 0)
+                    const priceVal = parseFloat(r.price) || 0;
+                    if (isInfo && priceVal === 0) {
+                        document.getElementById('p-buy-area').style.display = 'none';
+                    } else {
+                        document.getElementById('p-buy-area').style.display = 'flex';
+                    }
                     updatePriceDisplay();
                     
                     const grid = document.getElementById('cupping-data');
@@ -1069,7 +1106,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 flavorInt: r.flavor, atInt: r.aftertaste, flavorDesc: r.flavor_descriptors, mainFlavors: r.main_tastes, 
                                 flavorNotes: r.flavor_notes, acidInt: r.acidity, acidNotes: r.acidity_notes, sweetInt: r.sweetness, 
                                 sweetNotes: r.sweetness_notes, bodyInt: r.mouthfeel, bodyDesc: r.mouthfeel_descriptors, bodyNotes: r.mouthfeel_notes, 
-                                inCatalog: r.in_catalogue, category: r.category, price: r.price
+                                inCatalog: r.in_catalogue, category: r.category, price: r.price,
+                                imageUrl: r.image_url, customDesc: r.custom_desc
                             });
                         }
                     });
@@ -1089,49 +1127,76 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const containerInactive = document.getElementById('catalog-list-inactive');
                 containerActive.innerHTML = ''; containerInactive.innerHTML = '';
 
+                const groupsA = { 'Эспрессо': [], 'Фильтр': [], 'Ароматизация': [], 'Аксессуары': [], 'Информация': [] };
+                const groupsI = { 'Эспрессо': [], 'Фильтр': [], 'Ароматизация': [], 'Аксессуары': [], 'Информация': [] };
+
                 let activeCount = 0; let inactiveCount = 0;
 
                 this.ALL_PRODUCTS.forEach((r) => {
-                    const isChecked = r.inCatalog === "1" ? "checked" : "";
-                    const roastVal = parseFloat(r.roast) || 0;
-                    const typeText = roastVal >= 10 ? 'ЭСПРЕССО' : 'ФИЛЬТР';
-                    const typeColor = roastVal >= 10 ? '#B66A58' : '#7A8F7C';
-                    const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block;">${typeText}</span>`;
-                    const isBlend = r.sample.toLowerCase().includes('blend') || r.sample.toLowerCase().includes('смесь');
-                    const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; color:var(--locus-dark);">BLEND</span>` : '';
-                    
-                    const item = document.createElement('div');
-                    item.className = 'catalog-item';
-                    item.id = `cat-item-row-${r.id}`;
+                    const cat = (r.category || '').toLowerCase();
+                    let gName = 'Фильтр';
+                    if (cat.includes('аксессуар')) gName = 'Аксессуары';
+                    else if (cat.includes('информац')) gName = 'Информация';
+                    else if (cat.includes('ароматизац')) gName = 'Ароматизация';
+                    else if (parseFloat(r.roast) >= 10) gName = 'Эспрессо';
 
-                    item.innerHTML = `
-                        <div class="catalog-item-header" onclick="CatalogSystem.toggleDetails('${r.id}')">
-                            <div class="item-title" style="display:flex; align-items:center; flex-wrap:wrap;">
-                                ${typeSticker}${blendLabel} <span>${r.sample}</span>
-                            </div>
-                            <div class="item-controls" onclick="event.stopPropagation()">
-                                <div class="cat-checkbox-wrapper">
-                                    <span id="cat-status-${r.id}" class="save-status"></span>
-                                    <input type="checkbox" id="cat-check-${r.id}" ${isChecked} onchange="CatalogSystem.updateCatalogRow('${r.id}', this)">
-                                    В каталоге
-                                </div>
-                                <button class="cat-btn-icon" title="Редактировать лот" onclick="CatalogSystem.openEditMode('${r.id}', event)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                </button>
-                                <button class="cat-btn-icon" title="Дублировать лот" onclick="CatalogSystem.duplicateRow('${r.id}', event)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                </button>
-                                <button class="cat-btn-icon delete" id="cat-btn-delete-${r.id}" title="Удалить лот" onclick="CatalogSystem.deleteRow('${r.id}', '${r.sample}')">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="catalog-item-content" id="cat-content-${r.id}">${this.getViewHtml(r)}</div>
-                    `;
-                    
-                    if (r.inCatalog === "1") { containerActive.appendChild(item); activeCount++; } 
-                    else { containerInactive.appendChild(item); inactiveCount++; }
+                    if (r.inCatalog === "1") { groupsA[gName].push(r); activeCount++; }
+                    else { groupsI[gName].push(r); inactiveCount++; }
                 });
+
+                const appendGroupNodes = (groupsObj, container) => {
+                    for (const [gName, items] of Object.entries(groupsObj)) {
+                        if (items.length > 0) {
+                            const header = document.createElement('div');
+                            header.style.cssText = 'background:#f4f1ea; border:1px solid #E5E1D8; padding:8px 12px; margin: 15px 0 10px; font-weight:bold; color:var(--locus-dark); border-radius:6px; text-transform:uppercase; font-size:12px; letter-spacing:1px;';
+                            header.textContent = `${gName} (${items.length})`;
+                            container.appendChild(header);
+
+                            items.forEach(r => {
+                                const isChecked = r.inCatalog === "1" ? "checked" : "";
+                                const roastVal = parseFloat(r.roast) || 0;
+                                const typeText = roastVal >= 10 ? 'ЭСПРЕССО' : 'ФИЛЬТР';
+                                const typeColor = roastVal >= 10 ? '#B66A58' : '#7A8F7C';
+                                const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block;">${typeText}</span>`;
+                                const isBlend = r.sample.toLowerCase().includes('blend') || r.sample.toLowerCase().includes('смесь');
+                                const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; color:var(--locus-dark);">BLEND</span>` : '';
+
+                                const item = document.createElement('div');
+                                item.className = 'catalog-item';
+                                item.id = `cat-item-row-${r.id}`;
+
+                                item.innerHTML = `
+                                    <div class="catalog-item-header" onclick="CatalogSystem.toggleDetails('${r.id}')">
+                                        <div class="item-title" style="display:flex; align-items:center; flex-wrap:wrap;">
+                                            ${(gName==='Эспрессо'||gName==='Фильтр') ? typeSticker : ''}${blendLabel} <span>${r.sample}</span>
+                                        </div>
+                                        <div class="item-controls" onclick="event.stopPropagation()">
+                                            <div class="cat-checkbox-wrapper">
+                                                <span id="cat-status-${r.id}" class="save-status"></span>
+                                                <input type="checkbox" id="cat-check-${r.id}" ${isChecked} onchange="CatalogSystem.updateCatalogRow('${r.id}', this)">
+                                                В каталоге
+                                            </div>
+                                            <button class="cat-btn-icon" title="Редактировать лот" onclick="CatalogSystem.openEditMode('${r.id}', event)">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            </button>
+                                            <button class="cat-btn-icon" title="Дублировать лот" onclick="CatalogSystem.duplicateRow('${r.id}', event)">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                            </button>
+                                            <button class="cat-btn-icon delete" id="cat-btn-delete-${r.id}" title="Удалить лот" onclick="CatalogSystem.deleteRow('${r.id}', '${r.sample}')">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="catalog-item-content" id="cat-content-${r.id}">${this.getViewHtml(r)}</div>
+                                `;
+                                container.appendChild(item);
+                            });
+                        }
+                    }
+                };
+
+                appendGroupNodes(groupsA, containerActive);
+                appendGroupNodes(groupsI, containerInactive);
 
                 if (activeCount === 0) containerActive.innerHTML = '<div class="empty-msg">Нет лотов в каталоге</div>';
                 if (inactiveCount === 0) containerInactive.innerHTML = '<div class="empty-msg">Нет сохраненных каппингов</div>';
@@ -1176,6 +1241,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         </div>
                         <div class="cupping-item full-width">
                             <span class="cupping-label">Фиксированная цена (₽)</span>
+                            <div class="cupping-item full-width">
+                            <span class="cupping-label">URL фотографии (для Аксессуаров и Инфо)</span>
+                            <input type="text" id="cat-edit-imageUrl-${r.id}" class="edit-input" value="${r.imageUrl || ''}">
+                        </div>
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Текстовое описание (HTML, для Аксессуаров и Инфо)</span>
+                            <textarea id="cat-edit-customDesc-${r.id}" class="edit-textarea" style="height:100px;">${r.customDesc || ''}</textarea>
+                        </div>
                             <input type="number" id="cat-edit-price-${r.id}" class="edit-input" value="${r.price || ''}">
                             <div style="font-size:10px; margin-top:6px; color:var(--locus-dark); cursor:pointer; text-decoration:underline;" onclick="CatalogSystem.pullExtrinsicPrice('${r.id}', '${r.sample}')">Подтянуть расчетную цену из Extrinsic</div>
                         </div>
@@ -1262,6 +1335,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const updatedData = {
                     id: id,
                     sample: document.getElementById(`cat-edit-sample-${id}`).value,
+                    category: document.getElementById(`cat-edit-category-${id}`).value,
+                    price: document.getElementById(`cat-edit-price-${id}`).value,
+                    imageUrl: document.getElementById(`cat-edit-imageUrl-${id}`).value,
+                    customDesc: document.getElementById(`cat-edit-customDesc-${id}`).value,
                     category: document.getElementById(`cat-edit-category-${id}`).value, // НОВОЕ ПОЛЕ
                     price: document.getElementById(`cat-edit-price-${id}`).value, // НОВОЕ ПОЛЕ
                     cuppingDate: document.getElementById(`cat-edit-date-${id}`).value,
@@ -1333,17 +1410,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const pIndex = this.ALL_PRODUCTS.findIndex(p => p.id === id);
                     if (pIndex !== -1) this.ALL_PRODUCTS[pIndex].inCatalog = isChecked ? "1" : "";
 
-                    const itemRow = document.getElementById(`cat-item-row-${id}`);
-                    const targetCont = isChecked ? document.getElementById('catalog-list-active') : document.getElementById('catalog-list-inactive');
-                    const sourceCont = isChecked ? document.getElementById('catalog-list-inactive') : document.getElementById('catalog-list-active');
-                    
-                    const targetEmpty = targetCont.querySelector('.empty-msg');
-                    if (targetEmpty) targetEmpty.remove();
-                    targetCont.appendChild(itemRow);
-                    
-                    if (sourceCont.children.length === 0) {
-                        sourceCont.innerHTML = `<div class="empty-msg">${isChecked ? 'Нет сохраненных каппингов' : 'Нет лотов в каталоге'}</div>`;
-                    }
+                    this.renderCatalog();
                 } catch (error) {
                     checkboxEl.disabled = false; checkboxEl.checked = !isChecked;
                     statusEl.textContent = "Ошибка!"; statusEl.className = "save-status error";
@@ -3834,6 +3901,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             inCatalog: r.in_catalogue, 
                             category: r.category || '', 
                             price: r.price || '0',
+                            imageUrl: r.image_url || '',
+                            customDesc: r.custom_desc || '',
                             rawGreenPrice: parseFloat(r.raw_green_price || extItem.raw_green_price || getE('Farm Gate Price')) || 0,
                             
                             // ДОБАВЛЕНО ПОЛЕ ИСТОРИИ ИЗ БАЗЫ
