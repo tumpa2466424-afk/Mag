@@ -247,10 +247,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const toggleAiBtn = document.getElementById('btn-toggle-ai'); // Находим кнопку AI
 
                     if (isSpecial) {
-                        // 1. АКСЕССУАРЫ И ИНФО (Кастомное фото и описание, без статов)
+                        // 1. АКСЕССУАРЫ И ИНФО (Кастомное фото и выровненное описание)
                         let descHtml = '';
                         if (r.imageUrl) descHtml += `<img src="${r.imageUrl}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover;">`;
-                        descHtml += r.customDesc || r.flavorDesc || '';
+                        
+                        // ДОБАВЛЕНО: Оборачиваем текст в div с выравниванием по ширине (justify)
+                        descHtml += `<div style="text-align: justify; line-height: 1.5;">${r.customDesc || r.flavorDesc || ''}</div>`;
+                        
                         document.getElementById('p-simple-desc').innerHTML = descHtml;
 
                         document.getElementById('p-mini-stats').innerHTML = ''; 
@@ -1241,17 +1244,25 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         </div>
                         <div class="cupping-item full-width">
                             <span class="cupping-label">Фиксированная цена (₽)</span>
-                            <div class="cupping-item full-width">
-                            <span class="cupping-label">URL фотографии (для Аксессуаров и Инфо)</span>
-                            <input type="text" id="cat-edit-imageUrl-${r.id}" class="edit-input" value="${r.imageUrl || ''}">
-                        </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Текстовое описание (HTML, для Аксессуаров и Инфо)</span>
-                            <textarea id="cat-edit-customDesc-${r.id}" class="edit-textarea" style="height:100px;">${r.customDesc || ''}</textarea>
-                        </div>
                             <input type="number" id="cat-edit-price-${r.id}" class="edit-input" value="${r.price || ''}">
                             <div style="font-size:10px; margin-top:6px; color:var(--locus-dark); cursor:pointer; text-decoration:underline;" onclick="CatalogSystem.pullExtrinsicPrice('${r.id}', '${r.sample}')">Подтянуть расчетную цену из Extrinsic</div>
                         </div>
+
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Фотография (Загрузить или указать ссылку)</span>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <input type="text" id="cat-edit-imageUrl-${r.id}" class="edit-input" style="margin-bottom:0; flex-grow:1;" value="${r.imageUrl || ''}" placeholder="Ссылка на фото (ImgBB)">
+                                <input type="file" id="cat-edit-file-${r.id}" style="display:none" accept="image/*" onchange="CatalogSystem.uploadImageToImgBB('${r.id}')">
+                                <button type="button" class="btn-small-reorder" style="padding: 8px 12px; margin:0; white-space:nowrap; cursor:pointer;" onclick="document.getElementById('cat-edit-file-${r.id}').click()">Загрузить</button>
+                            </div>
+                            <div id="cat-upload-status-${r.id}" style="font-size:10px; color:gray; margin-top:4px;"></div>
+                        </div>
+
+                        <div class="cupping-item full-width">
+                            <span class="cupping-label">Текстовое описание (HTML)</span>
+                            <textarea id="cat-edit-customDesc-${r.id}" class="edit-textarea" style="height:100px;">${r.customDesc || ''}</textarea>
+                        </div>
+                        
                         <div class="cupping-item full-width">
                             <span class="cupping-label">Дата каппинга</span>
                             <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}">
@@ -1387,6 +1398,44 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     }
                 } else {
                     alert('Не удалось найти данные зеленого зерна для этого лота в Extrinsic.');
+                }
+            },
+
+            uploadImageToImgBB: async function(id) {
+                const fileInput = document.getElementById(`cat-edit-file-${id}`);
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                const statusEl = document.getElementById(`cat-upload-status-${id}`);
+                const urlInput = document.getElementById(`cat-edit-imageUrl-${id}`);
+                
+                statusEl.textContent = "Загрузка изображения на ImgBB...";
+                statusEl.style.color = "#8B7E66";
+
+                const formData = new FormData();
+                formData.append("image", file);
+                
+                // ВАЖНО: Вставь сюда свой API ключ от ImgBB!
+                const IMGBB_API_KEY = "a82462eb247f9d0aee41ded68240ed02"; 
+                
+                try {
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        urlInput.value = data.data.url; // Автоматически вставляем ссылку
+                        statusEl.textContent = "Фото успешно загружено!";
+                        statusEl.style.color = "#187a30";
+                    } else {
+                        throw new Error(data.error ? data.error.message : "Неизвестная ошибка");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    statusEl.textContent = "Ошибка загрузки: " + e.message;
+                    statusEl.style.color = "#B66A58";
                 }
             },
 
