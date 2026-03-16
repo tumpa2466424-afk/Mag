@@ -25,12 +25,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         const LOCUS_API_URL = "https://functions.yandexcloud.net/d4ehpa8o948vden3i9ba";
         
-        const CATEGORY_COLORS = { 'Эспрессо': '#B66A58', 'Фильтр': '#7A8F7C', 'Ароматизация': '#C09F80' };
+        const CATEGORY_COLORS = { 'Эспрессо': '#B66A58', 'Фильтр': '#7A8F7C', 'Ароматизация': '#C09F80', 'Аксессуары': '#8B7E66', 'Информация': '#D3B694' };
 
         const CATEGORY_DESCRIPTIONS = {
             'ЭСПРЕССО': 'В этой категории собраны сорта и смеси, которые подойдут для приготовления в эспрессо, турке, гейзере и другими способами. Идеально под молоко.',
             'ФИЛЬТР': 'В этой категории собраны сорта и смеси, которые подойдут для приготовления в любых фильтровых способах: воронки, аэропресс, капельные.',
-            'АРОМАТИЗАЦИЯ': 'Десертные сорта с мягкой ароматизацией. Применяются кондитерские ароматизаторы. Идеальный выбор для тех, кто хочет разнообразить кофейную рутину новыми яркими ароматами.'
+            'АРОМАТИЗАЦИЯ': 'Десертные сорта с мягкой ароматизацией. Применяются кондитерские ароматизаторы. Идеальный выбор для тех, кто хочет разнообразить кофейную рутину новыми яркими ароматами.',
+            'АКСЕССУАРЫ': 'Все, с помощью чего вы сможете приготовить себе чашку вкусного кофе.',
+            'ИНФОРМАЦИЯ': 'Ознакомьтесь с информацией.'
         };
         
         const SCA_CSV_MAP = {
@@ -70,7 +72,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         let SHOP_DATA = [
             { id: 'espresso', label: 'ЭСПРЕССО', color: CATEGORY_COLORS['Эспрессо'], desc: CATEGORY_DESCRIPTIONS['ЭСПРЕССО'], children: [] },
             { id: 'filter', label: 'ФИЛЬТР', color: CATEGORY_COLORS['Фильтр'], desc: CATEGORY_DESCRIPTIONS['ФИЛЬТР'], children: [] },
-            { id: 'aroma', label: 'АРОМАТИЗАЦИЯ', color: CATEGORY_COLORS['Ароматизация'], desc: CATEGORY_DESCRIPTIONS['АРОМАТИЗАЦИЯ'], children: [] }
+            { id: 'aroma', label: 'АРОМАТИЗАЦИЯ', color: CATEGORY_COLORS['Ароматизация'], desc: CATEGORY_DESCRIPTIONS['АРОМАТИЗАЦИЯ'], children: [] },
+            { id: 'accessories', label: 'АКСЕССУАРЫ', color: CATEGORY_COLORS['Аксессуары'], desc: CATEGORY_DESCRIPTIONS['АКСЕССУАРЫ'], children: [] },
+            { id: 'info', label: 'ИНФОРМАЦИЯ', color: CATEGORY_COLORS['Информация'], desc: CATEGORY_DESCRIPTIONS['ИНФОРМАЦИЯ'], children: [] }
         ];
 
         let rotation = 0, isDragging = false, lastAngle = 0, velocity = 0, lastTime = Date.now();
@@ -227,11 +231,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     document.getElementById('p-title').textContent = r.sample;
                     document.getElementById('p-cat-desc').textContent = '';
                     
-                    const roastVal = parseInt(r.roast) || 0;
-                    let roastLabel = "Средняя обжарка";
-                    if (roastVal < 5) roastLabel = "Светлая обжарка";
-                    else if (roastVal > 10) roastLabel = "Темная обжарка";
-                    document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}.<br>${roastLabel}.`;
+                    document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}`;
 
                     const isAroma = (r.category && r.category.toLowerCase().includes('ароматизация'));
                     
@@ -1062,7 +1062,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 flavorInt: r.flavor, atInt: r.aftertaste, flavorDesc: r.flavor_descriptors, mainFlavors: r.main_tastes, 
                                 flavorNotes: r.flavor_notes, acidInt: r.acidity, acidNotes: r.acidity_notes, sweetInt: r.sweetness, 
                                 sweetNotes: r.sweetness_notes, bodyInt: r.mouthfeel, bodyDesc: r.mouthfeel_descriptors, bodyNotes: r.mouthfeel_notes, 
-                                inCatalog: r.in_catalogue
+                                inCatalog: r.in_catalogue, category: r.category, price: r.price
                             });
                         }
                     });
@@ -1160,6 +1160,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 return `
                     <div class="cupping-grid">
                         <div class="cupping-item full-width"><span class="cupping-label">Название / Номер лота</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Категория (Аксессуары, Информация и др.)</span>
+                            <input type="text" id="cat-edit-category-${r.id}" class="edit-input" value="${r.category || ''}"></div>
+                        <div class="cupping-item full-width"><span class="cupping-label">Фиксированная цена (₽)</span>
+                            <input type="number" id="cat-edit-price-${r.id}" class="edit-input" value="${r.price || ''}">
+                            <div style="font-size:10px; margin-top:6px; color:var(--locus-dark); cursor:pointer; text-decoration:underline;" onclick="CatalogSystem.pullExtrinsicPrice('${r.id}', '${r.sample}')">Подтянуть расчетную цену из Extrinsic</div>
+                        </div>
                             <input type="text" id="cat-edit-sample-${r.id}" class="edit-input" value="${r.sample || ''}"></div>
                         <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span>
                             <input type="date" id="cat-edit-date-${r.id}" class="edit-input" value="${r.cuppingDate || ''}"></div>
@@ -1238,6 +1244,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const updatedData = {
                     id: id,
                     sample: document.getElementById(`cat-edit-sample-${id}`).value,
+                    category: document.getElementById(`cat-edit-category-${id}`).value, // НОВОЕ ПОЛЕ
+                    price: document.getElementById(`cat-edit-price-${id}`).value, // НОВОЕ ПОЛЕ
                     cuppingDate: document.getElementById(`cat-edit-date-${id}`).value,
                     roast: document.getElementById(`cat-edit-roast-${id}`).value,
                     smellInt: document.getElementById(`cat-edit-smellInt-${id}`).value,
@@ -1271,6 +1279,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 } catch (error) {
                     alert("Ошибка сети при сохранении изменений.");
                     btn.disabled = false; btn.textContent = "Сохранить";
+                }
+            },
+
+            pullExtrinsicPrice: function(id, sampleName) {
+                const prod = ALL_PRODUCTS_CACHE.find(p => p.sample === sampleName);
+                if (prod && prod.rawGreenPrice) {
+                    const prices = UserSystem.calculateRetailPrices(prod.rawGreenPrice);
+                    if (prices && prices.p250) {
+                        document.getElementById(`cat-edit-price-${id}`).value = prices.p250;
+                        alert('Цена за 250г успешно рассчитана и подтянута на основе зеленого зерна: ' + prices.p250 + ' ₽');
+                    }
+                } else {
+                    alert('Не удалось найти данные зеленого зерна для этого лота в Extrinsic.');
                 }
             },
 
@@ -3829,6 +3850,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             
                             if (dbCat.includes('ароматизация')) {
                                 targetCategoryLabel = 'АРОМАТИЗАЦИЯ';
+                            } else if (dbCat.includes('аксессуар')) {
+                                targetCategoryLabel = 'АКСЕССУАРЫ';
+                            } else if (dbCat.includes('информац')) {
+                                targetCategoryLabel = 'ИНФОРМАЦИЯ';
                             } else if (roastVal >= 10) { 
                                 targetCategoryLabel = 'ЭСПРЕССО'; 
                             }
