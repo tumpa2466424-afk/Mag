@@ -2159,7 +2159,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (p.inCatalog !== "1" && p.inCatalog !== 1 && p.inCatalog !== true) return;
                     
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
-                    if (rawGreen) pdfItems.push(p);
+                    const fixedPrice = parseFloat(p.price) || 0;
+                    
+                    if (rawGreen > 0 || fixedPrice > 0) pdfItems.push(p);
                 });
 
                 // 2. СОРТИРОВКА: Эспрессо -> Фильтр -> Ароматизация
@@ -2179,11 +2181,21 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 });
 
                 // 3. ФОРМИРОВАНИЕ СТРОК ПРАЙСА
+                // 3. ФОРМИРОВАНИЕ СТРОК ПРАЙСА
                 pdfItems.forEach(p => {
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
-                    const prices = this.calculateWholesalePrice(rawGreen);
+                    let ws250 = 0, ws1000 = 0;
                     
-                    const catName = (p.category || '').toLowerCase();
+                    if (rawGreen > 0) {
+                        const prices = this.calculateWholesalePrice(rawGreen);
+                        ws250 = prices.p250;
+                        ws1000 = prices.p1000;
+                    } else if (p.price && parseFloat(p.price) > 0) {
+                        const fixedRetail = parseFloat(p.price);
+                        ws250 = Math.ceil(fixedRetail * 0.7 / 10) * 10;
+                        ws1000 = ws250 * 4;
+                    }
+                    
                     const roastVal = parseFloat(p.roast) || 0;
                     
                     let typeText = 'ФИЛЬТР';
@@ -2199,8 +2211,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     tableBody.push([
                         prefixText + p.sample, 
                         p.flavorDesc || '-', 
-                        { text: prices.p250 + '\u00A0₽', alignment: 'center', noWrap: true }, 
-                        { text: prices.p1000 + '\u00A0₽', alignment: 'center', noWrap: true }
+                        { text: ws250 + '\u00A0₽', alignment: 'center', noWrap: true }, 
+                        { text: ws1000 + '\u00A0₽', alignment: 'center', noWrap: true }
                     ]);
                 });
 
