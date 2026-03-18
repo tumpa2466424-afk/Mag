@@ -4044,6 +4044,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                 ALL_PRODUCTS_CACHE = [];
                 
+                // ОЧИЩАЕМ СТАРЫЕ ЛЕПЕСТКИ КОЛЕСА ПЕРЕД ОБНОВЛЕНИЕМ
+                SHOP_DATA.forEach(cat => {
+                    cat.children = [];
+                });
+                
                 catRes.data.forEach(r => {
                     const sName = r.sample_no || r.sample;
                     
