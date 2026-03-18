@@ -133,6 +133,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             pInfo.classList.remove('active');
             setTimeout(() => { pInfo.style.display = 'none'; dMsg.style.display = 'block'; setTimeout(() => dMsg.classList.add('active'), 50); }, 250);
             currentActiveProduct = null;
+            
+            // Сброс свечения и анимации (Новое)
+            const glow = document.getElementById('wheel-glow');
+            if (glow) glow.style.background = 'transparent';
+            window.targetWheelRotation = null;
         };
 
         function updatePriceDisplay() {
@@ -572,6 +577,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
             spin.appendChild(svg);
 
+            // 3. ДОБАВЛЯЕМ ОБЪЕМ ДЛЯ ЦЕНТРА И ТЕНИ
+            const defs = document.createElementNS(svgNS, "defs");
+            defs.innerHTML = `
+                <radialGradient id="center-grad" cx="50%" cy="50%" r="50%" fx="35%" fy="35%">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+                    <stop offset="100%" stop-color="var(--locus-bg)" stop-opacity="1"/>
+                </radialGradient>
+                <filter id="shadow-center" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="rgba(105,58,5,0.3)"/>
+                </filter>
+            `;
+            svg.appendChild(defs);
+
             const polarToCartesian = (cX, cY, r, a) => {
                 const rad = (a - 90) * Math.PI / 180.0;
                 return { x: cX + (r * Math.cos(rad)), y: cY + (r * Math.sin(rad)) };
@@ -615,7 +633,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const text = document.createElementNS(svgNS, "text");
                 text.setAttribute("x", textPos.x); text.setAttribute("y", textPos.y);
                 text.setAttribute("text-anchor", "middle");
-                text.setAttribute("transform", `rotate(${mid - 90}, ${textPos.x}, ${textPos.y})`);
+                text.setAttribute("transform", `rotate(${mid + 90}, ${textPos.x}, ${textPos.y})`);
                 
                 seg.label.split('\n').forEach((l, i) => {
                     const tspan = document.createElementNS(svgNS, "tspan");
@@ -630,13 +648,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     svg.querySelectorAll('path').forEach(p => p.classList.remove('selected'));
                     path.classList.add('selected');
                     updateInfo(seg);
+
+                    // 5. АТМОСФЕРНОЕ СВЕЧЕНИЕ
+                    const glow = document.getElementById('wheel-glow');
+                    if (glow) glow.style.background = seg.color;
+
+                    // 6. МАГНИТНЫЙ ДОВОДЧИК (Снаппинг к верхнему указателю)
+                    window.targetWheelRotation = null; 
+                    const currentMod = rotation % 360;
+                    const targetMod = -90 - mid; // Указатель на 12 часов (-90 градусов)
+                    let diff = targetMod - currentMod;
+                    if (diff > 180) diff -= 360;
+                    if (diff < -180) diff += 360;
+                    window.targetWheelRotation = rotation + diff;
                 });
                 svg.appendChild(g);
             });
 
             const center = document.createElementNS(svgNS, "circle");
             center.setAttribute("cx", cx); center.setAttribute("cy", cy); center.setAttribute("r", 78);
-            center.setAttribute("fill", "var(--locus-bg)");
+            center.setAttribute("fill", "url(#center-grad)"); // Градиент
+            center.setAttribute("filter", "url(#shadow-center)"); // Падающая тень
             center.setAttribute("cursor", "pointer");
             center.addEventListener('click', window.resetInfo);
             svg.appendChild(center);
@@ -644,6 +676,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             const brand = document.createElementNS(svgNS, "text");
             brand.setAttribute("x", cx); brand.setAttribute("y", cy);
             brand.setAttribute("class", "brand-logo-center");
+            brand.setAttribute("filter", "drop-shadow(0 2px 4px rgba(255,255,255,0.9))"); // Тень для текста лого
             brand.textContent = "LOCUS COFFEE";
             svg.appendChild(brand);
 
@@ -653,7 +686,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         }
 
         function animate() {
-            if (!isDragging) { if (Math.abs(velocity) > 0.05) { rotation += velocity; velocity *= 0.95; } else velocity = 0; }
+            // ЛОГИКА ДОВОДЧИКА И ИНЕРЦИИ
+            if (typeof window.targetWheelRotation === 'number') {
+                const rDiff = window.targetWheelRotation - rotation;
+                if (Math.abs(rDiff) > 0.5) {
+                    rotation += rDiff * 0.06; // Плавная магнитная доводка
+                } else {
+                    rotation = window.targetWheelRotation;
+                    window.targetWheelRotation = null;
+                }
+            } else if (!isDragging) { 
+                if (Math.abs(velocity) > 0.05) { rotation += velocity; velocity *= 0.95; } 
+                else velocity = 0; 
+            }
+            
             if (spinnerElem) {
                 const scale = window.innerWidth >= 768 ? 1 : 0.8;
                 spinnerElem.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`;
@@ -661,15 +707,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             requestAnimationFrame(animate);
         }
         animate();
-
+        
         function initWheelInteraction() {
             zone = document.getElementById('wheel-zone');
             spinnerElem = document.getElementById('wheel-spinner');
             if (zone) {
-                zone.addEventListener('mousedown', e => { isDragging = true; velocity = 0; lastAngle = getAngle(e.clientX, e.clientY); lastTime = Date.now(); });
+                zone.addEventListener('mousedown', e => { window.targetWheelRotation = null; isDragging = true; velocity = 0; lastAngle = getAngle(e.clientX, e.clientY); lastTime = Date.now(); });
                 window.addEventListener('mousemove', e => moveH(e.clientX, e.clientY));
                 window.addEventListener('mouseup', () => isDragging = false);
-                zone.addEventListener('touchstart', e => { isDragging = true; velocity = 0; lastAngle = getAngle(e.touches[0].clientX, e.touches[0].clientY); lastTime = Date.now(); }, {passive: false});
+                zone.addEventListener('touchstart', e => { window.targetWheelRotation = null; isDragging = true; velocity = 0; lastAngle = getAngle(e.touches[0].clientX, e.touches[0].clientY); lastTime = Date.now(); }, {passive: false});
                 window.addEventListener('touchmove', e => moveH(e.touches[0].clientX, e.touches[0].clientY), {passive: false});
                 window.addEventListener('touchend', () => isDragging = false);
             }
