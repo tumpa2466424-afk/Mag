@@ -1885,10 +1885,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (p.inCatalog !== "1" && p.inCatalog !== 1 && p.inCatalog !== true) return;
 
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
-                    if (!rawGreen) return;
+                    let ws250 = 0;
+                    let ws1000 = 0;
+                    
+                    if (rawGreen > 0) {
+                        const prices = this.calculateWholesalePrice(rawGreen);
+                        ws250 = prices.p250;
+                        ws1000 = prices.p1000;
+                    } else if (p.price && parseFloat(p.price) > 0) {
+                        // Если зеленого зерна нет, берем фиксированную цену из каталога
+                        // и делаем оптовую скидку (сейчас стоит 30% от розницы -> коэффициент 0.7)
+                        const fixedRetail = parseFloat(p.price);
+                        ws250 = Math.ceil(fixedRetail * 0.7 / 10) * 10;
+                        ws1000 = ws250 * 4;
+                    }
 
-                    const prices = this.calculateWholesalePrice(rawGreen);
-                    itemsList.push({ ...p, ws250: prices.p250, ws1000: prices.p1000 });
+                    if (ws250 === 0) return; // Пропускаем, если цена так и не рассчитана
+
+                    itemsList.push({ ...p, ws250: ws250, ws1000: ws1000 });
                 });
 
                 // 2. СОРТИРОВКА: Эспрессо -> Фильтр -> Ароматизация. Внутри группы — по алфавиту.
