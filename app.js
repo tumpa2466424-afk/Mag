@@ -1226,6 +1226,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             getViewHtml: function(r) {
+                const catName = (r.category || '').toLowerCase();
+                // Проверяем, является ли категория "особенной" (не кофе)
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+
+                if (isSpecial) {
+                    // Для Аксессуаров и Информации выводим только описание
+                    return `
+                        <div class="cupping-grid">
+                            <div class="cupping-item full-width">
+                                <span class="cupping-label">Текстовое описание</span>
+                                <span class="cupping-value" style="white-space: pre-wrap; font-size: 13px;">${r.customDesc || r.flavorDesc || 'Нет описания'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Для Эспрессо, Фильтра и Ароматизации выводим полную сетку
                 return `
                     <div class="cupping-grid">
                         <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span><span class="cupping-value">${r.cuppingDate || '-'}</span></div>
@@ -1874,17 +1891,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     itemsList.push({ ...p, ws250: prices.p250, ws1000: prices.p1000 });
                 });
 
-                // 2. СОРТИРОВКА: Эспрессо (roast >= 10) сначала, затем Фильтр. Внутри группы — по алфавиту.
+                // 2. СОРТИРОВКА: Эспрессо -> Фильтр -> Ароматизация. Внутри группы — по алфавиту.
                 itemsList.sort((a, b) => {
-                    const roastA = parseFloat(a.roast) || 0;
-                    const roastB = parseFloat(b.roast) || 0;
-                    const isEspressoA = roastA >= 10 ? 1 : 0;
-                    const isEspressoB = roastB >= 10 ? 1 : 0;
+                    const getSortWeight = (item) => {
+                        const cat = (item.category || '').toLowerCase();
+                        if (cat.includes('ароматизац')) return 0; // Ароматизация в самом низу
+                        const r = parseFloat(item.roast) || 0;
+                        if (r >= 10) return 2; // Эспрессо в самом верху
+                        return 1; // Фильтр посередине
+                    };
                     
-                    if (isEspressoA !== isEspressoB) {
-                        return isEspressoB - isEspressoA; // 1 (Эспрессо) встанет выше 0 (Фильтр)
+                    const weightA = getSortWeight(a);
+                    const weightB = getSortWeight(b);
+                    
+                    if (weightA !== weightB) {
+                        return weightB - weightA;
                     }
-                    return a.sample.localeCompare(b.sample); // Алфавитная сортировка при совпадении категории
+                    return a.sample.localeCompare(b.sample);
                 });
 
                 let html = '';
@@ -1918,9 +1941,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         <tbody>`;
                     
                     itemsList.forEach(i => {
+                        const catName = (i.category || '').toLowerCase();
                         const roastVal = parseFloat(i.roast) || 0;
-                        const typeText = roastVal >= 10 ? 'ЭСПРЕССО' : 'ФИЛЬТР';
-                        const typeColor = roastVal >= 10 ? '#B66A58' : '#7A8F7C';
+                        
+                        let typeText = 'ФИЛЬТР';
+                        let typeColor = '#7A8F7C';
+                        
+                        if (catName.includes('ароматизац')) {
+                            typeText = 'АРОМАТИЗАЦИЯ';
+                            typeColor = '#C09F80';
+                        } else if (roastVal >= 10) {
+                            typeText = 'ЭСПРЕССО';
+                            typeColor = '#B66A58';
+                        }
                         
                         const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block; margin-bottom:4px;">${typeText}</span>`;
                         const isBlend = i.sample.toLowerCase().includes('blend') || i.sample.toLowerCase().includes('смесь');
@@ -2115,14 +2148,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (rawGreen) pdfItems.push(p);
                 });
 
-                // 2. СОРТИРОВКА: Аналогично таблице на сайте
+                // 2. СОРТИРОВКА: Эспрессо -> Фильтр -> Ароматизация
                 pdfItems.sort((a, b) => {
-                    const roastA = parseFloat(a.roast) || 0;
-                    const roastB = parseFloat(b.roast) || 0;
-                    const isEspressoA = roastA >= 10 ? 1 : 0;
-                    const isEspressoB = roastB >= 10 ? 1 : 0;
+                    const getSortWeight = (item) => {
+                        const cat = (item.category || '').toLowerCase();
+                        if (cat.includes('ароматизац')) return 0;
+                        const r = parseFloat(item.roast) || 0;
+                        if (r >= 10) return 2;
+                        return 1;
+                    };
+                    const weightA = getSortWeight(a);
+                    const weightB = getSortWeight(b);
                     
-                    if (isEspressoA !== isEspressoB) return isEspressoB - isEspressoA;
+                    if (weightA !== weightB) return weightB - weightA;
                     return a.sample.localeCompare(b.sample);
                 });
 
@@ -2131,8 +2169,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
                     const prices = this.calculateWholesalePrice(rawGreen);
                     
+                    const catName = (p.category || '').toLowerCase();
                     const roastVal = parseFloat(p.roast) || 0;
-                    const typeText = roastVal >= 10 ? 'ЭСПРЕССО' : 'ФИЛЬТР';
+                    
+                    let typeText = 'ФИЛЬТР';
+                    if (catName.includes('ароматизац')) {
+                        typeText = 'АРОМА';
+                    } else if (roastVal >= 10) {
+                        typeText = 'ЭСПРЕССО';
+                    }
+
                     const isBlend = p.sample.toLowerCase().includes('blend') || p.sample.toLowerCase().includes('смесь');
                     const prefixText = (isBlend ? '[BLEND] ' : '') + `[${typeText}] `;
                     
