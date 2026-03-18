@@ -1423,6 +1423,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     this.ALL_PRODUCTS[pIndex] = { ...this.ALL_PRODUCTS[pIndex], ...updatedData };
                     document.querySelector(`#cat-item-row-${id} .item-title span`).textContent = updatedData.sample;
                     this.cancelEdit(id);
+                    if (window.fetchExternalData) window.fetchExternalData(); // Обновляем витрину
                 } catch (error) {
                     alert("Ошибка сети при сохранении изменений.");
                     btn.disabled = false; btn.textContent = "Сохранить";
@@ -1501,6 +1502,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (pIndex !== -1) this.ALL_PRODUCTS[pIndex].inCatalog = isChecked ? "1" : "";
 
                     this.renderCatalog();
+                    if (window.fetchExternalData) window.fetchExternalData(); // Обновляем витрину
                 } catch (error) {
                     checkboxEl.disabled = false; checkboxEl.checked = !isChecked;
                     statusEl.textContent = "Ошибка!"; statusEl.className = "save-status error";
@@ -1526,6 +1528,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             const isCatalog = parent.id === 'catalog-list-active';
                             parent.innerHTML = `<div class="empty-msg">${isCatalog ? 'Нет лотов в каталоге' : 'Нет сохраненных каппингов'}</div>`;
                         }
+                        if (window.fetchExternalData) window.fetchExternalData(); // Обновляем витрину
                     }, 300);
                 } catch (error) {
                     alert("Ошибка сети при удалении.");
@@ -1544,6 +1547,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const result = await response.json();
                     if (!result.success) throw new Error("Ошибка сервера");
                     await this.loadData();
+                    if (window.fetchExternalData) window.fetchExternalData(); // Обновляем витрину
                 } catch (error) {
                     alert("Ошибка сети при копировании лота.");
                 } finally { document.body.style.cursor = 'default'; }
@@ -1883,6 +1887,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 ALL_PRODUCTS_CACHE.forEach(p => {
                     // 1. СТРОГИЙ ФИЛЬТР: Пропускаем сорта, которых нет в каталоге
                     if (p.inCatalog !== "1" && p.inCatalog !== 1 && p.inCatalog !== true) return;
+                    
+                    // ЗАДАЧА 4: Пропускаем всё, что не является кофе
+                    const catName = (p.category || '').toLowerCase();
+                    if (catName.includes('аксессуар') || catName.includes('информац')) return;
 
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
                     let ws250 = 0;
@@ -2157,6 +2165,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 ALL_PRODUCTS_CACHE.forEach(p => {
                     // 1. СТРОГИЙ ФИЛЬТР: Пропускаем сорта не в каталоге
                     if (p.inCatalog !== "1" && p.inCatalog !== 1 && p.inCatalog !== true) return;
+                    
+                    // ЗАДАЧА 4: Пропускаем всё, что не является кофе в прайсе
+                    const catName = (p.category || '').toLowerCase();
+                    if (catName.includes('аксессуар') || catName.includes('информац')) return;
                     
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
                     const fixedPrice = parseFloat(p.price) || 0;
@@ -2581,7 +2593,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         m.classList.add('admin-wide');
                         m.classList.add('wide');
                         this.switchView('admin'); 
-                        
+                        this.switchAdminTab('catalog');
                         this.loadUsers(); 
                         this.loadPromos(); 
                         
@@ -3304,10 +3316,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     list.appendChild(el);
                 });
                 this.updateCartTotals();
-                // Автозаполнение Email
+                // Автозаполнение Email, ФИО и Телефона из базы или памяти браузера (Задача 5)
                 const emailInput = document.getElementById('order-email');
-                if (emailInput && !emailInput.value && this.currentUser && this.currentUser.email) {
-                    emailInput.value = this.currentUser.email;
+                if (emailInput && !emailInput.value) {
+                    emailInput.value = (this.currentUser && this.currentUser.email) ? this.currentUser.email : (localStorage.getItem('locus_saved_email') || '');
+                }
+                const nameInput = document.getElementById('order-name');
+                if (nameInput && !nameInput.value) {
+                    nameInput.value = localStorage.getItem('locus_saved_name') || '';
+                }
+                const phoneInput = document.getElementById('order-phone');
+                if (phoneInput && !phoneInput.value) {
+                    phoneInput.value = localStorage.getItem('locus_saved_phone') || '';
                 }
             },
 
@@ -3388,6 +3408,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const email = emailInput ? emailInput.value.trim() : this.currentUser.email;
                 const policy = document.getElementById('policy-check').checked;
                 
+                // СОХРАНЯЕМ ДАННЫЕ В БРАУЗЕРЕ (Задача 5)
+                localStorage.setItem('locus_saved_name', name);
+                localStorage.setItem('locus_saved_phone', phone);
+                localStorage.setItem('locus_saved_email', email);
+
+                // ЖЕСТКАЯ ВАЛИДАЦИЯ
+                if(!name || !phone || !email) return alert('Заполните ФИО, телефон и e-mail');
+
                 // ЖЕСТКАЯ ВАЛИДАЦИЯ
                 if(!name || !phone || !email) return alert('Заполните ФИО, телефон и e-mail');
                 
@@ -3480,6 +3508,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     
                     // Переход по безопасной ссылке, сгенерированной на сервере
                     if (data.paymentUrl) {
+                        // ОЧИЩАЕМ ЛОКАЛЬНУЮ КОРЗИНУ ПЕРЕД ПЕРЕХОДОМ В РОБОКАССУ (Задача 1)
+                        this.localCart = [];
+                        localStorage.removeItem('locus_cart');
+                        this.updateCartBadge();
+                        
                         window.location.href = data.paymentUrl;
                     } else {
                         alert('Ошибка генерации ссылки на оплату');
@@ -4128,4 +4161,5 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 UserSystem.init(); 
             }
         }
+        window.fetchExternalData = fetchExternalData; // ДЕЛАЕМ ГЛОБАЛЬНОЙ
         fetchExternalData();
