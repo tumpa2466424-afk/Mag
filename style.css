@@ -540,3 +540,54 @@
                 padding: 10px 12px !important;
             }
         }
+        /* --- 4. СОЧНЫЕ МИКРОИНТЕРАКЦИИ (Hover-эффекты) --- */
+        path {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        path:hover {
+            filter: brightness(1.08); /* Легкое осветление при наведении */
+        }
+        path.selected {
+            stroke: var(--locus-white);
+            stroke-width: 3px;
+            filter: brightness(1.15) drop-shadow(0 0 15px rgba(255,255,255,0.4));
+        }
+
+        /* --- 5. АТМОСФЕРНОЕ СВЕЧЕНИЕ --- */
+        .wheel-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80vw;
+            max-width: 700px;
+            height: 80vw;
+            max-height: 700px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: transparent;
+            filter: blur(80px);
+            opacity: 0.35;
+            transition: background 0.8s ease;
+            pointer-events: none; /* Чтобы не блокировало клики */
+            z-index: 1;
+        }
+
+        /* --- 6. УКАЗАТЕЛЬ (Стрелка) --- */
+        .wheel-pointer {
+            position: absolute;
+            top: calc(50% - 400px - 10px); /* 400 - радиус колеса, 10 - отступ */
+            left: 50%;
+            transform: translate(-50%, 0) rotate(180deg);
+            z-index: 20;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 8px rgba(105, 58, 5, 0.4));
+            transition: top 0.3s ease;
+        }
+
+        /* Адаптация указателя под мобилки (где колесо уменьшено через scale) */
+        @media (max-width: 768px) {
+            .wheel-pointer {
+                top: calc(50% - 320px - 10px); /* 400 * 0.8 = 320 */
+            }
+        }
