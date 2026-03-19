@@ -78,7 +78,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const subgroup = part.substring(colonIndex + 1).trim();
                     return `<span class="flavor-group">${group}:</span> <span class="flavor-subgroup">${subgroup}</span>`;
                 } else {
-                    return `<span class="flavor-group">${part.trim()}</span>`;
+                    // Если двоеточия нет, значит это одиночный дескриптор — выделяем его как подгруппу!
+                    return `<span class="flavor-subgroup">${part.trim()}</span>`;
                 }
             }).join('<span class="flavor-group">; </span>');
         }
