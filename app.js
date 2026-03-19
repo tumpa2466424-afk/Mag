@@ -71,15 +71,25 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         // НОВАЯ ФУНКЦИЯ ДЛЯ СТИЛИЗАЦИИ БУКЕТА
         function formatFlavorDesc(text) {
             if (!text) return '';
-            return text.split(';').map(part => {
+            
+            // 1. Разбиваем по ';' и сразу отбрасываем пустые элементы (решает проблему висящих "; Группа;")
+            const parts = text.split(';').map(p => p.trim()).filter(p => p.length > 0);
+            
+            // 2. Обрабатываем каждый элемент
+            return parts.map(part => {
                 const colonIndex = part.indexOf(':');
                 if (colonIndex !== -1) {
                     const group = part.substring(0, colonIndex).trim();
                     const subgroup = part.substring(colonIndex + 1).trim();
+                    
+                    // Если двоеточие есть, но после него пусто ("Группа: ")
+                    if (!subgroup) {
+                        return `<span class="flavor-subgroup">${group}</span>`;
+                    }
                     return `<span class="flavor-group">${group}:</span> <span class="flavor-subgroup">${subgroup}</span>`;
                 } else {
-                    // Если двоеточия нет, значит это одиночный дескриптор — выделяем его как подгруппу!
-                    return `<span class="flavor-subgroup">${part.trim()}</span>`;
+                    // Если двоеточия нет вообще ("Группа") — делаем её подчеркнутой подгруппой
+                    return `<span class="flavor-subgroup">${part}</span>`;
                 }
             }).join('<span class="flavor-group">; </span>');
         }
