@@ -68,6 +68,26 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             return rgbArrToHex([r, g, b]);
         }
 
+        function mixFlavorColors(text, defaultHex) {
+            // ... (существующий код функции)
+            return rgbArrToHex([r, g, b]);
+        }
+
+        // НОВАЯ ФУНКЦИЯ ДЛЯ СТИЛИЗАЦИИ БУКЕТА
+        function formatFlavorDesc(text) {
+            if (!text) return '';
+            return text.split(';').map(part => {
+                const colonIndex = part.indexOf(':');
+                if (colonIndex !== -1) {
+                    const group = part.substring(0, colonIndex).trim();
+                    const subgroup = part.substring(colonIndex + 1).trim();
+                    return `<span class="flavor-group">${group}:</span> <span class="flavor-subgroup">${subgroup}</span>`;
+                } else {
+                    return `<span class="flavor-group">${part.trim()}</span>`;
+                }
+            }).join('<span class="flavor-group">; </span>');
+        }
+
         let ALL_PRODUCTS_CACHE = [];
         let SHOP_DATA = [
             { id: 'espresso', label: 'ЭСПРЕССО', color: CATEGORY_COLORS['Эспрессо'], desc: CATEGORY_DESCRIPTIONS['ЭСПРЕССО'], children: [] },
@@ -278,7 +298,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                     } else if (isAroma) {
                         // 2. АРОМАТИЗАЦИЯ (Оставляем описание, убираем статы и AI)
-                        document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}`;
+                        document.getElementById('p-simple-desc').innerHTML = formatFlavorDesc(r.flavorDesc);
 
                         document.getElementById('p-mini-stats').innerHTML = ''; 
                         document.getElementById('p-mini-stats').style.display = 'none';
@@ -294,7 +314,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                     } else {
                         // 3. ОБЫЧНЫЙ КОФЕ (Всё включено)
-                        document.getElementById('p-simple-desc').innerHTML = `${r.flavorDesc || ''}`;
+                        document.getElementById('p-simple-desc').innerHTML = formatFlavorDesc(r.flavorDesc);
 
                         document.getElementById('p-mini-stats').style.display = 'grid';
                         const miniStatsHTML = `
@@ -339,7 +359,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                         <div class="cupping-item"><span class="cupping-label">Интенсивность букета</span>${getScale(r.flavorInt)}</div>
                         <div class="cupping-item"><span class="cupping-label">Интенсивность послевкусия</span>${getScale(r.atInt)}</div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span><span class="cupping-value">${r.flavorDesc || '-'}</span></div>
+                        <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span><span class="cupping-value">${r.flavorDesc ? formatFlavorDesc(r.flavorDesc) : '-'}</span></div>
                         <div class="cupping-item full-width"><span class="cupping-label">Основные вкусы</span><span class="cupping-value flavor-text">${r.mainFlavors || '-'}</span></div>
                         <div class="cupping-item full-width"><span class="cupping-label">Заметки о букете и послевкусии</span><span class="cupping-notes">${r.flavorNotes || '-'}</span></div>
                         
@@ -1254,7 +1274,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                         <div class="cupping-item"><span class="cupping-label">Интенсивность букета</span>${getScale(r.flavorInt)}</div>
                         <div class="cupping-item"><span class="cupping-label">Интенсивность послевкусия</span>${getScale(r.atInt)}</div>
-                        <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span><span class="cupping-value">${r.flavorDesc || '-'}</span></div>
+                        <div class="cupping-item full-width"><span class="cupping-label">Описание букета</span><span class="cupping-value">${r.flavorDesc ? formatFlavorDesc(r.flavorDesc) : '-'}</span></div>
                         <div class="cupping-item full-width"><span class="cupping-label">Основные вкусы</span><span class="cupping-value flavor-text">${r.mainFlavors || '-'}</span></div>
                         <div class="cupping-item full-width"><span class="cupping-label">Заметки о букете и послевкусии</span><span class="cupping-notes">${r.flavorNotes || '-'}</span></div>
                         
