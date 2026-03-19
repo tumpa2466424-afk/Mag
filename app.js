@@ -68,11 +68,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             return rgbArrToHex([r, g, b]);
         }
 
-        function mixFlavorColors(text, defaultHex) {
-            // ... (существующий код функции)
-            return rgbArrToHex([r, g, b]);
-        }
-
         // НОВАЯ ФУНКЦИЯ ДЛЯ СТИЛИЗАЦИИ БУКЕТА
         function formatFlavorDesc(text) {
             if (!text) return '';
