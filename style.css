@@ -540,3 +540,16 @@
                 padding: 10px 12px !important;
             }
         }
+        /* --- СТИЛИЗАЦИЯ ДЕСКРИПТОРОВ БУКЕТА --- */
+.flavor-group {
+    font-size: 12px; /* Уменьшаем на 2 пункта (базовый 14px) */
+    opacity: 0.8; /* Уменьшаем интенсивность цвета на 20% */
+}
+
+.flavor-subgroup {
+    font-size: 14px;
+    text-decoration: underline;
+    text-underline-offset: 3px; /* Сдвигаем линию чуть ниже для красоты */
+    text-decoration-color: rgba(105, 58, 5, 0.4); /* Делаем линию мягкого коричневого цвета */
+    font-weight: 600; /* Делаем сам дескриптор чуть плотнее, чтобы он выделялся */
+}
