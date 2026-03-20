@@ -716,14 +716,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 if (Math.abs(velocity) > 0.05) { 
                     rotation += velocity; 
                     velocity *= 0.95; 
-                    // Трекаем максимальную скорость для Колеса Удачи (защита от "слабых" прокруток)
+                    
+                    // АНТИ-ЧИТ: Если скорость превысила порог, БЛОКИРУЕМ ручное управление
                     if (window.fortuneMode && Math.abs(velocity) > 2) {
                         window.fortuneMaxVelocity = Math.abs(velocity);
+                        window.fortuneLocked = true; 
                     }
                 } else { 
                     velocity = 0; 
-                    // Если Колесо Удачи активно и его крутанули, проверяем выигрыш
-                    if (window.fortuneMode && window.fortuneMaxVelocity > 1 && !window.wheelSpun) {
+                    // Проверяем выигрыш только если колесо было заблокировано (крутилось сильно)
+                    if (window.fortuneMode && window.fortuneLocked && !window.wheelSpun) {
                         window.wheelSpun = true;
                         setTimeout(() => window.FortuneSystem.checkWin(), 500);
                     }
@@ -741,10 +743,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             zone = document.getElementById('wheel-zone');
             spinnerElem = document.getElementById('wheel-spinner');
             if (zone) {
-                zone.addEventListener('mousedown', e => { isDragging = true; velocity = 0; lastAngle = getAngle(e.clientX, e.clientY); lastTime = Date.now(); });
+                zone.addEventListener('mousedown', e => { if (window.fortuneLocked) return; isDragging = true; velocity = 0; lastAngle = getAngle(e.clientX, e.clientY); lastTime = Date.now(); });
                 window.addEventListener('mousemove', e => moveH(e.clientX, e.clientY));
                 window.addEventListener('mouseup', () => isDragging = false);
-                zone.addEventListener('touchstart', e => { isDragging = true; velocity = 0; lastAngle = getAngle(e.touches[0].clientX, e.touches[0].clientY); lastTime = Date.now(); }, {passive: false});
+                zone.addEventListener('touchstart', e => { if (window.fortuneLocked) return; isDragging = true; velocity = 0; lastAngle = getAngle(e.touches[0].clientX, e.touches[0].clientY); lastTime = Date.now(); }, {passive: false});
                 window.addEventListener('touchmove', e => moveH(e.touches[0].clientX, e.touches[0].clientY), {passive: false});
                 window.addEventListener('touchend', () => isDragging = false);
             }
@@ -1672,17 +1674,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const zone = document.getElementById('wheel-zone');
                 const pointer = document.createElement('div');
                 pointer.id = 'fortune-pointer';
-                // Устанавливаем треугольник строго на 3 часа
-                pointer.style.cssText = 'position:absolute; top:50%; left:calc(50% + 350px); transform:translate(0, -50%) rotate(-90deg); z-index:20; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.6)); transition: all 0.3s ease; pointer-events: none;';
+                // Сдвинули ближе к колесу (260px) и вывели поверх всех слоев (z-index: 9999)
+                pointer.style.cssText = 'position:absolute; top:50%; left:calc(50% + 260px); transform:translate(0, -50%) rotate(-90deg); z-index:9999; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.6)); transition: all 0.3s ease; pointer-events: none;';
                 pointer.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
                 
-                if (window.innerWidth <= 768) { pointer.style.left = 'calc(50% + 280px)'; }
+                if (window.innerWidth <= 768) { pointer.style.left = 'calc(50% + 190px)'; }
                 zone.appendChild(pointer);
             },
             checkWin: function() {
                 if (!window.fortuneMode) return;
                 
-                // Вычисляем, какой угол оказался на 3 часах (0 радиан / 90 градусов в SVG)
                 let targetAngle = (90 - rotation) % 360;
                 if (targetAngle < 0) targetAngle += 360;
                 
@@ -1707,6 +1708,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 }
                 
                 if (winningSeg) {
+                    const catName = (winningSeg.raw.category || '').toLowerCase();
+                    
+                    // ЛОГИКА 1: Проверяем, не выпала ли Информация или Аксессуары
+                    if (catName.includes('аксессуар') || catName.includes('информац')) {
+                        alert(`Ой! Колесо остановилось на секторе "${winningSeg.raw.sample}".\nНа него скидку сделать нельзя :)\n\nВращайте еще раз!`);
+                        window.wheelSpun = false;
+                        window.fortuneMaxVelocity = 0;
+                        window.fortuneLocked = false; // Разблокируем колесо для новой попытки
+                        return;
+                    }
+
                     const lotName = winningSeg.raw.sample;
                     localStorage.setItem('locus_fortune_lot', lotName);
                     localStorage.setItem('locus_fortune_date', new Date().toDateString());
@@ -1714,10 +1726,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     alert(`Поздравляем! 🎉\n\nКолесо указало на лот "${lotName}".\nСкидка удачи 10% на этот сорт будет автоматически применяться в вашей корзине до конца дня!`);
                     
                     window.fortuneMode = false;
+                    window.fortuneLocked = false; // Снимаем блокировку
                     const pointer = document.getElementById('fortune-pointer');
                     if(pointer) pointer.remove();
                     
-                    // Обновляем корзину для мгновенного применения скидки
                     if (window.UserSystem) window.UserSystem.updateCartTotals();
                 }
             }
