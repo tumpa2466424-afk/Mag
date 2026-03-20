@@ -724,7 +724,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             window.fortuneMaxVelocity = Math.abs(velocity);
                         }
                         // Порог блокировки увеличен в 2 раза (было 2, стало 4)
-                        if (Math.abs(velocity) > 4) {
+                        if (Math.abs(velocity) > 8) {
                             window.fortuneLocked = true; 
                         }
                     }
