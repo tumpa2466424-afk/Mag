@@ -276,11 +276,38 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const weightSelector = document.getElementById('weight-selector-block');
                     const subBtn = document.getElementById('btn-subscription');
                     const cartBtn = document.getElementById('btn-cart');
+                    // ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ УВЕЛИЧЕНИЯ ФОТО
+                    if (!window.openFullscreenImage) {
+                        window.openFullscreenImage = function(src) {
+                            const overlay = document.createElement('div');
+                            overlay.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center; cursor:pointer; padding:20px; box-sizing:border-box;';
+                            const img = document.createElement('img');
+                            img.src = src;
+                            img.style.cssText = 'max-width:100%; max-height:100%; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.5); object-fit:contain;';
+                            overlay.appendChild(img);
+                            overlay.onclick = () => overlay.remove();
+                            document.body.appendChild(overlay);
+                        };
+                    }
 
+                    // СОБИРАЕМ HTML ГАЛЕРЕИ
+                    const buildGalleryHtml = (imgStr) => {
+                        if (!imgStr) return '';
+                        const urls = imgStr.split(',').map(u => u.trim()).filter(u => u);
+                        if (urls.length === 0) return '';
+                        if (urls.length === 1) return `<img src="${urls[0]}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover; cursor:pointer;" onclick="openFullscreenImage('${urls[0]}')">`;
+                        
+                        let html = `<div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">`;
+                        urls.forEach(url => html += `<img src="${url}" style="width:100%; aspect-ratio:1; border-radius:8px; object-fit:cover; cursor:pointer;" onclick="openFullscreenImage('${url}')">`);
+                        html += `</div>`;
+                        return html;
+                    };
+                    
+                    let galleryHtml = buildGalleryHtml(r.imageUrl);
                     if (isSpecial) {
-                        // 1. АКСЕССУАРЫ И ИНФО (Кастомное фото и выровненное описание)
-                        let descHtml = '';
-                        if (r.imageUrl) descHtml += `<img src="${r.imageUrl}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover;">`;
+                        // 1. АКСЕССУАРЫ И ИНФО
+                        let descHtml = galleryHtml + `<div style="text-align: justify; line-height: 1.5; white-space: pre-wrap;">${r.customDesc || r.flavorDesc || ''}</div>`;
+                        document.getElementById('p-simple-desc').innerHTML = descHtml;
                         
                         // ДОБАВЛЕНО: white-space: pre-wrap для сохранения абзацев
                         descHtml += `<div style="text-align: justify; line-height: 1.5; white-space: pre-wrap;">${r.customDesc || r.flavorDesc || ''}</div>`;
@@ -303,8 +330,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(grid) grid.innerHTML = ''; // Убираем таблицу каппинга
                         
                     } else if (isAroma) {
-                        // 2. АРОМАТИЗАЦИЯ (Оставляем описание, убираем статы и AI)
-                        document.getElementById('p-simple-desc').innerHTML = formatFlavorDesc(r.flavorDesc);
+                        // 2. АРОМАТИЗАЦИЯ
+                        document.getElementById('p-simple-desc').innerHTML = galleryHtml + formatFlavorDesc(r.flavorDesc);
 
                         document.getElementById('p-mini-stats').innerHTML = ''; 
                         document.getElementById('p-mini-stats').style.display = 'none';
@@ -319,8 +346,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'space-between';
 
                     } else {
-                        // 3. ОБЫЧНЫЙ КОФЕ (Всё включено)
-                        document.getElementById('p-simple-desc').innerHTML = formatFlavorDesc(r.flavorDesc);
+                        // 3. ОБЫЧНЫЙ КОФЕ
+                        document.getElementById('p-simple-desc').innerHTML = galleryHtml + formatFlavorDesc(r.flavorDesc);
 
                         document.getElementById('p-mini-stats').style.display = 'grid';
                         const miniStatsHTML = `
@@ -425,7 +452,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         addE('Номер ICO', r.ico);
                         addE('Импортер', r.importer);
                         addE('Экспортер', r.exporter);
-                        addE('Цена Farm Gate', r.farmGatePrice);
+                        
+                        // Скрываем Farm Gate Price от всех, кроме администратора
+                        if (UserSystem.currentUser && UserSystem.currentUser.email === 'info@locus.coffee') {
+                            addE('Цена Farm Gate', r.farmGatePrice);
+                        }
+                        
                         addE('Размер лота', r.lotSize);
                         addE('Другое (Торговля)', r.otherTrading);
 
@@ -680,7 +712,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         }
 
         function animate() {
-            if (!isDragging) { if (Math.abs(velocity) > 0.05) { rotation += velocity; velocity *= 0.95; } else velocity = 0; }
+            if (!isDragging) { 
+                if (Math.abs(velocity) > 0.05) { 
+                    rotation += velocity; 
+                    velocity *= 0.95; 
+                    // Трекаем максимальную скорость для Колеса Удачи (защита от "слабых" прокруток)
+                    if (window.fortuneMode && Math.abs(velocity) > 2) {
+                        window.fortuneMaxVelocity = Math.abs(velocity);
+                    }
+                } else { 
+                    velocity = 0; 
+                    // Если Колесо Удачи активно и его крутанули, проверяем выигрыш
+                    if (window.fortuneMode && window.fortuneMaxVelocity > 1 && !window.wheelSpun) {
+                        window.wheelSpun = true;
+                        setTimeout(() => window.FortuneSystem.checkWin(), 500);
+                    }
+                } 
+            }
             if (spinnerElem) {
                 const scale = window.innerWidth >= 768 ? 1 : 0.8;
                 spinnerElem.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`;
@@ -1317,9 +1365,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         </div>
 
                         <div class="cupping-item full-width">
-                            <span class="cupping-label">Фотография (Загрузить или указать ссылку)</span>
+                            <span class="cupping-label">Фотография (Загрузить или указать ссылки)</span>
                             <div style="display:flex; gap:10px; align-items:center;">
-                                <input type="text" id="cat-edit-imageUrl-${r.id}" class="edit-input" style="margin-bottom:0; flex-grow:1;" value="${r.imageUrl || ''}" placeholder="Ссылка на фото (ImgBB)">
+                                <input type="text" id="cat-edit-imageUrl-${r.id}" class="edit-input" style="margin-bottom:0; flex-grow:1;" value="${r.imageUrl || ''}" placeholder="Ссылки на фото (через запятую для нескольких)">
                                 <input type="file" id="cat-edit-file-${r.id}" style="display:none" accept="image/*" onchange="CatalogSystem.uploadImageToImgBB('${r.id}')">
                                 <button type="button" class="btn-small-reorder" style="padding: 8px 12px; margin:0; white-space:nowrap; cursor:pointer;" onclick="document.getElementById('cat-edit-file-${r.id}').click()">Загрузить</button>
                             </div>
@@ -1495,7 +1543,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const data = await res.json();
                     
                     if (data.success) {
-                        urlInput.value = data.data.url; // Автоматически вставляем ссылку
+                        const currentVal = urlInput.value.trim();
+                        urlInput.value = currentVal ? currentVal + ', ' + data.data.url : data.data.url;
                         statusEl.textContent = "Фото успешно загружено!";
                         statusEl.style.color = "#187a30";
                     } else {
@@ -1581,6 +1630,99 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             }
         };
         window.CatalogSystem = CatalogSystem;
+        const FortuneSystem = {
+            init: function() {
+                setTimeout(() => {
+                    const today = new Date().toDateString();
+                    // Если сегодня еще не играли и не отказывались
+                    if (localStorage.getItem('locus_fortune_date') !== today) {
+                        this.showOffer();
+                    }
+                }, 2000); // Показываем через 2 секунды после загрузки
+            },
+            showOffer: function() {
+                if (document.getElementById('fortune-offer')) return;
+                const div = document.createElement('div');
+                div.id = 'fortune-offer';
+                div.style.cssText = 'position:absolute; right:20px; top:120px; background:#fff; padding:15px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.15); z-index:50; width:220px; border:1px solid var(--locus-border); text-align:center;';
+                div.innerHTML = `
+                    <div style="font-weight:bold; color:var(--locus-dark); margin-bottom:10px;">Колесо удачи! 🎁</div>
+                    <div style="font-size:12px; margin-bottom:15px; color:#555;">Испытайте удачу и получите дополнительную скидку 10% на случайный сорт.</div>
+                    <button class="lc-btn" style="padding:8px; font-size:12px; margin-bottom:8px; width:100%;" onclick="FortuneSystem.accept()">Вращать колесо</button>
+                    <div style="font-size:10px; color:gray; cursor:pointer; text-decoration:underline;" onclick="FortuneSystem.decline()">Отказаться</div>
+                `;
+                const zone = document.getElementById('wheel-zone');
+                if(zone) zone.appendChild(div);
+            },
+            accept: function() {
+                const offer = document.getElementById('fortune-offer');
+                if(offer) offer.remove();
+                this.activateTriangle();
+                window.fortuneMode = true;
+                window.wheelSpun = false;
+                window.fortuneMaxVelocity = 0;
+                alert('Крутите колесо как можно сильнее! Сектор, который остановится у золотого треугольника, получит скидку 10%.');
+            },
+            decline: function() {
+                const offer = document.getElementById('fortune-offer');
+                if(offer) offer.remove();
+                localStorage.setItem('locus_fortune_date', new Date().toDateString());
+            },
+            activateTriangle: function() {
+                const zone = document.getElementById('wheel-zone');
+                const pointer = document.createElement('div');
+                pointer.id = 'fortune-pointer';
+                // Устанавливаем треугольник строго на 3 часа
+                pointer.style.cssText = 'position:absolute; top:50%; left:calc(50% + 350px); transform:translate(0, -50%) rotate(-90deg); z-index:20; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.6)); transition: all 0.3s ease; pointer-events: none;';
+                pointer.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
+                
+                if (window.innerWidth <= 768) { pointer.style.left = 'calc(50% + 280px)'; }
+                zone.appendChild(pointer);
+            },
+            checkWin: function() {
+                if (!window.fortuneMode) return;
+                
+                // Вычисляем, какой угол оказался на 3 часах (0 радиан / 90 градусов в SVG)
+                let targetAngle = (90 - rotation) % 360;
+                if (targetAngle < 0) targetAngle += 360;
+                
+                let winningSeg = null;
+                let curAngle = 0;
+                const total = SHOP_DATA.reduce((acc, cat) => acc + cat.children.length, 0);
+                
+                for (let cat of SHOP_DATA) {
+                    if (cat.children.length === 0) continue;
+                    const catA = (cat.children.length / total) * 360;
+                    let childCur = curAngle;
+                    for (let child of cat.children) {
+                        const childA = catA / cat.children.length;
+                        if (targetAngle >= childCur && targetAngle < childCur + childA) {
+                            winningSeg = child;
+                            break;
+                        }
+                        childCur += childA;
+                    }
+                    if (winningSeg) break;
+                    curAngle += catA;
+                }
+                
+                if (winningSeg) {
+                    const lotName = winningSeg.raw.sample;
+                    localStorage.setItem('locus_fortune_lot', lotName);
+                    localStorage.setItem('locus_fortune_date', new Date().toDateString());
+                    
+                    alert(`Поздравляем! 🎉\n\nКолесо указало на лот "${lotName}".\nСкидка удачи 10% на этот сорт будет автоматически применяться в вашей корзине до конца дня!`);
+                    
+                    window.fortuneMode = false;
+                    const pointer = document.getElementById('fortune-pointer');
+                    if(pointer) pointer.remove();
+                    
+                    // Обновляем корзину для мгновенного применения скидки
+                    if (window.UserSystem) window.UserSystem.updateCartTotals();
+                }
+            }
+        };
+        window.FortuneSystem = FortuneSystem;
 
         // --- USER SYSTEM ---
         const UserSystem = {
@@ -3012,7 +3154,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     groupedArray.forEach(group => {
                         // Собираем все лоты клиента в единый красивый блок
                         const lotsHtml = group.lots.map(lot => {
-                            const grindText = lot.grind && lot.grind !== 'Зерно' ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${lot.grind}</span>` : '';
+                            const grindText = lot.grind && lot.grind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${lot.grind}</span>` : '';
                             return `<div style="margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #eee; font-size:12px;">
                                 <span style="font-weight:600; color:var(--locus-dark);">${lot.item}</span>
                                 <span style="font-size:10px; color:gray; margin-left:5px;">(${lot.weight} г)</span>${grindText}
@@ -3379,6 +3521,41 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 
                 let loyaltyDiscountVal = Math.floor(subtotal * (discountPercent / 100));
                 let totalAfterLoyalty = subtotal - loyaltyDiscountVal;
+                // --- СКИДКА УДАЧИ ---
+                let fortuneDiscountVal = 0;
+                const fortuneDate = localStorage.getItem('locus_fortune_date');
+                const fortuneLot = localStorage.getItem('locus_fortune_lot');
+                if (fortuneDate === new Date().toDateString() && fortuneLot) {
+                    this.localCart.forEach(i => {
+                        if (i.item === fortuneLot) {
+                            fortuneDiscountVal += Math.floor((i.price * i.qty) * 0.10);
+                        }
+                    });
+                }
+                totalAfterLoyalty -= fortuneDiscountVal; // Вычитаем удачу из Итого
+                
+                // Динамически добавляем строчку в интерфейс корзины
+                let rowFortune = document.getElementById('row-fortune-discount');
+                if (!rowFortune) {
+                    const promoRow = document.getElementById('row-promo-discount');
+                    if (promoRow && promoRow.parentNode) {
+                        rowFortune = document.createElement('div');
+                        rowFortune.className = 'summary-row';
+                        rowFortune.id = 'row-fortune-discount';
+                        rowFortune.style.color = '#DAA520';
+                        rowFortune.style.display = 'none';
+                        rowFortune.innerHTML = `<span>Скидка удачи</span><span id="cart-fortune-val">-0 ₽</span>`;
+                        promoRow.parentNode.insertBefore(rowFortune, promoRow.nextSibling);
+                    }
+                }
+                if (rowFortune) {
+                    if (fortuneDiscountVal > 0) {
+                        rowFortune.style.display = 'flex';
+                        document.getElementById('cart-fortune-val').textContent = `-${fortuneDiscountVal} ₽`;
+                    } else {
+                        rowFortune.style.display = 'none';
+                    }
+                }
 
                 if (totalAfterLoyalty >= 3000) {
                     this.cdekPrice = 0;
@@ -3813,7 +3990,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             const el = document.createElement('div');
                             el.className = 'product-list-item';
                             const wDisplay = item.weight ? ` ${item.weight} г` : '';
-                            const gDisplay = item.grind && item.grind !== 'Зерно' ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${item.grind}</span>` : '';
+                            const gDisplay = item.grind && item.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${item.grind}</span>` : '';
 
                             let meta = isSub ? `В подписке • ${item.price} ₽` : `${item.date} • ${item.price} ₽`;
                             if(!productInStock && isSub) meta += ` <span style="color:#B66A58">(Нет в наличии)</span>`;
@@ -3878,7 +4055,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 el.style.cssText = 'border: 1px solid var(--locus-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff; box-shadow: 0 4px 10px rgba(105,58,5,0.03);';
 
                                 let itemsHtml = hItem.items.map(i => {
-                                    const grindText = i.grind && i.grind !== 'Зерно' ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${i.grind}</span>` : '';
+                                    const grindText = i.grind && i.grind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${i.grind}</span>` : '';
                                     return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:8px;">
                                         <span><b style="font-weight:600;">${i.item}</b> (${i.weight}г)${grindText} x${i.qty}</span>
                                         <span style="white-space:nowrap; font-weight:600;">${i.price * i.qty} ₽</span>
@@ -3963,7 +4140,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 const el = document.createElement('div');
                                 el.className = 'product-list-item';
                                 const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
-                                const gDisplay = hItem.grind && hItem.grind !== 'Зерно' ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${hItem.grind}</span>` : '';
+                                const gDisplay = hItem.grind && hItem.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${hItem.grind}</span>` : '';
                                 
                                 el.innerHTML = `
                                     <div style="display:flex; align-items:center;">
@@ -4191,6 +4368,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 document.getElementById('loading-overlay').textContent = "Ошибка загрузки";
                 renderWheel(); 
                 UserSystem.init(); 
+                UserSystem.init();
+                if (window.FortuneSystem) window.FortuneSystem.init();
             }
         }
         window.fetchExternalData = fetchExternalData; // ДЕЛАЕМ ГЛОБАЛЬНОЙ
