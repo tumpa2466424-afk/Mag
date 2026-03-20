@@ -717,17 +717,31 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     rotation += velocity; 
                     velocity *= 0.95; 
                     
-                    // АНТИ-ЧИТ: Если скорость превысила порог, БЛОКИРУЕМ ручное управление
-                    if (window.fortuneMode && Math.abs(velocity) > 2) {
-                        window.fortuneMaxVelocity = Math.abs(velocity);
-                        window.fortuneLocked = true; 
+                    // --- АНТИ-ЧИТ СИСТЕМА (УСИЛЕННАЯ) ---
+                    if (window.fortuneMode) {
+                        // Постоянно записываем максимальную скорость броска
+                        if (Math.abs(velocity) > (window.fortuneMaxVelocity || 0)) {
+                            window.fortuneMaxVelocity = Math.abs(velocity);
+                        }
+                        // Порог блокировки увеличен в 2 раза (было 2, стало 4)
+                        if (Math.abs(velocity) > 4) {
+                            window.fortuneLocked = true; 
+                        }
                     }
                 } else { 
                     velocity = 0; 
-                    // Проверяем выигрыш только если колесо было заблокировано (крутилось сильно)
-                    if (window.fortuneMode && window.fortuneLocked && !window.wheelSpun) {
-                        window.wheelSpun = true;
-                        setTimeout(() => window.FortuneSystem.checkWin(), 500);
+                    
+                    // Колесо полностью остановилось
+                    if (window.fortuneMode && !window.wheelSpun) {
+                        if (window.fortuneLocked) {
+                            // ЧЕСТНЫЙ БРОСОК: Колесо крутилось быстро
+                            window.wheelSpun = true;
+                            setTimeout(() => window.FortuneSystem.checkWin(), 500);
+                        } else if (window.fortuneMaxVelocity > 0.5) { 
+                            // ХИТРЫЙ/СЛАБЫЙ БРОСОК: Крутнули, но недостаточно сильно
+                            window.fortuneMaxVelocity = 0; // Сбрасываем скорость
+                            alert("Слишком слабо! 😅\nКрутите сильнее, скидка ждет вас!");
+                        }
                     }
                 } 
             }
