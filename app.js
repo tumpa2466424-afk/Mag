@@ -4363,13 +4363,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 renderWheel();
                 initWheelInteraction();
                 UserSystem.init();
+                
+                // ЗАПУСКАЕМ УДАЧУ ПРИ УСПЕШНОЙ ЗАГРУЗКЕ
+                if (window.FortuneSystem) window.FortuneSystem.init();
+                
             } catch (e) { 
                 console.error("Ошибка загрузки каталога:", e); 
                 document.getElementById('loading-overlay').textContent = "Ошибка загрузки";
                 renderWheel(); 
                 UserSystem.init(); 
-                UserSystem.init();
-                if (window.FortuneSystem) window.FortuneSystem.init();
             }
         }
         window.fetchExternalData = fetchExternalData; // ДЕЛАЕМ ГЛОБАЛЬНОЙ
