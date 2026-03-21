@@ -740,7 +740,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         } else if (window.fortuneMaxVelocity > 0.5) { 
                             // ХИТРЫЙ/СЛАБЫЙ БРОСОК: Крутнули, но недостаточно сильно
                             window.fortuneMaxVelocity = 0; // Сбрасываем скорость
-                            alert("Крутите сильнее, скидка ждет вас!");
+                            alert("Нужно сильнее! Скидка ждет вас! :)");
                         }
                     }
                 } 
@@ -1737,7 +1737,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     localStorage.setItem('locus_fortune_lot', lotName);
                     localStorage.setItem('locus_fortune_date', new Date().toDateString());
                     
-                    alert(`Поздравляем! 🎉\n\nКолесо указало на лот "${lotName}".\nСкидка удачи 10% на этот сорт будет автоматически применяться в вашей корзине до конца дня!`);
+                    alert(`Поздравляем! 🎉\n\n"${lotName}"!\nСкидка 10% на этот сорт будет автоматически применяться в вашей корзине до конца дня!`);
                     
                     window.fortuneMode = false;
                     window.fortuneLocked = false; // Снимаем блокировку
