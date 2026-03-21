@@ -1694,7 +1694,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 
                 if (window.innerWidth > 768) {
                     // ДЕСКТОП: Треугольник увеличен в 2 раза (80x80)
-                    pointer.innerHTML = `<svg width="160" height="160" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
+                    pointer.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
                     // Острие по-прежнему будет ровно на границе, так как мы выравниваем по левому краю
                     pointer.style.left = 'calc(50% + 210px)'; 
                 } else {
