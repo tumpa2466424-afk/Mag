@@ -2190,7 +2190,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                         html += `<tr>
                             <td style="font-weight:600; vertical-align:middle; line-height:1.4;">${typeSticker}${blendLabel}<br>${i.sample}</td>
-                            <td style="font-size:10px; opacity:0.8; vertical-align:middle; line-height:1.4;">${i.flavorDesc}</td>
+                            <td style="font-size:10px; opacity:0.8; vertical-align:middle; line-height:1.4;">${i.flavorDesc ? formatFlavorDesc(i.flavorDesc) : '-'}</td>
                             <td style="vertical-align:middle;">
                                 <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
                                     <span style="white-space:nowrap;">${i.ws250} ₽</span>
