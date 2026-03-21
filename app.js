@@ -740,7 +740,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         } else if (window.fortuneMaxVelocity > 0.5) { 
                             // ХИТРЫЙ/СЛАБЫЙ БРОСОК: Крутнули, но недостаточно сильно
                             window.fortuneMaxVelocity = 0; // Сбрасываем скорость
-                            alert("Слишком слабо! 😅\nКрутите сильнее, скидка ждет вас!");
+                            alert("Крутите сильнее, скидка ждет вас!");
                         }
                     }
                 } 
@@ -1664,8 +1664,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 div.innerHTML = `
                     <div style="font-weight:bold; color:var(--locus-dark); margin-bottom:10px;">Колесо удачи! 🎁</div>
                     <div style="font-size:12px; margin-bottom:15px; color:#555;">Испытайте удачу и получите дополнительную скидку 10% на случайный сорт.</div>
-                    <button class="lc-btn" style="padding:8px; font-size:12px; margin-bottom:8px; width:100%;" onclick="FortuneSystem.accept()">Вращать колесо</button>
-                    <div style="font-size:10px; color:gray; cursor:pointer; text-decoration:underline;" onclick="FortuneSystem.decline()">Отказаться</div>
+                    <button class="lc-btn" style="padding:8px; font-size:12px; margin-bottom:8px; width:100%;" onclick="FortuneSystem.accept()">Участвую!</button>
+                    <div style="font-size:10px; color:gray; cursor:pointer; text-decoration:underline;" onclick="FortuneSystem.decline()">В каталог</div>
                 `;
                 const zone = document.getElementById('wheel-zone');
                 if(zone) zone.appendChild(div);
