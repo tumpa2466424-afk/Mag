@@ -1689,14 +1689,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const pointer = document.createElement('div');
                 pointer.id = 'fortune-pointer';
                 
-                // Привязываем жестко к правой границе зоны колеса (right: 0)
-                // Треугольник будет лежать ровно на стыке двух панелей и смотреть влево.
-                pointer.style.cssText = 'position:absolute; top:50%; right:-5px; transform:translateY(-50%) rotate(-90deg); z-index:9999; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.6)); transition: all 0.3s ease; pointer-events: none;';
+                // Базовые стили (выводим поверх всех слоев с огромным z-index)
+                pointer.style.cssText = 'position:absolute; top:50%; transform:translateY(-50%) rotate(-90deg); z-index:99999; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.8)); transition: all 0.3s ease; pointer-events: none;';
                 pointer.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
                 
-                // Для мобильной версии (если там другая логика отступов), можно чуть сдвинуть
-                if (window.innerWidth <= 768) { 
-                    pointer.style.right = '5px'; 
+                if (window.innerWidth > 768) {
+                    // ДЕСКТОП: Отступаем от центра колеса ровно на радиус лепестков.
+                    // Если треугольник заезжает на текст - уменьши 210 до 190. 
+                    // Если слишком далеко от панели - увеличь до 220.
+                    pointer.style.left = 'calc(50% + 210px)'; 
+                } else {
+                    // МОБИЛКА: Прижимаем к правому краю экрана (с отступом 10px, чтобы не срезало)
+                    pointer.style.right = '10px';
                 }
                 
                 zone.appendChild(pointer);
