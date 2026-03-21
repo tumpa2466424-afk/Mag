@@ -1688,11 +1688,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const zone = document.getElementById('wheel-zone');
                 const pointer = document.createElement('div');
                 pointer.id = 'fortune-pointer';
-                // Сдвинули ближе к колесу (260px) и вывели поверх всех слоев (z-index: 9999)
-                pointer.style.cssText = 'position:absolute; top:50%; left:calc(50% + 260px); transform:translate(0, -50%) rotate(-90deg); z-index:9999; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.6)); transition: all 0.3s ease; pointer-events: none;';
+                
+                // Привязываем жестко к правой границе зоны колеса (right: 0)
+                // Треугольник будет лежать ровно на стыке двух панелей и смотреть влево.
+                pointer.style.cssText = 'position:absolute; top:50%; right:-5px; transform:translateY(-50%) rotate(-90deg); z-index:9999; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.6)); transition: all 0.3s ease; pointer-events: none;';
                 pointer.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
                 
-                if (window.innerWidth <= 768) { pointer.style.left = 'calc(50% + 190px)'; }
+                // Для мобильной версии (если там другая логика отступов), можно чуть сдвинуть
+                if (window.innerWidth <= 768) { 
+                    pointer.style.right = '5px'; 
+                }
+                
                 zone.appendChild(pointer);
             },
             checkWin: function() {
