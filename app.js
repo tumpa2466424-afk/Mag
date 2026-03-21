@@ -1689,17 +1689,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const pointer = document.createElement('div');
                 pointer.id = 'fortune-pointer';
                 
-                // Базовые стили (выводим поверх всех слоев с огромным z-index)
+                // Базовые стили позиционирования
                 pointer.style.cssText = 'position:absolute; top:50%; transform:translateY(-50%) rotate(-90deg); z-index:99999; filter:drop-shadow(0 4px 8px rgba(218, 165, 32, 0.8)); transition: all 0.3s ease; pointer-events: none;';
-                pointer.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
                 
                 if (window.innerWidth > 768) {
-                    // ДЕСКТОП: Отступаем от центра колеса ровно на радиус лепестков.
-                    // Если треугольник заезжает на текст - уменьши 210 до 190. 
-                    // Если слишком далеко от панели - увеличь до 220.
+                    // ДЕСКТОП: Треугольник увеличен в 2 раза (80x80)
+                    pointer.innerHTML = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
+                    // Острие по-прежнему будет ровно на границе, так как мы выравниваем по левому краю
                     pointer.style.left = 'calc(50% + 210px)'; 
                 } else {
-                    // МОБИЛКА: Прижимаем к правому краю экрана (с отступом 10px, чтобы не срезало)
+                    // МОБИЛКА: Оставляем стандартный аккуратный размер (40x40)
+                    pointer.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M12 2L22 20H2L12 2Z" fill="#DAA520"/></svg>`;
                     pointer.style.right = '10px';
                 }
                 
