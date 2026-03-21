@@ -1840,7 +1840,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         const title = titleEl ? titleEl.textContent.trim() : 'Unknown';
                         this.addToCart(title, currentWeight, currentGrind);
                     } else {
-                        alert('Войдите в ЛК чтобы покупать.');
+                        alert('Войдите в ЛК чтобы сделать покупку.');
                         this.toggleModal(true, 'login');
                     }
                 });
