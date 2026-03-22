@@ -27,8 +27,16 @@
     color: var(--locus-dark);
 }
 
-.cs-widget-container * { box-sizing: border-box; }
-.cs-widget-container input[type="checkbox"] { accent-color: var(--locus-dark); cursor: pointer; width: 16px; height: 16px; }
+/* Пробиваем box-sizing для модалок, чтобы убрать горизонтальный скролл */
+.cs-widget-container *, #lc-modal * { box-sizing: border-box; }
+
+/* Применяем фирменный цвет чекбоксов глобально */
+.cs-widget-container input[type="checkbox"], #lc-modal input[type="checkbox"] { 
+    accent-color: var(--locus-dark); 
+    cursor: pointer; 
+    width: 16px; 
+    height: 16px; 
+}
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -326,10 +334,15 @@
         .lc-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--locus-accent); margin-bottom: 5px; display: block; }
         
         .lc-btn {
-            background: var(--locus-dark); color: var(--locus-bg); padding: 15px; border: none;
+            background: var(--locus-dark); color: var(--locus-bg); border: none;
+            padding: 15px 30px; /* Верх/низ 15px, "резиновые" бока по 30px */
+            width: fit-content; /* Ширина определяется только текстом внутри */
+            max-width: 100%; /* Защита от вылезания длинного текста за края экрана */
+            display: block; margin-left: auto; margin-right: auto; /* Центрируем кнопку */
             text-transform: uppercase; letter-spacing: 2px; font-size: 11px; font-weight: 600; cursor: pointer;
-            margin-top: 10px; transition: all 0.3s; width: 100%; border-radius: 50px; 
+            margin-top: 10px; transition: all 0.3s; border-radius: 50px; 
             box-shadow: 0 4px 12px rgba(105, 58, 5, 0.08);
+            text-align: center;
         }
         .lc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(105, 58, 5, 0.12); }
         .lc-btn:disabled { opacity: 0.5; cursor: wait; }
