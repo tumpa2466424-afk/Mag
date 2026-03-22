@@ -671,7 +671,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             segments.forEach(seg => {
                 const { in: iR, out: oR } = radii[seg.depth];
                 const g = document.createElementNS(svgNS, "g");
-                g.setAttribute('data-lot', seg.raw.sample);
+                
+                // БЕЗОПАСНАЯ ПРИВЯЗКА: Добавляем метку только для лотов
+                if (seg.raw && seg.raw.sample) {
+                    g.setAttribute('data-lot', seg.raw.sample);
+                }
+                
                 const path = document.createElementNS(svgNS, "path");
                 path.setAttribute("d", describeArc(cx, cy, iR, oR, seg.start, seg.end));
                 path.setAttribute("fill", seg.color);
@@ -700,8 +705,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     updateInfo(seg);
 
                     // ОБНОВЛЯЕМ АДРЕСНУЮ СТРОКУ ДЛЯ ПРЯМОЙ ССЫЛКИ
+                    // ОБНОВЛЯЕМ АДРЕСНУЮ СТРОКУ ДЛЯ ПРЯМОЙ ССЫЛКИ
                     const url = new URL(window.location);
-                    url.searchParams.set('lot', seg.raw.sample);
+                    if (seg.raw && seg.raw.sample) {
+                        url.searchParams.set('lot', seg.raw.sample);
+                    } else {
+                        url.searchParams.delete('lot'); // Если кликнули на категорию, очищаем ссылку
+                    }
                     window.history.replaceState({}, '', url);
                 });
                 svg.appendChild(g);
