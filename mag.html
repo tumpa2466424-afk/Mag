@@ -127,11 +127,13 @@
                     </div>
                 </div>
 
-                <div style="display:flex; gap:15px; width:100%;">
-                    <a id="btn-subscription" href="#" class="btn-locus btn-sub">
-                        <span>В Подписку</span>
-                        <span class="btn-price-label" id="p-price-sub">0 ₽</span>
-                    </a>
+                <div style="display:flex; gap:15px; width:100%; justify-content: center;">
+                    <!-- СЕРВИС ПОДПИСОК ВРЕМЕННО ОТКЛЮЧЕН 
+    <a id="btn-subscription" href="#" class="btn-locus btn-sub">
+        <span>В Подписку</span>
+        <span class="btn-price-label" id="p-price-sub">0 ₽</span>
+    </a>
+    -->
                     <a id="btn-cart" href="#add-to-cart" class="btn-locus btn-cart">
                         <span>В корзину</span>
                         <span class="btn-price-label" id="p-price-cart">0 ₽</span>
@@ -198,7 +200,7 @@
                     
                     <!-- USER MESSAGES SECTION -->
                     <div id="user-messages-section">
-                        <div class="collapsible-header" onclick="UserSystem.toggleSection('user-messages')">
+                        <div class="collapsible-header" onclick="UserSystem.toggleSection('user-messages')" style="border-bottom: none;">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <div class="section-header" style="margin:0;">Сообщения</div>
                                 <button id="btn-refresh-msgs" style="border:none; background:none; cursor:pointer;" onclick="event.stopPropagation(); MessageSystem.loadMessagesForUser();">
@@ -214,13 +216,15 @@
                         </div>
                     </div>
 
-                    <div class="collapsible-header" onclick="UserSystem.toggleSection('sub')">
-                        <div class="section-header" style="margin:0;">Ваша подписка</div>
-                        <span class="arrow-indicator" id="arrow-sub">▼</span>
-                    </div>
-                    <div id="cont-sub" class="collapsible-content">
-                        <div id="user-subscription-list" style="margin-bottom: 20px;"></div>
-                    </div>
+                    <!-- СЕРВИС ПОДПИСОК ВРЕМЕННО ОТКЛЮЧЕН 
+<div class="collapsible-header" onclick="UserSystem.toggleSection('sub')">
+    <div class="section-header" style="margin:0;">Ваша подписка</div>
+    <span class="arrow-indicator" id="arrow-sub">▼</span>
+</div>
+<div id="cont-sub" class="collapsible-content">
+    <div id="user-subscription-list" style="margin-bottom: 20px;"></div>
+</div>
+-->
 
                     <div class="collapsible-header" onclick="UserSystem.toggleSection('hist')">
                         <div class="section-header" style="margin:0;">История покупок</div>
