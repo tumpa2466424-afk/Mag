@@ -4342,6 +4342,35 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         window.UserSystem = UserSystem;
 
+        // --- СИСТЕМА COOKIE УВЕДОМЛЕНИЙ ---
+        function initCookieBanner() {
+            // Если пользователь уже соглашался, ничего не делаем
+            if (localStorage.getItem('locus_cookie_consent')) return;
+
+            // Создаем плашку динамически
+            const banner = document.createElement('div');
+            banner.className = 'cookie-banner';
+            banner.innerHTML = `
+                <div class="cookie-text">Используя данный сайт, вы даете согласие на использование файлов cookie, помогающих нам сделать его удобнее для вас.</div>
+                <button class="cookie-btn">Соглашаюсь</button>
+            `;
+            document.body.appendChild(banner);
+
+            // Даем сайту загрузиться и плавно выводим плашку через 2.5 секунды
+            setTimeout(() => {
+                banner.classList.add('show');
+            }, 2500);
+
+            // Обработка клика по кнопке
+            banner.querySelector('.cookie-btn').addEventListener('click', () => {
+                localStorage.setItem('locus_cookie_consent', 'true');
+                banner.classList.remove('show'); // Плавно убираем вниз
+                setTimeout(() => banner.remove(), 500); // Удаляем из кода после завершения анимации
+            });
+        }
+        // Запускаем проверку
+        initCookieBanner();
+        
         async function fetchExternalData() {
             try {
                 // 1. Делаем два запроса ПАРАЛЛЕЛЬНО для максимальной скорости загрузки
