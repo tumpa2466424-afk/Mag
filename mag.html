@@ -117,27 +117,25 @@
                     </div>
                 </div>
 
-                <div class="weight-selector" id="weight-selector-block">
-                    <div class="weight-option selected" data-w="250">
-                        <span class="weight-label">250 г</span>
+                <div class="cart-action-row">
+                    <div style="display:flex; width:100%;" id="weight-selector-block">
+                        <div class="weight-toggle">
+                            <div class="weight-option selected" data-w="250">
+                                <span class="weight-label">250 г</span>
+                            </div>
+                            <div class="weight-option" data-w="1000">
+                                <span class="weight-label">1 кг</span>
+                                <span class="weight-price-diff">-15% выгода</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="weight-option" data-w="1000">
-                        <span class="weight-label">1 кг</span>
-                        <span class="weight-price-diff">-15% выгода</span>
-                    </div>
-                </div>
 
-                <div style="display:flex; gap:15px; width:100%; justify-content: center;">
-                    <!-- СЕРВИС ПОДПИСОК ВРЕМЕННО ОТКЛЮЧЕН 
-    <a id="btn-subscription" href="#" class="btn-locus btn-sub">
-        <span>В Подписку</span>
-        <span class="btn-price-label" id="p-price-sub">0 ₽</span>
-    </a>
-    -->
-                    <a id="btn-cart" href="#add-to-cart" class="btn-locus btn-cart">
-                        <span>В корзину</span>
-                        <span class="btn-price-label" id="p-price-cart">0 ₽</span>
-                    </a>
+                    <div style="display:flex; justify-content: center; width: 100%;">
+                        <a id="btn-cart" href="#add-to-cart" class="btn-locus btn-cart" style="width: 100%;">
+                            <span>В корзину</span>
+                            <span class="btn-price-label" id="p-price-cart">0 ₽</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
