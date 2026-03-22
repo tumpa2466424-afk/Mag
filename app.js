@@ -32,7 +32,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             'ФИЛЬТР': 'В этой категории собраны сорта и смеси, которые подойдут для приготовления в любых фильтровых способах: воронки, аэропресс, капельные.',
             'АРОМАТИЗАЦИЯ': 'Десертные сорта с мягкой ароматизацией. Применяются кондитерские ароматизаторы. Идеальный выбор для тех, кто хочет разнообразить кофейную рутину новыми яркими ароматами.',
             'АКСЕССУАРЫ': 'Все, с помощью чего вы сможете приготовить себе чашку вкусного кофе.',
-            'ИНФОРМАЦИЯ': 'Ознакомьтесь с информацией.'
+            'ИНФОРМАЦИЯ': 'Ознакомьтесь с информацией в этом разделе, чтобы узнать о нас больше.'
         };
         
         const SCA_CSV_MAP = {
@@ -159,6 +159,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             pInfo.classList.remove('active');
             setTimeout(() => { pInfo.style.display = 'none'; dMsg.style.display = 'block'; setTimeout(() => dMsg.classList.add('active'), 50); }, 250);
             currentActiveProduct = null;
+            // ОЧИЩАЕМ АДРЕСНУЮ СТРОКУ ОТ ССЫЛКИ НА ЛОТ
+            const url = new URL(window.location);
+            url.searchParams.delete('lot');
+            window.history.replaceState({}, '', url);
         };
 
         function updatePriceDisplay() {
@@ -667,6 +671,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             segments.forEach(seg => {
                 const { in: iR, out: oR } = radii[seg.depth];
                 const g = document.createElementNS(svgNS, "g");
+                g.setAttribute('data-lot', seg.raw.sample);
                 const path = document.createElementNS(svgNS, "path");
                 path.setAttribute("d", describeArc(cx, cy, iR, oR, seg.start, seg.end));
                 path.setAttribute("fill", seg.color);
@@ -693,6 +698,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     svg.querySelectorAll('path').forEach(p => p.classList.remove('selected'));
                     path.classList.add('selected');
                     updateInfo(seg);
+
+                    // ОБНОВЛЯЕМ АДРЕСНУЮ СТРОКУ ДЛЯ ПРЯМОЙ ССЫЛКИ
+                    const url = new URL(window.location);
+                    url.searchParams.set('lot', seg.raw.sample);
+                    window.history.replaceState({}, '', url);
                 });
                 svg.appendChild(g);
             });
@@ -4470,8 +4480,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 // ЗАПУСКАЕМ УДАЧУ ПРИ УСПЕШНОЙ ЗАГРУЗКЕ
                 if (window.FortuneSystem) window.FortuneSystem.init();
                 
+                // ЧТЕНИЕ ПРЯМОЙ ССЫЛКИ ИЗ АДРЕСНОЙ СТРОКИ (DEEP LINK)
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const lotFromUrl = urlParams.get('lot');
+                    if (lotFromUrl) {
+                        // Ищем лепесток с нужным названием
+                        const allGroups = document.querySelectorAll('#wheel-spinner svg g');
+                        const targetGroup = Array.from(allGroups).find(g => g.getAttribute('data-lot') === lotFromUrl);
+                        
+                        if (targetGroup) {
+                            // Имитируем клик
+                            targetGroup.dispatchEvent(new Event('click')); 
+                        }
+                    }
+                }, 800); // Небольшая задержка для отрисовки интерфейса
+                
             } catch (e) { 
-                console.error("Ошибка загрузки каталога:", e); 
+                console.error("Ошибка загрузки каталога:", e);
                 document.getElementById('loading-overlay').textContent = "Ошибка загрузки";
                 renderWheel(); 
                 UserSystem.init(); 
