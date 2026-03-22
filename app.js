@@ -4542,5 +4542,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 UserSystem.init(); 
             }
         }
+        // АВТООБНОВЛЕНИЕ ГОДА В ПОДВАЛЕ
+        const yearSpan = document.getElementById('current-year');
+        if (yearSpan) yearSpan.textContent = new Date().getFullYear();
         window.fetchExternalData = fetchExternalData; // ДЕЛАЕМ ГЛОБАЛЬНОЙ
         fetchExternalData();
