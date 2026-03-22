@@ -400,7 +400,7 @@
         .feedback-area textarea { width: 100%; height: 80px; background: rgba(255,255,255,0.5); border: 1px solid var(--locus-border); padding: 10px; font-family: inherit; font-size: 12px; resize: none; border-radius: 6px; }
         
         #btn-send-feedback { width: 70%; margin: 15px auto 0 auto; display: block; }
-        #btn-checkout { background: #187a30; margin-top: 15px; }
+        #btn-checkout { background: var(--locus-success); margin-top: 15px; }
 
         .admin-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(105, 58, 5, 0.1); padding-bottom: 10px; flex-wrap: wrap; }
         .admin-tab { 
@@ -494,8 +494,8 @@
         
         .save-status { font-size: 9px; font-weight: 600; margin-right: 5px; opacity: 0; transition: opacity 0.3s ease; }
         .save-status.saving { color: var(--locus-accent); opacity: 1; }
-        .save-status.success { color: #187a30; opacity: 1; }
-        .save-status.error { color: #B66A58; opacity: 1; }
+        .save-status.success { color: var(--locus-success); opacity: 1; }
+        .save-status.error { color: var(--locus-error); opacity: 1; }
         
         .catalog-item-content { display: none; padding: 20px; background: var(--locus-bg); border-top: 1px solid rgba(105, 58, 5, 0.05); }
         .catalog-item.open .catalog-item-content { display: block; animation: fadeIn 0.3s ease; }
@@ -508,7 +508,7 @@
         .edit-textarea { resize: vertical; min-height: 60px; }
         .edit-actions { display: flex; gap: 10px; margin-top: 25px; justify-content: flex-end; padding-top: 15px; border-top: 1px solid rgba(105, 58, 5, 0.05); }
         
-        .btn-save-cat { background: #187a30 !important; color: white !important; border: 1px solid #187a30 !important; }
+        .btn-save-cat { background: var(--locus-success) !important; color: white !important; border: 1px solid var(--locus-success) !important; }
         .btn-del-cat { background: transparent !important; color: #B66A58 !important; border: 1px solid #B66A58 !important; }
         .empty-msg { font-size: 12px; color: var(--locus-accent); text-align: center; padding: 20px; font-style: italic; background: rgba(255, 255, 255, 0.4); border-radius: 8px; }
 /* Увеличенный шрифт для Истории Аины */
@@ -661,11 +661,12 @@
     align-items: center;
     font-size: 12px;
     color: var(--locus-dark);
-    flex-wrap: wrap;
-    gap: 15px;
+    flex-wrap: nowrap; /* Принудительно держим в одну строку на десктопе */
+    gap: 10px;
+    white-space: nowrap; /* Запрещаем тексту внутри подвала переноситься на новую строку */
 }
 
-.footer-copyright {
+.footer-copyright, .footer-contacts {
     font-weight: 500;
 }
 
