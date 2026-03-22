@@ -1,5 +1,4 @@
-  /* --- LOCUS BRAND COLORS & LAYOUT --- */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* --- LOCUS BRAND COLORS & LAYOUT --- */
 :root {
@@ -11,10 +10,14 @@
     --cell-active-glow: rgba(105, 58, 5, 0.3);
     --locus-error: #B66A58;
     --locus-success: #7A8F7C;
-    --locus-font: 'Montserrat', system-ui, -apple-system, sans-serif; /* Единый шрифт */
+    --locus-font: 'Inter', system-ui, -apple-system, sans-serif; /* Более компактный и читаемый шрифт */
 }
 
-/* Принудительно применяем шрифт ко всем элементам, включая SVG внутри колеса */
+/* Глобальное применение шрифта: пробиваем корзину, модалки, кнопки и таблицы */
+body, button, input, select, textarea, .locus-modal, .locus-modal * {
+    font-family: var(--locus-font) !important;
+}
+
 .cs-widget-container * { 
     box-sizing: border-box; 
     font-family: var(--locus-font) !important; 
