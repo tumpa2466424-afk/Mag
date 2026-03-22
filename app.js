@@ -344,7 +344,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleAiBtn) toggleAiBtn.style.display = 'none'; // Скрываем AI историю для аромы
                         document.getElementById('grind-selector-block').style.display = 'none';
 
-                        // Возвращаем кнопки веса и подписки
+                       // Возвращаем кнопки веса и подписки
                         if(weightSelector) weightSelector.style.display = 'flex';
                         if(subBtn) subBtn.style.display = 'flex';
                         if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'space-between';
@@ -372,7 +372,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         // Возвращаем кнопки веса и подписки
                         if(weightSelector) weightSelector.style.display = 'flex';
                         if(subBtn) subBtn.style.display = 'flex';
-                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'space-between';
+                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'center';
                     }
 
                     // ЛОГИКА КНОПКИ ПОКУПКИ (Скрываем для раздела Инфо с ценой 0)
