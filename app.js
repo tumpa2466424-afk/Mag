@@ -2232,7 +2232,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     html += `</tbody></table></div>`
 
                     html += `<div style="font-size: 10px; color: gray; margin-top: 10px;">Не является публичной офертой.</div>`;
-                    html += `<button class="lc-btn" onclick="UserSystem.generatePDF()" style="margin-top: 15px; margin-bottom: 20px; background:#8B7E66; width:auto; padding:10px 25px; display:inline-block;">Скачать прайс</button>`;
+                    html += `<button class="lc-btn" onclick="UserSystem.generatePDF()" style="margin-top: 15px; margin-bottom: 20px; width:auto; padding:10px 25px; display:inline-block;">Скачать прайс</button>`;
                 }
 
                 container.innerHTML = html || 'Нет данных для расчета.';
