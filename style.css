@@ -1,4 +1,7 @@
   /* --- LOCUS BRAND COLORS & LAYOUT --- */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+/* --- LOCUS BRAND COLORS & LAYOUT --- */
 :root {
     --locus-bg: #F4F1EA;
     --locus-dark: #693a05;
@@ -8,10 +11,21 @@
     --cell-active-glow: rgba(105, 58, 5, 0.3);
     --locus-error: #B66A58;
     --locus-success: #7A8F7C;
+    --locus-font: 'Montserrat', system-ui, -apple-system, sans-serif; /* Единый шрифт */
 }
 
-.cs-widget-container * { box-sizing: border-box; }
-.cs-widget-container input[type="checkbox"] { accent-color: var(--locus-dark); cursor: pointer; width: 16px; height: 16px; }
+/* Принудительно применяем шрифт ко всем элементам, включая SVG внутри колеса */
+.cs-widget-container * { 
+    box-sizing: border-box; 
+    font-family: var(--locus-font) !important; 
+}
+
+.cs-widget-container input[type="checkbox"] { 
+    accent-color: var(--locus-dark); 
+    cursor: pointer; 
+    width: 16px; 
+    height: 16px; 
+}
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
