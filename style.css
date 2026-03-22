@@ -18,6 +18,11 @@ body, button, input, select, textarea, .locus-modal, .locus-modal * {
     font-family: var(--locus-font) !important;
 }
 
+/* Глобальное применение фирменного цвета ко всем текстовым блокам, таблицам и полям */
+body, .cs-widget-container, .locus-modal, table, th, td, input, select, textarea {
+    color: var(--locus-dark);
+}
+
 .cs-widget-container * { 
     box-sizing: border-box; 
     font-family: var(--locus-font) !important; 
