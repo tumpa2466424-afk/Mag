@@ -514,6 +514,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (elBuyArea) elBuyArea.style.display = 'none';
                     if(toggleBtn) toggleBtn.style.display = 'none';
                     if(toggleExtBtn) toggleExtBtn.style.display = 'none';
+                    
+                    // ЗАДАЧА 1: Скрываем Историю Аины для общих категорий
+                    const toggleAiBtn = document.getElementById('btn-toggle-ai');
+                    if(toggleAiBtn) toggleAiBtn.style.display = 'none';
                 }
                 pInfo.style.display = 'block';
                 setTimeout(() => pInfo.classList.add('active'), 50);
@@ -3192,7 +3196,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     groupedArray.forEach(group => {
                         // Собираем все лоты клиента в единый красивый блок
                         const lotsHtml = group.lots.map(lot => {
-                            const grindText = lot.grind && lot.grind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${lot.grind}</span>` : '';
+                            // Блокируем отображение помола для не-кофе
+                            let displayGrind = lot.grind;
+                            const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === lot.item.trim());
+                            if (cacheP) {
+                                const cat = (cacheP.category || '').toLowerCase();
+                                if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                            }
+                            
+                            const grindText = displayGrind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                             return `<div style="margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #eee; font-size:12px;">
                                 <span style="font-weight:600; color:var(--locus-dark);">${lot.item}</span>
                                 <span style="font-size:10px; color:gray; margin-left:5px;">(${lot.weight} г)</span>${grindText}
@@ -3443,11 +3455,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
            addToCart: function(item, weight = 250, grind = "Зерно") {
-                    const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === item.trim());
+                const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === item.trim());
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
                 
-                const isAroma = (product.category && product.category.toLowerCase().includes('ароматизация'));
-                if (isAroma) grind = "Зерно (Ароматизация)";
+                const catName = (product.category || '').toLowerCase();
+                const isAroma = catName.includes('ароматизация');
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                
+                // ЗАДАЧА 2: Убираем помол для Аксессуаров и Информации
+                if (isSpecial) {
+                    grind = ""; 
+                } else if (isAroma) {
+                    grind = "Зерно (Ароматизация)";
+                }
                 
                 // Подтягиваем расчет из базы или фиксированную цену
                 const rawGreen = parseFloat(product.rawGreenPrice || product.raw_green_price) || 0;
@@ -3511,8 +3531,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 this.localCart.forEach((p, idx) => {
                     const el = document.createElement('div');
                     el.className = 'cart-item-row';
+                    
+                    // Блокируем отображение помола для не-кофе
+                    let displayGrind = p.grind;
+                    const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === p.item.trim());
+                    if (cacheP) {
+                        const cat = (cacheP.category || '').toLowerCase();
+                        if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                    }
+
                     const wDisplay = p.weight ? ` ${p.weight} г` : '';
-                    const gDisplay = p.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${p.grind}</span>` : '';
+                    const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                     
                     el.innerHTML = `
                         <div class="cart-item-info"><div class="cart-item-title">${p.item}${wDisplay}${gDisplay}</div><div class="cart-item-meta">${p.price} ₽</div></div>
@@ -3847,10 +3876,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             addToSubscription: async function(itemName, weight = 250, grind = "Зерно") {
                 if(!this.uid) return alert("Для оформления подписки необходимо войти в Личный кабинет.");
                 if(!this.currentUser.subscription) this.currentUser.subscription = [];
-                if(this.currentUser.subscription.find(s => s.item === itemName && s.weight === weight && s.grind === grind)) return alert('Этот сорт уже в подписке');
-
+                
                 const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === itemName.trim());
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
+
+                const catName = (product.category || '').toLowerCase();
+                const isAroma = catName.includes('ароматизация');
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                
+                // ЗАДАЧА 2: Убираем помол для Аксессуаров и Информации
+                if (isSpecial) {
+                    grind = "";
+                } else if (isAroma) {
+                    grind = "Зерно (Ароматизация)";
+                }
+
+                if(this.currentUser.subscription.find(s => s.item === itemName && s.weight === weight && s.grind === grind)) return alert('Этот сорт уже в подписке');
 
                 // Подтягиваем расчет из базы или фиксированную цену
                 const rawGreen = parseFloat(product.rawGreenPrice || product.raw_green_price) || 0;
@@ -4027,8 +4068,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                             const el = document.createElement('div');
                             el.className = 'product-list-item';
+                            
+                            // Блокируем отображение помола для не-кофе
+                            let displayGrind = item.grind;
+                            if (productInStock) {
+                                const cat = (productInStock.category || '').toLowerCase();
+                                if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                            }
+
                             const wDisplay = item.weight ? ` ${item.weight} г` : '';
-                            const gDisplay = item.grind && item.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${item.grind}</span>` : '';
+                            const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
 
                             let meta = isSub ? `В подписке • ${item.price} ₽` : `${item.date} • ${item.price} ₽`;
                             if(!productInStock && isSub) meta += ` <span style="color:#B66A58">(Нет в наличии)</span>`;
@@ -4093,7 +4142,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 el.style.cssText = 'border: 1px solid var(--locus-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff; box-shadow: 0 4px 10px rgba(105,58,5,0.03);';
 
                                 let itemsHtml = hItem.items.map(i => {
-                                    const grindText = i.grind && i.grind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${i.grind}</span>` : '';
+                                    // Блокируем отображение помола для не-кофе
+                                    let displayGrind = i.grind;
+                                    const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === i.item.trim());
+                                    if (cacheP) {
+                                        const cat = (cacheP.category || '').toLowerCase();
+                                        if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                                    }
+                                    
+                                    const grindText = displayGrind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                                     return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:8px;">
                                         <span><b style="font-weight:600;">${i.item}</b> (${i.weight}г)${grindText} x${i.qty}</span>
                                         <span style="white-space:nowrap; font-weight:600;">${i.price * i.qty} ₽</span>
@@ -4177,8 +4234,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 const productInStock = ALL_PRODUCTS_CACHE.find(p => String(hItem.item).toLowerCase().includes(String(p.sample).toLowerCase().split(' (')[0]));
                                 const el = document.createElement('div');
                                 el.className = 'product-list-item';
+                                
+                                // Блокируем отображение помола для не-кофе
+                                let displayGrind = hItem.grind;
+                                if (productInStock) {
+                                    const cat = (productInStock.category || '').toLowerCase();
+                                    if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                                }
+
                                 const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
-                                const gDisplay = hItem.grind && hItem.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${hItem.grind}</span>` : '';
+                                const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                                 
                                 el.innerHTML = `
                                     <div style="display:flex; align-items:center;">
