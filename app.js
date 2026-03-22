@@ -25,7 +25,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         const LOCUS_API_URL = "https://functions.yandexcloud.net/d4ehpa8o948vden3i9ba";
         
-        const CATEGORY_COLORS = { 'Эспрессо': '#B66A58', 'Фильтр': '#7A8F7C', 'Ароматизация': '#C09F80', 'Аксессуары': '#8B7E66', 'Информация': '#D3B694' };
+        const CATEGORY_COLORS = { 'Эспрессо': '#B66A58', 'Фильтр': '#7A8F7C', 'Ароматизация': '#C09F80', 'Аксессуары': '#8B7E66', 'Информация': '#5F9EA0' };
 
         const CATEGORY_DESCRIPTIONS = {
             'ЭСПРЕССО': 'В этой категории собраны сорта и смеси, которые подойдут для приготовления в эспрессо, турке, гейзере и другими способами. Идеально под молоко.',
