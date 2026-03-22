@@ -2424,7 +2424,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 });
 
                 // 3. ФОРМИРОВАНИЕ СТРОК ПРАЙСА
-                // 3. ФОРМИРОВАНИЕ СТРОК ПРАЙСА
                 pdfItems.forEach(p => {
                     const rawGreen = parseFloat(p.rawGreenPrice || p.raw_green_price) || 0;
                     let ws250 = 0, ws1000 = 0;
@@ -2440,6 +2439,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     }
                     
                     const roastVal = parseFloat(p.roast) || 0;
+                    const catName = (p.category || '').toLowerCase(); // <-- ИСПРАВЛЕНИЕ: ДОБАВИЛИ ПОТЕРЯННУЮ ПЕРЕМЕННУЮ
                     
                     let typeText = 'ФИЛЬТР';
                     if (catName.includes('ароматизац')) {
