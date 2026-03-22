@@ -241,7 +241,10 @@
         @media (min-width: 480px) { .buy-area { flex-direction: row; } }
 
         .btn-locus {
-            flex: 1; padding: 8px 10px; min-height: 42px;
+            /* flex: 1; <-- УДАЛИЛИ ЭТО ПРАВИЛО, ЧТОБЫ КНОПКА НЕ РАСТЯГИВАЛАСЬ */
+            padding: 15px 30px; /* Добавили резиновые отступы как у других кнопок */
+            width: fit-content; /* Ширина строго по размеру текста */
+            min-height: 42px;
             text-decoration: none; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px;
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
