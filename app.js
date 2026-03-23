@@ -328,7 +328,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         // Скрываем кнопки веса и подписки
                         if(weightSelector) weightSelector.style.display = 'none';
                         if(subBtn) subBtn.style.display = 'none';
-                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'center';
+                        if(cartBtn && cartBtn.parentElement) {
+                            cartBtn.parentElement.style.justifyContent = 'center';
+                            cartBtn.style.width = 'fit-content'; // Сжимаем до аккуратного размера по центру
+                        }
                         
                         const grid = document.getElementById('cupping-data');
                         if(grid) grid.innerHTML = ''; // Убираем таблицу каппинга
@@ -347,7 +350,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                        // Возвращаем кнопки веса и подписки
                         if(weightSelector) weightSelector.style.display = 'flex';
                         if(subBtn) subBtn.style.display = 'flex';
-                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'space-between';
+                        if(cartBtn && cartBtn.parentElement) {
+                            cartBtn.parentElement.style.justifyContent = 'center';
+                            cartBtn.style.width = '100%'; // Возвращаем 50/50 ширину
+                        }
 
                     } else {
                         // 3. ОБЫЧНЫЙ КОФЕ
@@ -372,7 +378,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         // Возвращаем кнопки веса и подписки
                         if(weightSelector) weightSelector.style.display = 'flex';
                         if(subBtn) subBtn.style.display = 'flex';
-                        if(cartBtn && cartBtn.parentElement) cartBtn.parentElement.style.justifyContent = 'center';
+                        if(cartBtn && cartBtn.parentElement) {
+                            cartBtn.parentElement.style.justifyContent = 'center';
+                            cartBtn.style.width = '100%'; // Возвращаем 50/50 ширину
+                        }
                     }
 
                     // ЛОГИКА КНОПКИ ПОКУПКИ (Скрываем для раздела Инфо с ценой 0)
