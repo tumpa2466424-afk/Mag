@@ -4364,23 +4364,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         window.UserSystem = UserSystem;
 
-        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (TOUR SYSTEM LOCUS DESIGN) ---
+        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (TOUR SYSTEM - ЭКРАННОЕ ПОЗИЦИОНИРОВАНИЕ) ---
         const TourSystem = {
             steps: [
                 {
                     target: '#wheel-zone',
                     text: 'Это каталог магазина. Вращая колесо, нажимайте на нужные лоты, читайте описание, совершайте покупки.',
-                    arrow: '👇'
+                    arrow: '👆' // Шаг 1: Стрелка указывает ВВЕРХ на колесо
                 },
                 {
                     target: '#info-panel',
                     text: 'Здесь будет выводиться описание любого лота, который вы выберите на колесе-каталоге.',
-                    arrow: '👇'
+                    arrow: '👇' // Шаг 2: Стрелка указывает ВНИЗ на инфо-панель
                 },
                 {
                     target: '.top-controls',
                     text: 'Это меню сайта. Здесь находится ваш личный кабинет, корзина для оплаты и раздел опта, если это вам необходимо.',
-                    arrow: '⬆️'
+                    arrow: '⬆️' // Шаг 3: Стрелка указывает ВВЕРХ на меню
                 },
                 {
                     target: null,
@@ -4391,12 +4391,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             currentStep: 0,
 
             init: function() {
-                // Проверяем, проходил ли пользователь уже обучение
                 if (localStorage.getItem('locus_tour_done')) return;
-
                 this.createElements();
-
-                // Запускаем через 2 секунды после загрузки сайта
                 setTimeout(() => this.start(), 2000);
             },
 
@@ -4432,7 +4428,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 this.showStep();
             },
 
-            // --- ТОЧНОЕ ПОЗИЦИОНИРОВАНИЕ (ИСПРАВЛЕНО) ---
             showStep: function() {
                 // Убираем подсветку с предыдущего элемента
                 document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
@@ -4447,16 +4442,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 arrowEl.textContent = step.arrow;
                 arrowEl.style.display = step.arrow ? 'block' : 'none';
 
-                // Динамический цвет текста (на светлом фоне он темный)
-                if (step.target === '#info-panel') {
-                    textEl.style.color = 'var(--locus-dark)';
-                    textEl.style.textShadow = '0 2px 15px rgba(255,255,255,1), 0 0 5px rgba(255,255,255,0.8)';
-                } else {
-                    textEl.style.color = 'var(--locus-white)';
-                    textEl.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)';
-                }
+                // Текст всегда белый, так как он теперь всегда на темном фоне
+                textEl.style.color = 'var(--locus-white)';
+                textEl.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)';
 
-                // Кнопка в зависимости от шага
                 btnEl.textContent = this.currentStep === this.steps.length - 1 ? 'Начать' : 'Далее';
 
                 // Позиционирование финального шага
@@ -4466,66 +4455,92 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     tooltip.style.left = '50%';
                     tooltip.style.right = 'auto';
                     tooltip.style.bottom = 'auto';
+                    
+                    arrowEl.style.order = '1';
+                    textEl.style.order = '2';
+                    btnEl.style.order = '3';
                     return;
                 }
 
-                // Поиск и позиционирование для конкретного элемента
-                const target = document.querySelector(step.target);
+                // Поиск и подсветка нужного элемента
+                let target = null;
+                if (step.target === '.top-controls') {
+                    const cartBtn = document.getElementById('btn-open-cart');
+                    if (cartBtn) {
+                        target = cartBtn.closest('.top-controls') || cartBtn.parentElement;
+                        target.classList.add('top-controls');
+                    }
+                } else {
+                    target = document.querySelector(step.target);
+                }
+
                 if (target) {
                     target.classList.add('tour-highlight');
 
-                    // Плавный скролл (для меню — просто вверх)
+                    // Плавный скролл
                     if (step.target === '.top-controls') {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     } else {
                         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
 
-                    // Позиционирование окна с текстом ПОСЛЕ скролла
+                    // НАДЕЖНОЕ ЭКРАННОЕ ПОЗИЦИОНИРОВАНИЕ (НИКАКИХ ВЫЛЕТОВ ЗА ЭКРАН)
                     setTimeout(() => {
-                        const rect = target.getBoundingClientRect();
-                        
-                        // Объект с функциями точного позиционирования для каждого шага
-                        const positionFn = {
-                            '#wheel-zone': () => {
-                                // ПОД КОЛЕСОМ. Сдвигаем на 20px вниз от нижней границы.
-                                tooltip.style.top = (rect.bottom + 20) + 'px';
-                                tooltip.style.left = '50%';
-                                tooltip.style.right = 'auto';
-                                tooltip.style.transform = 'translate(-50%, 0) scale(1)'; // Центрируем по горизонтали
-                            },
-                            '#info-panel': () => {
-                                // ПОД ПАНЕЛЬЮ. Сдвигаем на 20px вниз.
-                                tooltip.style.top = (rect.bottom + 20) + 'px';
-                                tooltip.style.left = '50%';
-                                tooltip.style.right = 'auto';
-                                tooltip.style.transform = 'translate(-50%, 0) scale(1)'; // Центрируем по горизонтали
-                            },
-                            '.top-controls': () => {
-                                // ПОД МЕНЮ СПРАВА. На 15px вниз.
-                                tooltip.style.top = (rect.bottom + 15) + 'px';
-                                tooltip.style.left = 'auto';
-                                tooltip.style.right = '20px'; // Прижимаем окно к правому краю
-                                tooltip.style.transform = 'translate(0, 0) scale(1)'; // Убираем центровку
-                            }
-                        };
-                        
-                        // Жесткая очистка стилей перед применением
-                        tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
-                        tooltip.style.top = '50%';
-                        tooltip.style.left = '50%';
-                        tooltip.style.right = 'auto';
+                        // Жесткий сброс позиций
+                        tooltip.style.top = 'auto';
                         tooltip.style.bottom = 'auto';
+                        tooltip.style.left = 'auto';
+                        tooltip.style.right = 'auto';
+                        tooltip.style.transform = 'translate(0, 0) scale(1)';
 
-                        // Вызываем функцию позиционирования
-                        if (positionFn[step.target]) positionFn[step.target]();
+                        if (step.target === '#wheel-zone') {
+                            // ШАГ 1: Текст ВНИЗУ экрана, на темном фоне
+                            tooltip.style.bottom = '5%'; // 5% от низа экрана
+                            tooltip.style.left = '50%';
+                            tooltip.style.transform = 'translate(-50%, 0) scale(1)';
+                            
+                            // Порядок: Стрелка 👆 -> Текст -> Кнопка
+                            arrowEl.style.order = '1';
+                            textEl.style.order = '2';
+                            btnEl.style.order = '3';
+                            
+                            arrowEl.style.textAlign = 'center';
+                            arrowEl.style.paddingRight = '0';
+                            
+                        } else if (step.target === '#info-panel') {
+                            // ШАГ 2: Текст ВВЕРХУ экрана, на темном фоне
+                            tooltip.style.top = '10%'; // 10% от верха экрана
+                            tooltip.style.left = '50%';
+                            tooltip.style.transform = 'translate(-50%, 0) scale(1)';
+                            
+                            // Порядок: Текст -> Кнопка -> Стрелка 👇 (в самом низу окна)
+                            textEl.style.order = '1';
+                            btnEl.style.order = '2';
+                            arrowEl.style.order = '3'; 
+                            
+                            arrowEl.style.textAlign = 'center';
+                            arrowEl.style.paddingRight = '0';
+                            
+                        } else if (step.target === '.top-controls') {
+                            // ШАГ 3: Текст В ПРАВОМ ВЕРХНЕМ УГЛУ под меню
+                            tooltip.style.top = '70px'; // Четкий отступ сверху
+                            tooltip.style.right = '15px'; // Прижимаем вправо
+                            
+                            // Порядок: Стрелка ⬆️ -> Текст -> Кнопка
+                            arrowEl.style.order = '1';
+                            textEl.style.order = '2';
+                            btnEl.style.order = '3';
+                            
+                            arrowEl.style.textAlign = 'right';
+                            arrowEl.style.paddingRight = '30px';
+                        }
 
                     }, 300); // Ждем окончания скролла
                 }
             },
 
             next: function() {
-                // Единоразовая логика для колеса: если мы идем дальше, скрываем описание.
+                // Если мы идем дальше после шага 1, скрываем описание лота
                 if (this.steps[this.currentStep].target === '#wheel-zone') {
                     document.getElementById('info-panel')?.classList.remove('active');
                     document.getElementById('wheel-zone')?.classList.remove('lot-selected');
@@ -4544,7 +4559,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 document.getElementById('tour-tooltip').classList.remove('active');
                 document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
 
-                // Записываем в память, что обучение пройдено
                 localStorage.setItem('locus_tour_done', 'true');
             }
         };
