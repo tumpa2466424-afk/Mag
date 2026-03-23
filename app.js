@@ -312,13 +312,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         // 1. АКСЕССУАРЫ И ИНФО
                         let descHtml = galleryHtml + `<div style="text-align: justify; line-height: 1.5; white-space: pre-wrap;">${r.customDesc || r.flavorDesc || ''}</div>`;
                         document.getElementById('p-simple-desc').innerHTML = descHtml;
-                        
-                        // ДОБАВЛЕНО: white-space: pre-wrap для сохранения абзацев
-                        descHtml += `<div style="text-align: justify; line-height: 1.5; white-space: pre-wrap;">${r.customDesc || r.flavorDesc || ''}</div>`;
-                        
-                        document.getElementById('p-simple-desc').innerHTML = descHtml;
 
-                        document.getElementById('p-mini-stats').innerHTML = ''; 
+                        document.getElementById('p-mini-stats').innerHTML = '';
                         document.getElementById('p-mini-stats').style.display = 'none';
                         if(toggleBtn) toggleBtn.style.display = 'none';
                         if(toggleExtBtn) toggleExtBtn.style.display = 'none';
@@ -1284,7 +1279,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (cat.includes('аксессуар')) gName = 'Аксессуары';
                     else if (cat.includes('информац')) gName = 'Информация';
                     else if (cat.includes('ароматизац')) gName = 'Ароматизация';
-                    else if (parseFloat(r.roast) >= 10) gName = 'Эспрессо';
+                    else if (cat.includes('эспрессо')) gName = 'Эспрессо'; // Сначала верим тексту
+                    else if (cat.includes('фильтр')) gName = 'Фильтр';     // Сначала верим тексту
+                    else if (parseFloat(r.roast) >= 10) gName = 'Эспрессо'; // Если не указано, смотрим на цифру
 
                     if (r.inCatalog === "1") { groupsA[gName].push(r); activeCount++; }
                     else { groupsI[gName].push(r); inactiveCount++; }
@@ -1300,9 +1297,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                             items.forEach(r => {
                                 const isChecked = r.inCatalog === "1" ? "checked" : "";
+                                const catStr = (r.category || '').toLowerCase();
                                 const roastVal = parseFloat(r.roast) || 0;
-                                const typeText = roastVal >= 10 ? 'ЭСПРЕССО' : 'ФИЛЬТР';
-                                const typeColor = roastVal >= 10 ? '#B66A58' : '#7A8F7C';
+                                
+                                let typeText = 'ФИЛЬТР';
+                                let typeColor = '#7A8F7C';
+                                
+                                if (catStr.includes('эспрессо') || (!catStr.includes('фильтр') && roastVal >= 10)) {
+                                    typeText = 'ЭСПРЕССО';
+                                    typeColor = '#B66A58';
+                                }
+                                
                                 const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block;">${typeText}</span>`;
                                 const isBlend = r.sample.toLowerCase().includes('blend') || r.sample.toLowerCase().includes('смесь');
                                 const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; color:var(--locus-dark);">BLEND</span>` : '';
@@ -2211,7 +2216,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if (catName.includes('ароматизац')) {
                             typeText = 'АРОМАТИЗАЦИЯ';
                             typeColor = '#C09F80';
-                        } else if (roastVal >= 10) {
+                        } else if (catName.includes('эспрессо') || (!catName.includes('фильтр') && roastVal >= 10)) {
                             typeText = 'ЭСПРЕССО';
                             typeColor = '#B66A58';
                         }
@@ -2452,7 +2457,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     let typeText = 'ФИЛЬТР';
                     if (catName.includes('ароматизац')) {
                         typeText = 'АРОМА';
-                    } else if (roastVal >= 10) {
+                    } else if (catName.includes('эспрессо')) {
+                        typeText = 'ЭСПРЕССО';
+                    } else if (!catName.includes('фильтр') && roastVal >= 10) {
                         typeText = 'ЭСПРЕССО';
                     }
 
@@ -4725,6 +4732,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 targetCategoryLabel = 'АКСЕССУАРЫ';
                             } else if (dbCat.includes('информац')) {
                                 targetCategoryLabel = 'ИНФОРМАЦИЯ';
+                            } else if (dbCat.includes('эспрессо')) {
+                                targetCategoryLabel = 'ЭСПРЕССО';
+                            } else if (dbCat.includes('фильтр')) {
+                                targetCategoryLabel = 'ФИЛЬТР';
                             } else if (roastVal >= 10) { 
                                 targetCategoryLabel = 'ЭСПРЕССО'; 
                             }
