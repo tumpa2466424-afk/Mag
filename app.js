@@ -4524,37 +4524,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 initWheelInteraction();
                 UserSystem.init();
                 
+                // ЗАПУСКАЕМ УДАЧУ ПРИ УСПЕШНОЙ ЗАГРУЗКЕ
+                if (window.FortuneSystem) window.FortuneSystem.init();
+                
                 // ЧТЕНИЕ ПРЯМОЙ ССЫЛКИ ИЗ АДРЕСНОЙ СТРОКИ (DEEP LINK)
                 setTimeout(() => {
                     const urlParams = new URLSearchParams(window.location.search);
-                    
-                    // 1. Проверяем ссылку на ОПТ (например: site.ru/?opt=1)
-                    if (urlParams.get('opt')) {
-                        // Умный поиск кнопки в меню по тексту (без привязки к ID)
-                        const navElements = document.querySelectorAll('a, button, div');
-                        const optButton = Array.from(navElements).find(el => 
-                            el.textContent.trim().toLowerCase() === 'опт' || 
-                            el.textContent.trim().toLowerCase() === 'оптовый заказ'
-                        );
-                        
-                        if (optButton) {
-                            optButton.click(); // Программно кликаем по пункту меню
-                        } else {
-                            // Резервный вариант: если кнопка скрыта или переименована, просто показываем сам блок
-                            const viewWholesale = document.getElementById('view-wholesale');
-                            if(viewWholesale) viewWholesale.style.display = 'block';
-                        }
-                        return; // Останавливаем выполнение, чтобы не открывать лоты
-                    }
-
-                    // 2. Проверяем ссылку на конкретный ЛОТ (например: site.ru/?lot=Бразилия)
                     const lotFromUrl = urlParams.get('lot');
                     if (lotFromUrl) {
+                        // Ищем лепесток с нужным названием
                         const allGroups = document.querySelectorAll('#wheel-spinner svg g');
                         const targetGroup = Array.from(allGroups).find(g => g.getAttribute('data-lot') === lotFromUrl);
-                        if (targetGroup) targetGroup.dispatchEvent(new Event('click')); 
+                        
+                        if (targetGroup) {
+                            // Имитируем клик
+                            targetGroup.dispatchEvent(new Event('click')); 
+                        }
                     }
-                }, 800);
+                }, 800); // Небольшая задержка для отрисовки интерфейса
                 
             } catch (e) { 
                 console.error("Ошибка загрузки каталога:", e);
