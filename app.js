@@ -2819,10 +2819,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             toggleModal: function(show, initialView = 'dashboard') {
                 const m = document.getElementById('lc-modal');
                 if(!m) return;
+                
+                // ДОБАВЛЕНО: Получаем текущий URL
+                const url = new URL(window.location);
+
                 if(show) {
                     document.body.style.overflow = 'hidden';
                     m.classList.add('active');
                     if(initialView === 'wholesale') m.classList.add('wide'); else m.classList.remove('wide');
+                    
+                    // ДОБАВЛЕНО: Обновляем URL для прямых ссылок (Опт, Корзина, Вход)
+                    if (initialView === 'wholesale' || initialView === 'cart' || initialView === 'login') {
+                        url.searchParams.set('view', initialView);
+                        window.history.replaceState({}, '', url);
+                    }
                     
                     if(initialView === 'cart') { 
                         this.renderCart(); 
@@ -2855,6 +2865,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 } else { 
                     document.body.style.overflow = '';
                     m.classList.remove('active'); 
+                    
+                    // ДОБАВЛЕНО: Очищаем параметр view при закрытии окна, чтобы вернуть чистый URL
+                    url.searchParams.delete('view');
+                    window.history.replaceState({}, '', url);
                 }
             },
             // --- КОНЕЦ: ИСПРАВЛЕННОЕ ОТКРЫТИЕ ОКОН ---
@@ -4539,6 +4553,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if (targetGroup) {
                             // Имитируем клик
                             targetGroup.dispatchEvent(new Event('click')); 
+                        }
+                    }
+
+                    // ДОБАВЛЕНО: Чтение ссылки на разделы модального окна (Опт, Корзина и т.д.)
+                    const viewFromUrl = urlParams.get('view');
+                    if (viewFromUrl) {
+                        if (viewFromUrl === 'wholesale') {
+                            document.getElementById('btn-open-wholesale')?.click();
+                        } else if (viewFromUrl === 'cart') {
+                            document.getElementById('btn-open-cart')?.click();
+                        } else if (viewFromUrl === 'login') {
+                            document.getElementById('btn-open-lc')?.click();
                         }
                     }
                 }, 800); // Небольшая задержка для отрисовки интерфейса
