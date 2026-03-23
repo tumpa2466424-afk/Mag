@@ -181,12 +181,12 @@
             display: flex; flex-direction: row; align-items: stretch; gap: 8px; width: 100%; margin-bottom: 5px;
         }
         .cart-action-row > div { 
-            flex: 1; display: flex; min-width: 0; /* min-width: 0 нужен, чтобы текст не распирал блоки */
+            flex: 1; display: flex; min-width: 0;
         }
         .cart-action-row .btn-locus {
-            width: 100%; /* Заставляем кнопку занять всю правую половину */
-            padding: 10px 5px; /* Немного уменьшаем боковые отступы для узких экранов */
-            gap: 6px; /* Чуть сдвигаем текст и цену */
+            width: 100%;
+            padding: 10px 15px; /* <-- УВЕЛИЧИЛИ БОКОВЫЕ ОТСТУПЫ, ЧТОБЫ ДАТЬ ТЕКСТУ ДЫШАТЬ */
+            gap: 6px;
         }
 
         .weight-toggle {
