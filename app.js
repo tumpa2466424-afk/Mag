@@ -329,12 +329,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     document.getElementById('p-title').textContent = r.sample;
                     document.getElementById('p-cat-desc').textContent = '';
                     
-                    // Определяем категории
-                    const isAroma = (r.category && r.category.toLowerCase().includes('ароматизац'));
-                    const isAcc = (r.category && r.category.toLowerCase().includes('аксессуар'));
-                    const isInfo = (r.category && r.category.toLowerCase().includes('информац'));
-                    const isDrip = (r.sample && r.sample.toLowerCase().includes('дрип'));
-                    const isSpecial = isAcc || isInfo || isDrip;
+                    // Рефакторинг: используем ProductManager
+                    const typeInfo = ProductManager.getTypeInfo(r);
+                    const { isAroma, isInfo, isSpecial } = typeInfo;
 
                     const toggleAiBtn = document.getElementById('btn-toggle-ai'); // Находим кнопку AI
 
@@ -1416,10 +1413,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             getViewHtml: function(r) {
-                const catName = (r.category || '').toLowerCase();
-                const sampleName = (r.sample || '').toLowerCase();
-                // Проверяем, является ли категория "особенной" (не кофе или дрипы)
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
+                // Рефакторинг: используем ProductManager
+                const isSpecial = ProductManager.getTypeInfo(r).isSpecial;
 
                 if (isSpecial) {
                     // Для Аксессуаров и Информации выводим только описание
@@ -1460,9 +1455,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             getEditHtml: function(r) {
-                const catName = (r.category || '').toLowerCase();
-                const sampleName = (r.sample || '').toLowerCase();
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
+                // Рефакторинг: используем ProductManager
+                const isSpecial = ProductManager.getTypeInfo(r).isSpecial;
                 const extraStyle = isSpecial ? 'display: none;' : 'display: contents;';
 
                 return `
@@ -2289,9 +2283,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         const isBlend = i.sample.toLowerCase().includes('blend') || i.sample.toLowerCase().includes('смесь');
                         const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; margin-bottom:4px;">BLEND</span>` : '';
                         
-                        const sName = (i.sample || '').toLowerCase();
-                        const isSpecialItem = catName.includes('аксессуар') || catName.includes('информац') || sName.includes('дрип');
-                        const displayDesc = isSpecialItem ? (i.customDesc || i.flavorDesc || '-') : (i.flavorDesc ? formatFlavorDesc(i.flavorDesc) : '-');
+                        // Рефакторинг: получаем правильное описание через ProductManager
+                        const displayDesc = ProductManager.getDisplayDesc(i);
                         
                         html += `<tr>
                             <td style="font-weight:600; vertical-align:middle; line-height:1.4;">${typeSticker}${blendLabel}<br>${i.sample}</td>
@@ -2534,8 +2527,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const isBlend = p.sample.toLowerCase().includes('blend') || p.sample.toLowerCase().includes('смесь');
                     const prefixText = (isBlend ? '[BLEND] ' : '') + `[${typeText}] `;
                     
-                    const sName = (p.sample || '').toLowerCase();
-                    const isSpecialItem = catName.includes('аксессуар') || catName.includes('информац') || sName.includes('дрип');
+                    // Рефакторинг: используем ProductManager (без HTML-тегов для PDF)
+                    const isSpecialItem = ProductManager.getTypeInfo(p).isSpecial;
                     const displayDesc = isSpecialItem ? (p.customDesc || p.flavorDesc || '-') : (p.flavorDesc || '-');
                     
                     tableBody.push([
