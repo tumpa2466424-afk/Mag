@@ -3579,15 +3579,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === item.trim());
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
                 
-                const catName = (product.category || '').toLowerCase();
-                const sampleName = (product.sample || '').toLowerCase();
-                const isAroma = catName.includes('ароматизация');
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
+                // Рефакторинг: получаем информацию о типе товара через единый центр
+                const typeInfo = ProductManager.getTypeInfo(product);
                 
-                // ЗАДАЧА 2: Убираем помол для Аксессуаров и Информации
-                if (isSpecial) {
+                // Убираем/заменяем помол для особых категорий
+                if (typeInfo.isSpecial) {
                     grind = ""; 
-                } else if (isAroma) {
+                } else if (typeInfo.isAroma) {
                     grind = "Зерно (Ароматизация)";
                 }
                 
@@ -3996,15 +3994,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === itemName.trim());
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
 
-                const catName = (product.category || '').toLowerCase();
-                const sampleName = (product.sample || '').toLowerCase();
-                const isAroma = catName.includes('ароматизация');
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
+                // Рефакторинг: получаем информацию о типе товара через единый центр
+                const typeInfo = ProductManager.getTypeInfo(product);
                 
-                // ЗАДАЧА 2: Убираем помол для Аксессуаров и Информации
-                if (isSpecial) {
+                // Убираем/заменяем помол для особых категорий
+                if (typeInfo.isSpecial) {
                     grind = "";
-                } else if (isAroma) {
+                } else if (typeInfo.isAroma) {
                     grind = "Зерно (Ароматизация)";
                 }
 
