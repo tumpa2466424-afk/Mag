@@ -4364,23 +4364,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         window.UserSystem = UserSystem;
 
-        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (TOUR SYSTEM) ---
+        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (TOUR SYSTEM REVISED) ---
         const TourSystem = {
             steps: [
                 { 
                     target: '#wheel-zone', 
                     text: 'Это каталог магазина. Вращая колесо, нажимайте на нужные лоты, читайте описание, совершайте покупки.',
-                    arrow: '⬇️' // Стрелка визуально укажет на подсвеченный элемент
+                    arrow: '👇' // Указывает вниз на колесо
                 },
                 { 
                     target: '#info-panel', 
                     text: 'Здесь будет выводиться описание любого лота, который вы выберите на колесе-каталоге.',
-                    arrow: '⬇️' 
+                    arrow: '👇' // Указывает вниз на инфо-поле
                 },
                 { 
                     target: '.top-controls', 
                     text: 'Это меню сайта. Здесь находится ваш личный кабинет, корзина для оплаты и раздел опта, если это вам необходимо.',
-                    arrow: '⬆️'
+                    arrow: '⬆️' // Указывает вверх на меню
                 },
                 { 
                     target: null, 
@@ -4396,11 +4396,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 
                 this.createElements();
                 
-                // Запускаем через 2 секунды после загрузки сайта, чтобы пользователь успел осмотреться
+                // Запускаем через 2 секунды после загрузки сайта
                 setTimeout(() => this.start(), 2000);
             },
 
             createElements: function() {
+                // Если элементы уже созданы, не создаем их снова
+                if (document.getElementById('tour-overlay')) return;
+
                 const overlay = document.createElement('div');
                 overlay.id = 'tour-overlay';
                 overlay.className = 'tour-overlay';
@@ -4420,8 +4423,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             start: function() {
-                document.getElementById('tour-overlay').classList.add('active');
-                document.getElementById('tour-tooltip').classList.add('active');
+                const overlay = document.getElementById('tour-overlay');
+                const tooltip = document.getElementById('tour-tooltip');
+                if (!overlay || !tooltip) return;
+
+                overlay.classList.add('active');
+                tooltip.classList.add('active');
                 this.currentStep = 0;
                 this.showStep();
             },
@@ -4440,8 +4447,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 arrowEl.textContent = step.arrow;
                 arrowEl.style.display = step.arrow ? 'block' : 'none';
 
-                // Если это последний шаг
-                if (this.currentStep === this.steps.length - 1) {
+                // Настройка финального шага
+                if (!step.target) {
                     btnEl.textContent = 'Начать';
                     // Центрируем финальное окно
                     tooltip.style.top = '50%';
@@ -4456,23 +4463,32 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 if (target) {
                     target.classList.add('tour-highlight');
                     
-                    // Плавный скролл к элементу (особенно важно для мобилок)
+                    // Плавный скролл к элементу
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-                    // Умное позиционирование подсказки в зависимости от шага
+                    // Умное позиционирование прозрачного текста
                     setTimeout(() => {
                         const rect = target.getBoundingClientRect();
+                        const winsowHeight = window.innerHeight;
                         
-                        // Сбрасываем стили
+                        // Сбрасываем стили трансформации и позиционирования
                         tooltip.style.top = 'auto';
                         tooltip.style.bottom = 'auto';
                         tooltip.style.transform = 'translate(-50%, 0) scale(1)';
                         
+                        // Если светим верхнее меню, текст ставим аккуратно ПОД ним
                         if (step.target === '.top-controls') {
-                            // Если светим верхнее меню, подсказку ставим чуть ниже
-                            tooltip.style.top = (rect.bottom + 20) + 'px';
-                        } else {
-                            // В остальных случаях (колесо, инфо-панель) ставим по центру экрана
+                            tooltip.style.top = (rect.bottom + 25) + 'px';
+                        } 
+                        // Если светим колесо или инфо-панель (они большие), 
+                        // текст ставим по центру свободной зоны экрана.
+                        else if (step.target === '#wheel-zone') {
+                             // Ставим текст ниже центра колеса, чтобы стрелка 👇 указывала на него
+                             tooltip.style.top = '65%'; 
+                             tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                        }
+                        else {
+                            // Для инфо-панели центрируем на экране
                             tooltip.style.top = '50%';
                             tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
                         }
