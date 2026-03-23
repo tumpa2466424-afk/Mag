@@ -4524,22 +4524,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 initWheelInteraction();
                 UserSystem.init();
                 
-                // ЗАПУСКАЕМ УДАЧУ ПРИ УСПЕШНОЙ ЗАГРУЗКЕ
-                if (window.FortuneSystem) window.FortuneSystem.init();
-                
                 // ЧТЕНИЕ ПРЯМОЙ ССЫЛКИ ИЗ АДРЕСНОЙ СТРОКИ (DEEP LINK)
                 setTimeout(() => {
                     const urlParams = new URLSearchParams(window.location.search);
+                    
+                    // 1. Проверяем ссылку на ОПТ (например: site.ru/?opt=1)
+                    if (urlParams.get('opt')) {
+                        // ЗАМЕНИ 'btn-menu-opt' на реальный ID твоей кнопки "Опт" в навигации!
+                        const optButton = document.getElementById('btn-open-wholesale'); 
+                        if (optButton) optButton.click();
+                        return; // Останавливаем дальнейшие проверки
+                    }
+
+                    // 2. Проверяем ссылку на конкретный ЛОТ (например: site.ru/?lot=Бразилия)
                     const lotFromUrl = urlParams.get('lot');
                     if (lotFromUrl) {
-                        // Ищем лепесток с нужным названием
                         const allGroups = document.querySelectorAll('#wheel-spinner svg g');
                         const targetGroup = Array.from(allGroups).find(g => g.getAttribute('data-lot') === lotFromUrl);
-                        
-                        if (targetGroup) {
-                            // Имитируем клик
-                            targetGroup.dispatchEvent(new Event('click')); 
-                        }
+                        if (targetGroup) targetGroup.dispatchEvent(new Event('click')); 
                     }
                 }, 800); // Небольшая задержка для отрисовки интерфейса
                 
