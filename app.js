@@ -4364,7 +4364,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         window.UserSystem = UserSystem;
 
-        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (ТОЧНОЕ ПОЗИЦИОНИРОВАНИЕ 1 СМ И СВЕТЛАЯ КНОПКА) ---
+        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (ФИНАЛ: КОМПАКТНАЯ КНОПКА) ---
         const TourSystem = {
             steps: [
                 {
@@ -4404,11 +4404,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 tooltip.id = 'tour-tooltip';
                 tooltip.className = 'tour-tooltip';
                 
-                // ИНВЕРТИРОВАННАЯ КНОПКА: Светлый фон, темный текст (--locus-white и --locus-dark)
+                // ИЗМЕНЕНО: padding: 10px 18px !important; (делает кнопку компактнее)
                 tooltip.innerHTML = `
                     <span class="tour-arrow-icon" id="tour-arrow"></span>
                     <div class="tour-text" id="tour-text"></div>
-                    <button id="tour-next-btn" style="background: var(--locus-white) !important; color: var(--locus-dark) !important; border: 1px solid var(--locus-dark) !important; padding: 12px 30px !important; border-radius: 50px !important; margin-top: 15px !important; font-weight: 800 !important; text-transform: uppercase !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; transition: transform 0.2s;">Далее</button>
+                    <button id="tour-next-btn" style="background: var(--locus-white) !important; color: var(--locus-dark) !important; border: 1px solid var(--locus-dark) !important; padding: 10px 18px !important; border-radius: 50px !important; margin-top: 15px !important; font-weight: 800 !important; text-transform: uppercase !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; transition: transform 0.2s;">Далее</button>
                 `;
                 document.body.appendChild(tooltip);
 
@@ -4443,18 +4443,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                 textEl.textContent = step.text;
                 
-                // НАСТРОЙКА СТРЕЛОК (Шаг 3 и 4 — без стрелок)
+                // НАСТРОЙКА СТРЕЛОК
                 let arrowSymbol = '';
                 if (this.currentStep === 0) {
-                    arrowSymbol = isDesktop ? '👈' : '👆'; // Д: влево, М: вверх
+                    arrowSymbol = isDesktop ? '👈' : '👆'; 
                 } else if (this.currentStep === 1) {
-                    arrowSymbol = isDesktop ? '👉' : '👇'; // Д: вправо, М: вниз
+                    arrowSymbol = isDesktop ? '👉' : '👇'; 
                 }
                 
                 arrowEl.textContent = arrowSymbol;
                 arrowEl.style.display = arrowSymbol ? 'block' : 'none';
 
-                // Текст всегда белый с четкой тенью для контраста
                 textEl.style.color = 'var(--locus-white)';
                 textEl.style.textShadow = '0 2px 6px rgba(0,0,0,0.8)';
 
@@ -4503,11 +4502,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         tooltip.style.transform = 'translate(0, 0) scale(1)';
 
                         const rect = target.getBoundingClientRect();
-                        const spacing = 35; // ~1 сантиметр в пикселях
+                        const spacing = 35; // ~1 сантиметр
 
                         if (step.target === '#wheel-zone') {
                             if (isDesktop) {
-                                // ДЕСКТОП: Текст строго СПРАВА от колеса 👈
                                 tooltip.style.left = (rect.right + spacing) + 'px';
                                 tooltip.style.top = (rect.top + rect.height / 2) + 'px';
                                 tooltip.style.transform = 'translate(0, -50%) scale(1)';
@@ -4515,7 +4513,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 arrowEl.style.order = '1'; textEl.style.order = '2'; btnEl.style.order = '3';
                                 arrowEl.style.textAlign = 'left';
                             } else {
-                                // МОБИЛКА: Текст строго ПОД колесом 👆
                                 tooltip.style.top = (rect.bottom + spacing) + 'px';
                                 tooltip.style.left = '50%';
                                 tooltip.style.transform = 'translate(-50%, 0) scale(1)';
@@ -4526,7 +4523,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             
                         } else if (step.target === '#info-panel') {
                             if (isDesktop) {
-                                // ДЕСКТОП: Текст строго СЛЕВА от описания 👉
                                 tooltip.style.right = (window.innerWidth - rect.left + spacing) + 'px';
                                 tooltip.style.top = (rect.top + rect.height / 2) + 'px';
                                 tooltip.style.transform = 'translate(0, -50%) scale(1)';
@@ -4534,7 +4530,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 textEl.style.order = '1'; btnEl.style.order = '2'; arrowEl.style.order = '3'; 
                                 arrowEl.style.textAlign = 'right';
                             } else {
-                                // МОБИЛКА: Текст строго НАД описанием 👇
                                 tooltip.style.bottom = (window.innerHeight - rect.top + spacing) + 'px';
                                 tooltip.style.left = '50%';
                                 tooltip.style.transform = 'translate(-50%, 0) scale(1)';
@@ -4544,12 +4539,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             }
                             
                         } else if (step.target === '.top-controls') {
-                            // ШАГ 3: МЕНЮ (Универсально, текст под меню)
                             tooltip.style.top = (rect.bottom + spacing) + 'px';
                             const distFromRight = window.innerWidth - rect.right;
                             tooltip.style.right = Math.max(15, distFromRight) + 'px'; 
                             
-                            textEl.style.order = '1'; btnEl.style.order = '2'; // Стрелка отключена
+                            textEl.style.order = '1'; btnEl.style.order = '2'; 
                         }
 
                     }, 300); // Ждем скролла
