@@ -4364,6 +4364,142 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         window.UserSystem = UserSystem;
 
+        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (TOUR SYSTEM) ---
+        const TourSystem = {
+            steps: [
+                { 
+                    target: '#wheel-zone', 
+                    text: 'Это каталог магазина. Вращая колесо, нажимайте на нужные лоты, читайте описание, совершайте покупки.',
+                    arrow: '⬇️' // Стрелка визуально укажет на подсвеченный элемент
+                },
+                { 
+                    target: '#info-panel', 
+                    text: 'Здесь будет выводиться описание любого лота, который вы выберите на колесе-каталоге.',
+                    arrow: '⬇️' 
+                },
+                { 
+                    target: '.top-controls', 
+                    text: 'Это меню сайта. Здесь находится ваш личный кабинет, корзина для оплаты и раздел опта, если это вам необходимо.',
+                    arrow: '⬆️'
+                },
+                { 
+                    target: null, 
+                    text: 'Приятных вам покупок! 🎉',
+                    arrow: ''
+                }
+            ],
+            currentStep: 0,
+
+            init: function() {
+                // Проверяем, проходил ли пользователь уже обучение
+                if (localStorage.getItem('locus_tour_done')) return;
+                
+                this.createElements();
+                
+                // Запускаем через 2 секунды после загрузки сайта, чтобы пользователь успел осмотреться
+                setTimeout(() => this.start(), 2000);
+            },
+
+            createElements: function() {
+                const overlay = document.createElement('div');
+                overlay.id = 'tour-overlay';
+                overlay.className = 'tour-overlay';
+                document.body.appendChild(overlay);
+
+                const tooltip = document.createElement('div');
+                tooltip.id = 'tour-tooltip';
+                tooltip.className = 'tour-tooltip';
+                tooltip.innerHTML = `
+                    <span class="tour-arrow-icon" id="tour-arrow"></span>
+                    <div class="tour-text" id="tour-text"></div>
+                    <button class="tour-btn" id="tour-next-btn">Далее</button>
+                `;
+                document.body.appendChild(tooltip);
+
+                document.getElementById('tour-next-btn').addEventListener('click', () => this.next());
+            },
+
+            start: function() {
+                document.getElementById('tour-overlay').classList.add('active');
+                document.getElementById('tour-tooltip').classList.add('active');
+                this.currentStep = 0;
+                this.showStep();
+            },
+
+            showStep: function() {
+                // Убираем подсветку с предыдущего элемента
+                document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+
+                const step = this.steps[this.currentStep];
+                const textEl = document.getElementById('tour-text');
+                const btnEl = document.getElementById('tour-next-btn');
+                const arrowEl = document.getElementById('tour-arrow');
+                const tooltip = document.getElementById('tour-tooltip');
+
+                textEl.textContent = step.text;
+                arrowEl.textContent = step.arrow;
+                arrowEl.style.display = step.arrow ? 'block' : 'none';
+
+                // Если это последний шаг
+                if (this.currentStep === this.steps.length - 1) {
+                    btnEl.textContent = 'Начать';
+                    // Центрируем финальное окно
+                    tooltip.style.top = '50%';
+                    tooltip.style.bottom = 'auto';
+                    tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                    return;
+                }
+
+                btnEl.textContent = 'Далее';
+                const target = document.querySelector(step.target);
+                
+                if (target) {
+                    target.classList.add('tour-highlight');
+                    
+                    // Плавный скролл к элементу (особенно важно для мобилок)
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Умное позиционирование подсказки в зависимости от шага
+                    setTimeout(() => {
+                        const rect = target.getBoundingClientRect();
+                        
+                        // Сбрасываем стили
+                        tooltip.style.top = 'auto';
+                        tooltip.style.bottom = 'auto';
+                        tooltip.style.transform = 'translate(-50%, 0) scale(1)';
+                        
+                        if (step.target === '.top-controls') {
+                            // Если светим верхнее меню, подсказку ставим чуть ниже
+                            tooltip.style.top = (rect.bottom + 20) + 'px';
+                        } else {
+                            // В остальных случаях (колесо, инфо-панель) ставим по центру экрана
+                            tooltip.style.top = '50%';
+                            tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
+                        }
+                    }, 300); // Ждем окончания скролла
+                }
+            },
+
+            next: function() {
+                this.currentStep++;
+                if (this.currentStep >= this.steps.length) {
+                    this.end();
+                } else {
+                    this.showStep();
+                }
+            },
+
+            end: function() {
+                document.getElementById('tour-overlay').classList.remove('active');
+                document.getElementById('tour-tooltip').classList.remove('active');
+                document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+                
+                // Записываем в память, что обучение пройдено
+                localStorage.setItem('locus_tour_done', 'true');
+            }
+        };
+        window.TourSystem = TourSystem;
+
         // --- СИСТЕМА COOKIE УВЕДОМЛЕНИЙ ---
         function initCookieBanner() {
             // Если пользователь уже соглашался, ничего не делаем
@@ -4540,6 +4676,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 
                 // ЗАПУСКАЕМ УДАЧУ ПРИ УСПЕШНОЙ ЗАГРУЗКЕ
                 if (window.FortuneSystem) window.FortuneSystem.init();
+
+                // ДОБАВЛЕНО: ЗАПУСКАЕМ ОБУЧЕНИЕ ДЛЯ НОВЫХ ГОСТЕЙ
+                if (window.TourSystem) window.TourSystem.init();
                 
                 // ЧТЕНИЕ ПРЯМОЙ ССЫЛКИ ИЗ АДРЕСНОЙ СТРОКИ (DEEP LINK)
                 setTimeout(() => {
