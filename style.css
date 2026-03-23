@@ -647,6 +647,17 @@
     background: var(--locus-dark);
 }
 
+/* Убиваем призрачные линии отбивки в карточке товара */
+.info-card {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+}
+
+#product-info .simple-desc {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+}
+
 /* --- FOOTER (ПОДВАЛ) --- */
 .locus-footer {
     margin-top: auto; /* Всегда прижимает подвал к низу контейнера */
