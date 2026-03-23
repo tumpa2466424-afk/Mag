@@ -4193,10 +4193,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             const el = document.createElement('div');
                             el.className = 'product-list-item';
                             
-                            // Рефакторинг: получаем мета-данные через единый центр
-                            const meta = ProductManager.getDisplayMeta(item.item, item.weight, item.grind);
-                            const wDisplay = meta.weight ? ` ${meta.weight} г` : '';
-                            const gDisplay = meta.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${meta.grind}</span>` : '';
+                            // ИСПРАВЛЕНИЕ: Переименовали в productMeta, чтобы не было конфликта
+                            const productMeta = ProductManager.getDisplayMeta(item.item, item.weight, item.grind);
+                            const wDisplay = productMeta.weight ? ` ${productMeta.weight} г` : '';
+                            const gDisplay = productMeta.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${productMeta.grind}</span>` : '';
 
                             let meta = isSub ? `В подписке • ${item.price} ₽` : `${item.date} • ${item.price} ₽`;
                             if(!productInStock && isSub) meta += ` <span style="color:#B66A58">(Нет в наличии)</span>`;
