@@ -3248,24 +3248,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     groupedArray.forEach(group => {
                         // Собираем все лоты клиента в единый красивый блок
                         const lotsHtml = group.lots.map(lot => {
-                            // Блокируем отображение помола для не-кофе
+                            // Скрываем помол и вес для не-кофе и дрипов
                             let displayGrind = lot.grind;
+                            let displayWeight = lot.weight;
                             const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === lot.item.trim());
                             if (cacheP) {
                                 const cat = (cacheP.category || '').toLowerCase();
-                                if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                const sName = (cacheP.sample || '').toLowerCase();
+                                if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
                                     displayGrind = "";
-                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
+                                    displayWeight = "";
                                 }
                             }
                             
+                            const weightText = displayWeight ? ` <span style="font-size:10px; color:gray; margin-left:5px;">(${displayWeight} г)</span>` : '';
                             const grindText = displayGrind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                             return `<div style="margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #eee; font-size:12px;">
                                 <span style="font-weight:600; color:var(--locus-dark);">${lot.item}</span>
-                                <span style="font-size:10px; color:gray; margin-left:5px;">(${lot.weight} г)</span>${grindText}
+                                ${weightText}${grindText}
                                 <span style="float:right; font-weight:600;">${lot.price} ₽</span>
                             </div>`;
                         }).join('');
@@ -3337,7 +3337,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         const timePart = d.toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
                         const dateStrHTML = `${datePart} ${timePart}`;
 
-                        const itemsHtml = o.items.map(i => `<span style="font-weight:600">${i.item}</span> <span style="font-size:10px; color:gray;">(${i.weight}г)</span> x ${i.qty} шт.`).join('<br>');
+                        const itemsHtml = o.items.map(i => {
+                            let displayWeight = i.weight;
+                            const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === i.item.trim());
+                            if (cacheP) {
+                                const cat = (cacheP.category || '').toLowerCase();
+                                const sName = (cacheP.sample || '').toLowerCase();
+                                if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
+                                    displayWeight = "";
+                                }
+                            }
+                            const weightText = displayWeight ? ` <span style="font-size:10px; color:gray;">(${displayWeight}г)</span>` : '';
+                            return `<span style="font-weight:600">${i.item}</span>${weightText} x ${i.qty} шт.`;
+                        }).join('<br>');
                         
                         const phone = o.customer && o.customer.phone ? o.customer.phone : 'Не указан';
                         const email = o.customer && o.customer.email ? o.customer.email : 'Не указан';
@@ -3403,7 +3415,26 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         const customer = o.customer || {};
                         const delivery = o.delivery || {};
                         
-                        const itemsHtml = (o.items || []).map(i => `<span style="font-weight:600">${i.item}</span> <span style="font-size:10px; color:gray;">(${i.weight}г, ${i.grind})</span> x ${i.qty} шт.`).join('<br>');
+                        const itemsHtml = (o.items || []).map(i => {
+                            let displayGrind = i.grind;
+                            let displayWeight = i.weight;
+                            const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === i.item.trim());
+                            if (cacheP) {
+                                const cat = (cacheP.category || '').toLowerCase();
+                                const sName = (cacheP.sample || '').toLowerCase();
+                                if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
+                                    displayGrind = "";
+                                    displayWeight = "";
+                                }
+                            }
+                            
+                            let metaArr = [];
+                            if (displayWeight) metaArr.push(`${displayWeight}г`);
+                            if (displayGrind) metaArr.push(displayGrind);
+                            const metaText = metaArr.length > 0 ? ` <span style="font-size:10px; color:gray;">(${metaArr.join(', ')})</span>` : '';
+                            
+                            return `<span style="font-weight:600">${i.item}</span>${metaText} x ${i.qty} шт.`;
+                        }).join('<br>');
                         
                         let rowStyle = '';
                         if (o.status === 'pending_payment') rowStyle = 'background-color:#fef6f5;';
@@ -3591,21 +3622,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const el = document.createElement('div');
                     el.className = 'cart-item-row';
                     
-                    // Блокируем отображение помола для не-кофе
+                    // Скрываем помол и вес для не-кофе и дрипов
                     let displayGrind = p.grind;
+                    let displayWeight = p.weight;
                     const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === p.item.trim());
                     if (cacheP) {
                         const cat = (cacheP.category || '').toLowerCase();
-                        if (cat.includes('аксессуар') || cat.includes('информац')) {
-                                    displayGrind = "";
-                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                }
+                        const sName = (cacheP.sample || '').toLowerCase();
+                        if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
+                            displayGrind = "";
+                            displayWeight = "";
+                        }
                     }
 
-                    const wDisplay = p.weight ? ` ${p.weight} г` : '';
+                    const wDisplay = displayWeight ? ` ${displayWeight} г` : '';
                     const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                     
                     el.innerHTML = `
@@ -4135,20 +4165,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             const el = document.createElement('div');
                             el.className = 'product-list-item';
                             
-                            // Блокируем отображение помола для не-кофе
+                            // Скрываем помол и вес для не-кофе и дрипов
                             let displayGrind = item.grind;
+                            let displayWeight = item.weight;
                             if (productInStock) {
                                 const cat = (productInStock.category || '').toLowerCase();
-                                if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                const sName = (productInStock.sample || '').toLowerCase();
+                                if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
                                     displayGrind = "";
-                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
+                                    displayWeight = "";
                                 }
                             }
 
-                            const wDisplay = item.weight ? ` ${item.weight} г` : '';
+                            const wDisplay = displayWeight ? ` ${displayWeight} г` : '';
                             const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
 
                             let meta = isSub ? `В подписке • ${item.price} ₽` : `${item.date} • ${item.price} ₽`;
@@ -4214,23 +4243,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 el.style.cssText = 'border: 1px solid var(--locus-border); border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff; box-shadow: 0 4px 10px rgba(105,58,5,0.03);';
 
                                 let itemsHtml = hItem.items.map(i => {
-                                    // Блокируем отображение помола для не-кофе
+                                    // Скрываем помол и вес для не-кофе и дрипов
                                     let displayGrind = i.grind;
+                                    let displayWeight = i.weight;
                                     const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === i.item.trim());
                                     if (cacheP) {
                                         const cat = (cacheP.category || '').toLowerCase();
-                                        if (cat.includes('аксессуар') || cat.includes('информац')) {
-                                    displayGrind = "";
-                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                }
+                                        const sName = (cacheP.sample || '').toLowerCase();
+                                        if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
+                                            displayGrind = "";
+                                            displayWeight = "";
+                                        }
                                     }
                                     
+                                    const weightText = displayWeight ? ` (${displayWeight}г)` : '';
                                     const grindText = displayGrind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                                     return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:8px;">
-                                        <span><b style="font-weight:600;">${i.item}</b> (${i.weight}г)${grindText} x${i.qty}</span>
+                                        <span><b style="font-weight:600;">${i.item}</b>${weightText}${grindText} x${i.qty}</span>
                                         <span style="white-space:nowrap; font-weight:600;">${i.price * i.qty} ₽</span>
                                     </div>`;
                                 }).join('');
@@ -4313,20 +4342,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 const el = document.createElement('div');
                                 el.className = 'product-list-item';
                                 
-                                // Блокируем отображение помола для не-кофе
+                                // Скрываем помол и вес для не-кофе и дрипов
                                 let displayGrind = hItem.grind;
+                                let displayWeight = hItem.weight;
                                 if (productInStock) {
                                     const cat = (productInStock.category || '').toLowerCase();
-                                    if (cat.includes('аксессуар') || cat.includes('информац')) {
-                                    displayGrind = "";
-                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
-                                    displayGrind = "";
-                                }
+                                    const sName = (productInStock.sample || '').toLowerCase();
+                                    if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
+                                        displayGrind = "";
+                                        displayWeight = "";
+                                    }
                                 }
 
-                                const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
+                                const wDisplay = displayWeight ? ` ${displayWeight} г` : '';
                                 const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
                                 
                                 el.innerHTML = `
