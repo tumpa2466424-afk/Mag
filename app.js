@@ -2228,9 +2228,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         const isBlend = i.sample.toLowerCase().includes('blend') || i.sample.toLowerCase().includes('смесь');
                         const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; margin-bottom:4px;">BLEND</span>` : '';
                         
+                        const sName = (i.sample || '').toLowerCase();
+                        const isSpecialItem = catName.includes('аксессуар') || catName.includes('информац') || sName.includes('дрип');
+                        const displayDesc = isSpecialItem ? (i.customDesc || i.flavorDesc || '-') : (i.flavorDesc ? formatFlavorDesc(i.flavorDesc) : '-');
+                        
                         html += `<tr>
                             <td style="font-weight:600; vertical-align:middle; line-height:1.4;">${typeSticker}${blendLabel}<br>${i.sample}</td>
-                            <td style="font-size:10px; opacity:0.8; vertical-align:middle; line-height:1.4;">${i.flavorDesc ? formatFlavorDesc(i.flavorDesc) : '-'}</td>
+                            <td style="font-size:10px; opacity:0.8; vertical-align:middle; line-height:1.4;">${displayDesc}</td>
                             <td style="vertical-align:middle;">
                                 <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
                                     <span style="white-space:nowrap;">${i.ws250} ₽</span>
@@ -2469,9 +2473,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const isBlend = p.sample.toLowerCase().includes('blend') || p.sample.toLowerCase().includes('смесь');
                     const prefixText = (isBlend ? '[BLEND] ' : '') + `[${typeText}] `;
                     
+                    const sName = (p.sample || '').toLowerCase();
+                    const isSpecialItem = catName.includes('аксессуар') || catName.includes('информац') || sName.includes('дрип');
+                    const displayDesc = isSpecialItem ? (p.customDesc || p.flavorDesc || '-') : (p.flavorDesc || '-');
+                    
                     tableBody.push([
                         prefixText + p.sample, 
-                        p.flavorDesc || '-', 
+                        displayDesc, 
                         { text: ws250 + '\u00A0₽', alignment: 'center', noWrap: true }, 
                         { text: ws1000 + '\u00A0₽', alignment: 'center', noWrap: true }
                     ]);
