@@ -272,7 +272,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const isAroma = (r.category && r.category.toLowerCase().includes('ароматизац'));
                     const isAcc = (r.category && r.category.toLowerCase().includes('аксессуар'));
                     const isInfo = (r.category && r.category.toLowerCase().includes('информац'));
-                    const isSpecial = isAcc || isInfo;
+                    const isDrip = (r.sample && r.sample.toLowerCase().includes('дрип'));
+                    const isSpecial = isAcc || isInfo || isDrip;
 
                     const toggleAiBtn = document.getElementById('btn-toggle-ai'); // Находим кнопку AI
 
@@ -1355,8 +1356,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
             getViewHtml: function(r) {
                 const catName = (r.category || '').toLowerCase();
-                // Проверяем, является ли категория "особенной" (не кофе)
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                const sampleName = (r.sample || '').toLowerCase();
+                // Проверяем, является ли категория "особенной" (не кофе или дрипы)
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
 
                 if (isSpecial) {
                     // Для Аксессуаров и Информации выводим только описание
@@ -1398,7 +1400,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
             getEditHtml: function(r) {
                 const catName = (r.category || '').toLowerCase();
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                const sampleName = (r.sample || '').toLowerCase();
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
                 const extraStyle = isSpecial ? 'display: none;' : 'display: contents;';
 
                 return `
@@ -3250,7 +3253,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === lot.item.trim());
                             if (cacheP) {
                                 const cat = (cacheP.category || '').toLowerCase();
-                                if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                                if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                    displayGrind = "";
+                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                }
                             }
                             
                             const grindText = displayGrind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
@@ -3508,8 +3517,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
                 
                 const catName = (product.category || '').toLowerCase();
+                const sampleName = (product.sample || '').toLowerCase();
                 const isAroma = catName.includes('ароматизация');
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
                 
                 // ЗАДАЧА 2: Убираем помол для Аксессуаров и Информации
                 if (isSpecial) {
@@ -3586,7 +3596,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === p.item.trim());
                     if (cacheP) {
                         const cat = (cacheP.category || '').toLowerCase();
-                        if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                        if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                    displayGrind = "";
+                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                }
                     }
 
                     const wDisplay = p.weight ? ` ${p.weight} г` : '';
@@ -3930,8 +3946,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 if(!product) return alert("Ошибка товара: лот не найден в каталоге.");
 
                 const catName = (product.category || '').toLowerCase();
+                const sampleName = (product.sample || '').toLowerCase();
                 const isAroma = catName.includes('ароматизация');
-                const isSpecial = catName.includes('аксессуар') || catName.includes('информац');
+                const isSpecial = catName.includes('аксессуар') || catName.includes('информац') || sampleName.includes('дрип');
                 
                 // ЗАДАЧА 2: Убираем помол для Аксессуаров и Информации
                 if (isSpecial) {
@@ -4122,7 +4139,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             let displayGrind = item.grind;
                             if (productInStock) {
                                 const cat = (productInStock.category || '').toLowerCase();
-                                if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                                if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                    displayGrind = "";
+                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                }
                             }
 
                             const wDisplay = item.weight ? ` ${item.weight} г` : '';
@@ -4196,7 +4219,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                     const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === i.item.trim());
                                     if (cacheP) {
                                         const cat = (cacheP.category || '').toLowerCase();
-                                        if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                                        if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                    displayGrind = "";
+                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                }
                                     }
                                     
                                     const grindText = displayGrind ? ` <span style="font-size:9px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
@@ -4288,7 +4317,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 let displayGrind = hItem.grind;
                                 if (productInStock) {
                                     const cat = (productInStock.category || '').toLowerCase();
-                                    if (cat.includes('аксессуар') || cat.includes('информац')) displayGrind = "";
+                                    if (cat.includes('аксессуар') || cat.includes('информац')) {
+                                    displayGrind = "";
+                                } else if (typeof cacheP !== 'undefined' && cacheP && (cacheP.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                } else if (typeof productInStock !== 'undefined' && productInStock && (productInStock.sample || '').toLowerCase().includes('дрип')) {
+                                    displayGrind = "";
+                                }
                                 }
 
                                 const wDisplay = hItem.weight ? ` ${hItem.weight} г` : '';
