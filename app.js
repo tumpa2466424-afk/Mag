@@ -4447,7 +4447,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 arrowEl.textContent = step.arrow;
                 arrowEl.style.display = step.arrow ? 'block' : 'none';
 
-                // Сбрасываем выравнивание стрелки по умолчанию
+                // ДИНАМИЧЕСКИЙ ЦВЕТ ТЕКСТА: 
+                // Если мы подсвечиваем светлую панель (#info-panel), делаем текст темным с белым свечением
+                if (step.target === '#info-panel') {
+                    textEl.style.color = 'var(--locus-dark)';
+                    textEl.style.textShadow = '0 2px 15px rgba(255,255,255,1), 0 0 5px rgba(255,255,255,0.8)';
+                } else {
+                    // Иначе (на темном фоне) делаем текст белым с темной тенью
+                    textEl.style.color = 'var(--locus-white)';
+                    textEl.style.textShadow = '0 2px 4px rgba(0,0,0,0.8)';
+                }
+
+                // Сбрасываем выравнивание стрелки
                 arrowEl.style.textAlign = 'center';
                 arrowEl.style.paddingRight = '0';
 
@@ -4464,34 +4475,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                 btnEl.textContent = 'Далее';
                 
-                // ИЩЕМ ПРАВИЛЬНЫЙ ЭЛЕМЕНТ (Защита от левых скрытых меню)
-                let target = null;
-                if (step.target === '.top-controls') {
-                    // Ищем именно ту панель, где лежит кнопка корзины (справа вверху)
-                    const cartBtn = document.getElementById('btn-open-cart');
-                    if (cartBtn) {
-                        target = cartBtn.closest('.top-controls') || cartBtn.parentElement;
-                        target.classList.add('top-controls'); // Гарантируем наличие класса для стилей
-                    }
-                } else {
-                    target = document.querySelector(step.target);
-                }
+                // Ищем элемент
+                const target = document.querySelector(step.target);
                 
                 if (target) {
                     target.classList.add('tour-highlight');
                     
-                    // Плавный скролл (если это меню - просто крутим в самый верх страницы)
                     if (step.target === '.top-controls') {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     } else {
                         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
 
-                    // Умное позиционирование прозрачного текста
+                    // Позиционирование прозрачного текста
                     setTimeout(() => {
                         const rect = target.getBoundingClientRect();
                         
-                        // Сбрасываем стили позиционирования
                         tooltip.style.top = 'auto';
                         tooltip.style.bottom = 'auto';
                         tooltip.style.left = '50%';
@@ -4499,17 +4498,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         tooltip.style.transform = 'translate(-50%, 0) scale(1)';
                         
                         if (step.target === '.top-controls') {
-                            // МЕНЮ СПРАВА: Ставим текст аккуратно под меню в правом углу
+                            // Меню теперь остается на месте, ставим текст под него справа
                             let newTop = rect.bottom + 15;
-                            // Жесткая защита: если расчет выдал аномалию, ставим 80px от верха
                             if (newTop > window.innerHeight - 150) newTop = 80; 
                             
                             tooltip.style.top = newTop + 'px';
                             tooltip.style.left = 'auto';
                             tooltip.style.right = '20px'; // Прижимаем окно к правому краю экрана
-                            tooltip.style.transform = 'translate(0, 0) scale(1)'; // Убираем центровку
+                            tooltip.style.transform = 'translate(0, 0) scale(1)';
                             
-                            // Сдвигаем саму стрелочку вправо, чтобы она четко указывала на иконки
+                            // Сдвигаем стрелочку вправо, чтобы она четко указывала на иконки
                             arrowEl.style.textAlign = 'right';
                             arrowEl.style.paddingRight = '30px';
                         } 
@@ -4521,7 +4519,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             tooltip.style.top = '50%';
                             tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
                         }
-                    }, 300); // Ждем окончания скролла
+                    }, 300);
                 }
             },
 
