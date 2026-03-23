@@ -645,6 +645,15 @@
 .cookie-btn:hover {
     background: var(--locus-dark);
 }
+
+/* Убираем дублирующуюся нижнюю линию лота перед подвалом */
+#product-info, .buy-area {
+    border-bottom: none !important;
+}
+#product-info hr {
+    display: none !important;
+}
+
 /* --- FOOTER (ПОДВАЛ) --- */
 .locus-footer {
     margin-top: auto; /* Всегда прижимает подвал к низу контейнера */
