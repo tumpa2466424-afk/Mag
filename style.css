@@ -726,60 +726,78 @@
         gap: 12px;
     }
 }
-/* --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (ONBOARDING TOUR) --- */
+/* --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (TOUR STYLE REVISED) --- */
 .tour-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(2px);
+    background: rgba(10, 5, 0, 0.75); /* Чуть темнее для лучшего контраста */
+    backdrop-filter: blur(2px);
     z-index: 99990; display: none; opacity: 0; transition: opacity 0.4s ease;
 }
 .tour-overlay.active { display: block; opacity: 1; pointer-events: auto; }
 
-/* Класс, который будет "поднимать" элемент над затемнением */
+/* Класс для точной подсветки элементов */
 .tour-highlight {
     position: relative !important;
     z-index: 99995 !important;
-    background: var(--locus-bg);
-    box-shadow: 0 0 0 4px var(--locus-white), 0 0 30px 10px rgba(105, 58, 5, 0.4) !important;
-    pointer-events: none !important; /* Блокируем клики во время обучения */
-    border-radius: 12px;
-    transition: box-shadow 0.3s ease;
+    /* Убрали жесткую тень, добавили мягкое свечение */
+    box-shadow: 0 0 0 10px rgba(242, 239, 233, 0.1), 0 0 40px rgba(105, 58, 5, 0.5) !important;
+    pointer-events: none !important;
 }
 
-/* Индивидуальные правки для подсветки конкретных блоков */
-#wheel-zone.tour-highlight { background: #F2EFE9; border-radius: 0; }
-.top-controls.tour-highlight { background: rgba(244, 241, 234, 0.9); padding: 5px 10px; border-radius: 50px; margin-top: -5px; }
+/* Правки для конкретных блоков при подсветке */
+#wheel-zone.tour-highlight { 
+    background: #F2EFE9; /* Фон самого колеса */
+    border-radius: 50%; /* Скругляем по форме колеса */
+}
+/* Аккуратная прямоугольная подсветка меню */
+.top-controls.tour-highlight { 
+    background: var(--locus-bg); 
+    padding: 10px 15px; 
+    border-radius: 12px; 
+    margin: -5px -5px 0 -5px; 
+}
 
-/* Всплывающая подсказка */
+/* Всплывающая подсказка (ТЕПЕРЬ ПРОЗРАЧНАЯ) */
 .tour-tooltip {
     position: fixed; z-index: 99999;
-    background: var(--locus-white);
-    padding: 25px; border-radius: 16px;
-    width: 90%; max-width: 340px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    background: transparent; /* Убрали фон */
+    padding: 10px; border-radius: 0; /* Убрали отступы и скругления "коробки" */
+    width: 90%; max-width: 380px;
+    box-shadow: none; /* Убрали тень коробки */
     display: none; flex-direction: column; gap: 15px;
-    opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid var(--locus-dark);
+    opacity: 0; transition: all 0.4s ease;
+    border: none; /* Убрали рамку */
     text-align: center;
-    top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+    top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
 }
 .tour-tooltip.active { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
-.tour-text { font-size: 14px; color: var(--locus-dark); line-height: 1.5; font-weight: 500; }
-
-.tour-btn {
-    background: var(--locus-dark); color: var(--locus-bg);
-    border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer;
-    font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;
-    margin: 5px auto 0 auto; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(105, 58, 5, 0.2);
+/* Стиль текста (СВЕТЛЫЙ, БЕЗ КОРОБКИ) */
+.tour-text { 
+    font-size: 15px; 
+    color: var(--locus-white); /* Белый цвет текста */
+    line-height: 1.6; 
+    font-weight: 500; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Тень для чтения на любом фоне */
 }
-.tour-btn:hover { transform: translateY(-2px); }
 
-/* Имитация стрелочки, указывающей на элемент */
+/* Кнопка "Далее" (Сделаем её более заметной на темном) */
+.tour-btn {
+    background: var(--locus-white); color: var(--locus-dark);
+    border: none; padding: 12px 30px; border-radius: 50px; cursor: pointer;
+    font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;
+    margin: 10px auto 0 auto; transition: all 0.2s; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+.tour-btn:hover { transform: translateY(-2px); background: var(--locus-bg); }
+
+/* Анимированная стрелочка */
 .tour-arrow-icon {
-    font-size: 24px; color: var(--locus-accent);
-    margin-bottom: -5px; display: block; animation: bounceArrow 1s infinite;
+    font-size: 32px; color: var(--locus-accent); /* Акцентный цвет */
+    margin-bottom: 0; display: block; animation: bounceArrow 1s infinite;
+    text-shadow: 0 2px 10px rgba(105, 58, 5, 0.6);
 }
 @keyframes bounceArrow {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+    50% { transform: translateY(-8px); }
 }
