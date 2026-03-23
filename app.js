@@ -94,6 +94,67 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             }).join('<span class="flavor-group">; </span>');
         }
 
+        // ============================================================================
+        // ЕДИНЫЙ ЦЕНТР УПРАВЛЕНИЯ ТОВАРАМИ (PRODUCT MANAGER)
+        // Вся логика типов товаров, веса, помола и описаний централизована здесь.
+        // ============================================================================
+        const ProductManager = {
+            // 1. Умный поиск товара в кэше по имени
+            getProduct: function(sampleName) {
+                if (!sampleName) return null;
+                const target = String(sampleName).trim().toLowerCase();
+                return ALL_PRODUCTS_CACHE.find(p => {
+                    const pName = String(p.sample || p.sample_no || "").trim().toLowerCase();
+                    // Ищем точное совпадение или если старое имя в истории содержит текущее
+                    return pName === target || target.includes(pName) || pName.includes(target.split(' (')[0]);
+                }) || null;
+            },
+
+            // 2. Определение типа товара (Кофе, Дрип, Аксессуар и т.д.)
+            getTypeInfo: function(productOrName) {
+                const p = typeof productOrName === 'string' ? this.getProduct(productOrName) : productOrName;
+                if (!p) return { isSpecial: false, isAroma: false, isCoffee: true, isDrip: false };
+
+                const cat = (p.category || '').toLowerCase();
+                const sName = (p.sample || '').toLowerCase();
+
+                const isAroma = cat.includes('ароматизац');
+                const isAcc = cat.includes('аксессуар');
+                const isInfo = cat.includes('информац');
+                const isDrip = sName.includes('дрип');
+
+                return {
+                    isSpecial: isAcc || isInfo || isDrip, // Всё, что не классический кофе
+                    isAccessory: isAcc,
+                    isInfo: isInfo,
+                    isDrip: isDrip,
+                    isAroma: isAroma,
+                    isCoffee: !isAcc && !isInfo && !isDrip
+                };
+            },
+
+            // 3. Форматирование мета-данных для вывода (Скрывает вес/помол где не нужно)
+            getDisplayMeta: function(productOrName, originalWeight, originalGrind) {
+                const type = this.getTypeInfo(productOrName);
+                return {
+                    weight: type.isSpecial ? "" : originalWeight,
+                    grind: type.isSpecial ? "" : originalGrind
+                };
+            },
+
+            // 4. Получение правильного текстового описания
+            getDisplayDesc: function(product) {
+                if (!product) return '-';
+                const type = this.getTypeInfo(product);
+                if (type.isSpecial) {
+                    return product.customDesc || product.flavorDesc || '-';
+                }
+                return product.flavorDesc ? formatFlavorDesc(product.flavorDesc) : '-';
+            }
+        };
+        window.ProductManager = ProductManager; // Делаем доступным глобально
+        // ============================================================================
+
         let ALL_PRODUCTS_CACHE = [];
         let SHOP_DATA = [
             { id: 'espresso', label: 'ЭСПРЕССО', color: CATEGORY_COLORS['Эспрессо'], desc: CATEGORY_DESCRIPTIONS['ЭСПРЕССО'], children: [] },
@@ -3630,21 +3691,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const el = document.createElement('div');
                     el.className = 'cart-item-row';
                     
-                    // Скрываем помол и вес для не-кофе и дрипов
-                    let displayGrind = p.grind;
-                    let displayWeight = p.weight;
-                    const cacheP = ALL_PRODUCTS_CACHE.find(cp => (cp.sample || cp.sample_no || "").trim() === p.item.trim());
-                    if (cacheP) {
-                        const cat = (cacheP.category || '').toLowerCase();
-                        const sName = (cacheP.sample || '').toLowerCase();
-                        if (cat.includes('аксессуар') || cat.includes('информац') || sName.includes('дрип')) {
-                            displayGrind = "";
-                            displayWeight = "";
-                        }
-                    }
-
-                    const wDisplay = displayWeight ? ` ${displayWeight} г` : '';
-                    const gDisplay = displayGrind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${displayGrind}</span>` : '';
+                    // Рефакторинг: получаем мета-данные через единый центр
+                    const meta = ProductManager.getDisplayMeta(p.item, p.weight, p.grind);
+                    const wDisplay = meta.weight ? ` ${meta.weight} г` : '';
+                    const gDisplay = meta.grind ? ` <span style="font-size:10px; opacity:0.7; border:1px solid #ccc; padding:0 3px; border-radius:3px;">${meta.grind}</span>` : '';
                     
                     el.innerHTML = `
                         <div class="cart-item-info"><div class="cart-item-title">${p.item}${wDisplay}${gDisplay}</div><div class="cart-item-meta">${p.price} ₽</div></div>
