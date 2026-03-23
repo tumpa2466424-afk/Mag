@@ -4447,48 +4447,77 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 arrowEl.textContent = step.arrow;
                 arrowEl.style.display = step.arrow ? 'block' : 'none';
 
+                // Сбрасываем выравнивание стрелки по умолчанию
+                arrowEl.style.textAlign = 'center';
+                arrowEl.style.paddingRight = '0';
+
                 // Настройка финального шага
                 if (!step.target) {
                     btnEl.textContent = 'Начать';
-                    // Центрируем финальное окно
                     tooltip.style.top = '50%';
                     tooltip.style.bottom = 'auto';
+                    tooltip.style.left = '50%';
+                    tooltip.style.right = 'auto';
                     tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
                     return;
                 }
 
                 btnEl.textContent = 'Далее';
-                const target = document.querySelector(step.target);
+                
+                // ИЩЕМ ПРАВИЛЬНЫЙ ЭЛЕМЕНТ (Защита от левых скрытых меню)
+                let target = null;
+                if (step.target === '.top-controls') {
+                    // Ищем именно ту панель, где лежит кнопка корзины (справа вверху)
+                    const cartBtn = document.getElementById('btn-open-cart');
+                    if (cartBtn) {
+                        target = cartBtn.closest('.top-controls') || cartBtn.parentElement;
+                        target.classList.add('top-controls'); // Гарантируем наличие класса для стилей
+                    }
+                } else {
+                    target = document.querySelector(step.target);
+                }
                 
                 if (target) {
                     target.classList.add('tour-highlight');
                     
-                    // Плавный скролл к элементу
-                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Плавный скролл (если это меню - просто крутим в самый верх страницы)
+                    if (step.target === '.top-controls') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
 
                     // Умное позиционирование прозрачного текста
                     setTimeout(() => {
                         const rect = target.getBoundingClientRect();
-                        const winsowHeight = window.innerHeight;
                         
-                        // Сбрасываем стили трансформации и позиционирования
+                        // Сбрасываем стили позиционирования
                         tooltip.style.top = 'auto';
                         tooltip.style.bottom = 'auto';
+                        tooltip.style.left = '50%';
+                        tooltip.style.right = 'auto';
                         tooltip.style.transform = 'translate(-50%, 0) scale(1)';
                         
-                        // Если светим верхнее меню, текст ставим аккуратно ПОД ним
                         if (step.target === '.top-controls') {
-                            tooltip.style.top = (rect.bottom + 25) + 'px';
+                            // МЕНЮ СПРАВА: Ставим текст аккуратно под меню в правом углу
+                            let newTop = rect.bottom + 15;
+                            // Жесткая защита: если расчет выдал аномалию, ставим 80px от верха
+                            if (newTop > window.innerHeight - 150) newTop = 80; 
+                            
+                            tooltip.style.top = newTop + 'px';
+                            tooltip.style.left = 'auto';
+                            tooltip.style.right = '20px'; // Прижимаем окно к правому краю экрана
+                            tooltip.style.transform = 'translate(0, 0) scale(1)'; // Убираем центровку
+                            
+                            // Сдвигаем саму стрелочку вправо, чтобы она четко указывала на иконки
+                            arrowEl.style.textAlign = 'right';
+                            arrowEl.style.paddingRight = '30px';
                         } 
-                        // Если светим колесо или инфо-панель (они большие), 
-                        // текст ставим по центру свободной зоны экрана.
                         else if (step.target === '#wheel-zone') {
-                             // Ставим текст ниже центра колеса, чтобы стрелка 👇 указывала на него
                              tooltip.style.top = '65%'; 
                              tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
                         }
                         else {
-                            // Для инфо-панели центрируем на экране
                             tooltip.style.top = '50%';
                             tooltip.style.transform = 'translate(-50%, -50%) scale(1)';
                         }
