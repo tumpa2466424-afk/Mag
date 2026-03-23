@@ -4364,7 +4364,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
         window.UserSystem = UserSystem;
 
-        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (ФИНАЛ: КОМПАКТНАЯ КНОПКА) ---
+        // --- ИНТЕРАКТИВНОЕ ОБУЧЕНИЕ (ФИНАЛ: КОМПАКТНАЯ КНОПКА И ОТСТУПЫ) ---
         const TourSystem = {
             steps: [
                 {
@@ -4404,11 +4404,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 tooltip.id = 'tour-tooltip';
                 tooltip.className = 'tour-tooltip';
                 
-                // ИЗМЕНЕНО: padding: 10px 18px !important; (делает кнопку компактнее)
+                // ИЗМЕНЕНО: Добавлены width: max-content !important и align-self: center !important
                 tooltip.innerHTML = `
                     <span class="tour-arrow-icon" id="tour-arrow"></span>
                     <div class="tour-text" id="tour-text"></div>
-                    <button id="tour-next-btn" style="background: var(--locus-white) !important; color: var(--locus-dark) !important; border: 1px solid var(--locus-dark) !important; padding: 10px 18px !important; border-radius: 50px !important; margin-top: 15px !important; font-weight: 800 !important; text-transform: uppercase !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; transition: transform 0.2s;">Далее</button>
+                    <button id="tour-next-btn" style="background: var(--locus-white) !important; color: var(--locus-dark) !important; border: 1px solid var(--locus-dark) !important; padding: 10px 24px !important; border-radius: 50px !important; margin-top: 15px !important; font-weight: 800 !important; text-transform: uppercase !important; font-size: 11px !important; cursor: pointer !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; transition: transform 0.2s; width: max-content !important; align-self: center !important;">Далее</button>
                 `;
                 document.body.appendChild(tooltip);
 
