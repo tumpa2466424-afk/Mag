@@ -131,8 +131,9 @@
         .info-card.active { opacity: 1; transform: translateY(0); display: block; }
 
         .cupping-header {
-            margin-bottom: 25px; border-bottom: 1px solid var(--locus-border);
-            padding-bottom: 15px; margin-top: 40px; 
+            margin-bottom: 25px; 
+            margin-top: 40px; 
+            /* border-bottom и padding-bottom удалены, чтобы линия не конфликтовала с подвалом */
         }
 
         .product-title {
@@ -644,14 +645,6 @@
 
 .cookie-btn:hover {
     background: var(--locus-dark);
-}
-
-/* Убираем дублирующуюся нижнюю линию лота перед подвалом */
-#product-info, .buy-area {
-    border-bottom: none !important;
-}
-#product-info hr {
-    display: none !important;
 }
 
 /* --- FOOTER (ПОДВАЛ) --- */
