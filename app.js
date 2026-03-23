@@ -197,7 +197,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             let userDiscount = 0;
             if(typeof UserSystem !== 'undefined' && UserSystem.currentUser && UserSystem.currentUser.totalSpent) {
                  userDiscount = Math.floor((UserSystem.currentUser.totalSpent || 0) / 3000);
-                 if(userDiscount > 10) userDiscount = 10;
+                 if(userDiscount > 15) userDiscount = 15;
             }
             
             const finalPrice = Math.floor(basePrice * (1 - userDiscount/100));
@@ -2708,7 +2708,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 this.localCart.forEach(i => subtotal += (i.price * i.qty));
                 let loyaltyDiscountVal = 0;
                 if(this.currentUser) {
-                    const discountPercent = Math.min(Math.floor(this.currentUser.totalSpent / 3000), 10);
+                    const discountPercent = Math.min(Math.floor(this.currentUser.totalSpent / 3000), 15);
                     loyaltyDiscountVal = Math.floor(subtotal * (discountPercent / 100));
                 }
                 const totalAfterLoyalty = subtotal - loyaltyDiscountVal;
@@ -2948,7 +2948,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         }
 
                         let discount = Math.floor(spent / 3000);
-                        if(discount > 10) discount = 10;
+                        if(discount > 15) discount = 15;
 
                         usersList.push({
                             id: u.id,
@@ -3602,7 +3602,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 let discountPercent = 0;
                 if(this.currentUser) {
                     discountPercent = Math.floor(this.currentUser.totalSpent / 3000);
-                    if(discountPercent > 10) discountPercent = 10;
+                    if(discountPercent > 15) discountPercent = 15;
                 }
                 
                 let loyaltyDiscountVal = Math.floor(subtotal * (discountPercent / 100));
@@ -3742,7 +3742,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 let subtotal = 0;
                 this.localCart.forEach(i => subtotal += (i.price * i.qty));
                 let discountPercent = Math.floor(this.currentUser.totalSpent / 3000);
-                if(discountPercent > 10) discountPercent = 10;
+                if(discountPercent > 15) discountPercent = 15;
                 let total = subtotal - Math.floor(subtotal * (discountPercent / 100));
 
                 let shippingCost = this.cdekPrice;
@@ -4034,19 +4034,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const u = this.currentUser;
                     const safeSpent = isNaN(u.totalSpent) ? 0 : u.totalSpent;
                     let discountPercent = Math.floor(safeSpent / 3000);
-                    if(discountPercent > 10) discountPercent = 10;
+                    if(discountPercent > 15) discountPercent = 15;
                     
                     const elDiscount = document.getElementById('user-discount-val'); if (elDiscount) elDiscount.textContent = discountPercent + '%';
-                    let progress = discountPercent < 10 ? ((safeSpent % 3000) / 3000) * 100 : 100;
+                    let progress = discountPercent < 15 ? ((safeSpent % 3000) / 3000) * 100 : 100;
                     const elProgress = document.getElementById('user-progress-fill');
                     if (elProgress) elProgress.style.width = progress + '%';
 
                     const elNext = document.getElementById('user-next-level');
                     if (elNext) {
-                        if(discountPercent < 10) { const remainder = 3000 - (safeSpent % 3000);
-                            elNext.innerHTML = `Потрачено: <b>${safeSpent} ₽</b>.<br>До следующего % осталось: <b>${remainder} ₽</b>`;
+                        if(discountPercent < 15) { const remainder = 3000 - (safeSpent % 3000);
+                            elNext.innerHTML = `Потрачено: <b>${safeSpent} ₽</b>.<br>До следующего % осталось: <b>${remainder} ₽</b><br><span style="font-size: 10px; opacity: 0.7; margin-top: 4px; display: inline-block;">Максимальная скидка - 15%.</span>`;
                         } 
-                        else { elNext.textContent = 'Вы достигли максимальной скидки!';
+                        else { elNext.textContent = 'Вы достигли максимальной скидки (15%)!';
                         }
                     }
 
