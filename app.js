@@ -164,59 +164,40 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         }
 
         function mixFlavorColors(text, defaultHex) {
-            if (!text) {
-                // Если описания нет, даже цвет категории делаем пастельным
-                const catRgb = hexToRgbArr(defaultHex);
-                const whiteRgb = [255, 255, 255];
-                // 50% категории + 50% белого
-                const pastelCatR = Math.round((catRgb[0] + whiteRgb[0]) / 2);
-                const pastelCatG = Math.round((catRgb[1] + whiteRgb[1]) / 2);
-                const pastelCatB = Math.round((catRgb[2] + whiteRgb[2]) / 2);
-                return rgbArrToHex([pastelCatR, pastelCatG, pastelCatB]);
-            }
+            if (!text) return defaultHex;
             
-            // 1. Разбиваем текст на дескрипторы по запятой
+            // 1. Разбиваем текст на отдельные дескрипторы по запятой
             const descriptors = text.split(',').map(d => d.trim().toLowerCase()).filter(d => d.length > 0);
             let foundRgbs = [];
 
-            // 2. Ищем совпадения в SCA-словарe
+            // 2. Для каждого дескриптора ищем совпадение в словаре
             descriptors.forEach(desc => {
                 for (const [key, rgb] of Object.entries(SCA_CSV_MAP)) {
+                    // Если дескриптор содержит ключевое слово из словаря
                     if (desc.includes(key)) {
                         foundRgbs.push(rgb);
-                        break; 
+                        break; // Нашли цвет для этого дескриптора — прерываем цикл и переходим к следующему слову
                     }
                 }
             });
 
-            // Базовый цвет категории
+            // Если ни один дескриптор не распознан, возвращаем чистый цвет категории
+            if (foundRgbs.length === 0) return defaultHex;
+
+            // 3. Считаем средний цвет всех найденных дескрипторов
+            let r = 0, g = 0, b = 0;
+            foundRgbs.forEach(col => { r += col[0]; g += col[1]; b += col[2]; });
+            let flavorR = Math.round(r / foundRgbs.length);
+            let flavorG = Math.round(g / foundRgbs.length);
+            let flavorB = Math.round(b / foundRgbs.length);
+
+            // 4. Получаем базовый цвет родительской категории
             const catRgb = hexToRgbArr(defaultHex);
-            const whiteRgb = [255, 255, 255];
 
-            let flavorR, flavorG, flavorB;
-
-            if (foundRgbs.length === 0) {
-                // Если дескрипторы не найдены, берем цвет категории
-                [flavorR, flavorG, flavorB] = catRgb;
-            } else {
-                // 3. Усредняем цвета найденных вкусов
-                let r = 0, g = 0, b = 0;
-                foundRgbs.forEach(col => { r += col[0]; g += col[1]; b += col[2]; });
-                flavorR = Math.round(r / foundRgbs.length);
-                flavorG = Math.round(g / foundRgbs.length);
-                flavorB = Math.round(b / foundRgbs.length);
-            }
-
-            // 4. "Равновесное" смешивание (50% вкуса + 50% категории)
-            const midR = Math.round((flavorR + catRgb[0]) / 2);
-            const midG = Math.round((flavorG + catRgb[1]) / 2);
-            const midB = Math.round((flavorB + catRgb[2]) / 2);
-
-            // 5. НАНЕСЕНИЕ ПАСТЕЛИ (Добавляем 50% белого в получившийся микс)
-            // Это "припудрит" яркие цвета и осветлит темные, сохраняя оттенок
-            const finalR = Math.round((midR + whiteRgb[0]) / 2);
-            const finalG = Math.round((midG + whiteRgb[1]) / 2);
-            const finalB = Math.round((midB + whiteRgb[2]) / 2);
+            // 5. Равновесное смешивание (50% вкуса + 50% категории)
+            const finalR = Math.round((flavorR + catRgb[0]) / 2);
+            const finalG = Math.round((flavorG + catRgb[1]) / 2);
+            const finalB = Math.round((flavorB + catRgb[2]) / 2);
 
             return rgbArrToHex([finalR, finalG, finalB]);
         }
