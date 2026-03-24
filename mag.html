@@ -65,45 +65,6 @@
                 <div id="p-simple-desc" class="simple-desc"></div>
             </div>
 
-            <button id="btn-toggle-details" class="details-toggle-btn">
-                <span>Подробное описание</span>
-                <svg class="details-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-
-            <div id="detailed-stats-block" class="detailed-stats">
-                <div class="cupping-grid" id="cupping-data"></div>
-            </div>
-
-            <button id="btn-toggle-extrinsic" class="details-toggle-btn" style="margin-top: 15px;">
-                <span>Внешнее описание</span>
-                <svg class="details-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-
-            <div id="extrinsic-stats-block" class="detailed-stats">
-                <div class="cupping-grid" id="extrinsic-data"></div>
-            </div>
-
-            <button id="btn-toggle-ai" class="details-toggle-btn" style="margin-top: 15px;">
-                <span style="display:flex; align-items:center; gap:5px;">
-                    <!-- <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> -->
-                    История лота от Аины
-                </span>
-                <svg class="details-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-
-            <div id="ai-story-block" class="detailed-stats" style="position: relative;">
-                <button id="btn-regen-ai" title="Сгенерировать/Обновить" style="display:none; position:absolute; top:0; right:0; background:var(--locus-dark); color:#fff; border:none; width:24px; height:24px; border-radius:4px; font-weight:bold; cursor:pointer; z-index:10; font-size: 12px;">R</button>
-                <div id="ai-story-content" style="padding: 15px; font-size: 13px; line-height: 1.6; color: var(--locus-dark); background: rgba(255,255,255,0.5); border-radius: 8px; border: 1px solid var(--locus-border);">
-                    Загрузка...
-                </div>
-            </div>
-
             <div id="p-buy-area" class="buy-area" style="flex-direction: column;">
                 <div id="p-mini-stats"></div>
                 
@@ -136,6 +97,44 @@
                             <span class="btn-price-label" id="p-price-cart">0 ₽</span>
                         </a>
                     </div>
+                </div>
+            </div>
+            
+            <button id="btn-toggle-details" class="details-toggle-btn" style="margin-top: 15px;">
+                <span>Подробное описание</span>
+                <svg class="details-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div id="detailed-stats-block" class="detailed-stats">
+                <div class="cupping-grid" id="cupping-data"></div>
+            </div>
+
+            <button id="btn-toggle-extrinsic" class="details-toggle-btn" style="margin-top: 15px;">
+                <span>Внешнее описание</span>
+                <svg class="details-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div id="extrinsic-stats-block" class="detailed-stats">
+                <div class="cupping-grid" id="extrinsic-data"></div>
+            </div>
+
+            <button id="btn-toggle-ai" class="details-toggle-btn" style="margin-top: 15px;">
+                <span style="display:flex; align-items:center; gap:5px;">
+                    История лота от Аины
+                </span>
+                <svg class="details-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+
+            <div id="ai-story-block" class="detailed-stats" style="position: relative;">
+                <button id="btn-regen-ai" title="Сгенерировать/Обновить" style="display:none; position:absolute; top:0; right:0; background:var(--locus-dark); color:#fff; border:none; width:24px; height:24px; border-radius:4px; font-weight:bold; cursor:pointer; z-index:10; font-size: 12px;">R</button>
+                <div id="ai-story-content" style="padding: 15px; font-size: 13px; line-height: 1.6; color: var(--locus-dark); background: rgba(255,255,255,0.5); border-radius: 8px; border: 1px solid var(--locus-border);">
+                    Загрузка...
                 </div>
             </div>
         </div>
