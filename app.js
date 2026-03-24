@@ -56,16 +56,30 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             if(!text) return defaultHex;
             const lower = text.toLowerCase();
             let foundRgbs = [];
+            
             for (const [key, rgb] of Object.entries(SCA_CSV_MAP)) {
                 if (lower.includes(key)) foundRgbs.push(rgb);
             }
+            
             if (foundRgbs.length === 0) return defaultHex;
+            
+            // 1. Считаем средний цвет на основе вкусовых дескрипторов
             let r = 0, g = 0, b = 0;
             foundRgbs.forEach(col => { r += col[0]; g += col[1]; b += col[2]; });
-            r = Math.round(r / foundRgbs.length);
-            g = Math.round(g / foundRgbs.length);
-            b = Math.round(b / foundRgbs.length);
-            return rgbArrToHex([r, g, b]);
+            let flavorR = Math.round(r / foundRgbs.length);
+            let flavorG = Math.round(g / foundRgbs.length);
+            let flavorB = Math.round(b / foundRgbs.length);
+
+            // 2. Получаем базовый цвет родительской категории
+            const catRgb = hexToRgbArr(defaultHex);
+
+            // 3. Смешиваем (50% цвет категории + 50% цвет вкуса)
+            // Это сгладит контраст и сохранит визуальную целостность колеса
+            const finalR = Math.round((flavorR + catRgb[0]) / 2);
+            const finalG = Math.round((flavorG + catRgb[1]) / 2);
+            const finalB = Math.round((flavorB + catRgb[2]) / 2);
+
+            return rgbArrToHex([finalR, finalG, finalB]);
         }
 
         // НОВАЯ ФУНКЦИЯ ДЛЯ СТИЛИЗАЦИИ БУКЕТА
