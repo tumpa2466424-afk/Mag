@@ -164,28 +164,37 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         }
 
         function mixFlavorColors(text, defaultHex) {
-            if(!text) return defaultHex;
-            const lower = text.toLowerCase();
+            if (!text) return defaultHex;
+            
+            // 1. Разбиваем текст на отдельные дескрипторы по запятой
+            const descriptors = text.split(',').map(d => d.trim().toLowerCase()).filter(d => d.length > 0);
             let foundRgbs = [];
-            
-            for (const [key, rgb] of Object.entries(SCA_CSV_MAP)) {
-                if (lower.includes(key)) foundRgbs.push(rgb);
-            }
-            
+
+            // 2. Для каждого дескриптора ищем совпадение в словаре
+            descriptors.forEach(desc => {
+                for (const [key, rgb] of Object.entries(SCA_CSV_MAP)) {
+                    // Если дескриптор содержит ключевое слово из словаря
+                    if (desc.includes(key)) {
+                        foundRgbs.push(rgb);
+                        break; // Нашли цвет для этого дескриптора — прерываем цикл и переходим к следующему слову
+                    }
+                }
+            });
+
+            // Если ни один дескриптор не распознан, возвращаем чистый цвет категории
             if (foundRgbs.length === 0) return defaultHex;
-            
-            // 1. Считаем средний цвет на основе вкусовых дескрипторов
+
+            // 3. Считаем средний цвет всех найденных дескрипторов
             let r = 0, g = 0, b = 0;
             foundRgbs.forEach(col => { r += col[0]; g += col[1]; b += col[2]; });
             let flavorR = Math.round(r / foundRgbs.length);
             let flavorG = Math.round(g / foundRgbs.length);
             let flavorB = Math.round(b / foundRgbs.length);
 
-            // 2. Получаем базовый цвет родительской категории
+            // 4. Получаем базовый цвет родительской категории
             const catRgb = hexToRgbArr(defaultHex);
 
-            // 3. Смешиваем (50% цвет категории + 50% цвет вкуса)
-            // Это сгладит контраст и сохранит визуальную целостность колеса
+            // 5. Равновесное смешивание (50% вкуса + 50% категории)
             const finalR = Math.round((flavorR + catRgb[0]) / 2);
             const finalG = Math.round((flavorG + catRgb[1]) / 2);
             const finalB = Math.round((flavorB + catRgb[2]) / 2);
@@ -4916,7 +4925,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             
                             const target = SHOP_DATA.find(c => c.label === targetCategoryLabel);
                             if (target) {
-                                const petalColor = mixFlavorColors(raw.flavorDesc + " " + raw.mainFlavors, target.color);
+                                // ИЗМЕНЕНИЕ: Теперь передаем только заметки о букете (где дескрипторы через запятую)
+                                const petalColor = mixFlavorColors(raw.flavorNotes, target.color);
                                 let wheelLabel = raw.sample;
                                 const words = wheelLabel.split(' ');
                                 if(words.length > 2) {
