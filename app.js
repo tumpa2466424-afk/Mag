@@ -451,26 +451,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         function updateInfo(seg) {
             dMsg.classList.remove('active'); pInfo.classList.remove('active');
             
-            const detailBlock = document.getElementById('detailed-stats-block');
-            const toggleBtn = document.getElementById('btn-toggle-details');
-            if(detailBlock) detailBlock.style.display = 'none';
-            if(toggleBtn) {
-                toggleBtn.classList.remove('open');
-                toggleBtn.querySelector('span').textContent = 'Подробное описание';
-            }
+            // Закрываем все блоки
+            if (document.getElementById('detailed-stats-block')) document.getElementById('detailed-stats-block').style.display = 'none';
+            if (document.getElementById('extrinsic-stats-block')) document.getElementById('extrinsic-stats-block').style.display = 'none';
+            if (document.getElementById('ai-story-block')) document.getElementById('ai-story-block').style.display = 'none';
 
-            const extBlock = document.getElementById('extrinsic-stats-block');
-            const toggleExtBtn = document.getElementById('btn-toggle-extrinsic');
-            if(extBlock) extBlock.style.display = 'none';
-            if(toggleExtBtn) {
-                toggleExtBtn.classList.remove('open');
-                toggleExtBtn.querySelector('span').textContent = 'Внешнее описание';
-            }
-
-            const aiBlock = document.getElementById('ai-story-block');
-            const toggleAiBtn = document.getElementById('btn-toggle-ai');
-            if(aiBlock) aiBlock.style.display = 'none';
-            if(toggleAiBtn) toggleAiBtn.classList.remove('open');
+            // Отжимаем все кнопки (сбрасываем класс active)
+            if (document.getElementById('btn-toggle-details')) document.getElementById('btn-toggle-details').classList.remove('active');
+            if (document.getElementById('btn-toggle-extrinsic')) document.getElementById('btn-toggle-extrinsic').classList.remove('active');
+            if (document.getElementById('btn-toggle-ai')) document.getElementById('btn-toggle-ai').classList.remove('active');
 
             setTimeout(() => {
                 dMsg.style.display = 'none';
@@ -752,40 +741,58 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             }, 250);
         }
 
-        document.getElementById('btn-toggle-details').addEventListener('click', function() {
-            const block = document.getElementById('detailed-stats-block');
-            this.classList.toggle('open');
-            if (block.style.display === 'block') {
-                block.style.display = 'none';
-                this.querySelector('span').textContent = 'Подробное описание';
-            } else {
-                block.style.display = 'block';
-                this.querySelector('span').textContent = 'Скрыть подробности';
-            }
-        });
+        // ==========================================
+        // ЛОГИКА ВКЛАДОК ДЛЯ ОПИСАНИЙ ЛОТА
+        // ==========================================
+        const btnDetails = document.getElementById('btn-toggle-details');
+        const blockDetails = document.getElementById('detailed-stats-block');
+        
+        const btnExtrinsic = document.getElementById('btn-toggle-extrinsic');
+        const blockExtrinsic = document.getElementById('extrinsic-stats-block');
+        
+        const btnAi = document.getElementById('btn-toggle-ai');
+        const blockAi = document.getElementById('ai-story-block');
 
-        const toggleExtBtn = document.getElementById('btn-toggle-extrinsic');
-        if (toggleExtBtn) {
-            toggleExtBtn.addEventListener('click', function() {
-                const block = document.getElementById('extrinsic-stats-block');
-                this.classList.toggle('open');
-                if (block.style.display === 'block') {
-                    block.style.display = 'none';
-                    this.querySelector('span').textContent = 'Внешнее описание';
-                } else {
-                    block.style.display = 'block';
-                    this.querySelector('span').textContent = 'Скрыть внешнее описание';
+        function closeAllDescTabs() {
+            if(blockDetails) blockDetails.style.display = 'none';
+            if(blockExtrinsic) blockExtrinsic.style.display = 'none';
+            if(blockAi) blockAi.style.display = 'none';
+            
+            if(btnDetails) btnDetails.classList.remove('active');
+            if(btnExtrinsic) btnExtrinsic.classList.remove('active');
+            if(btnAi) btnAi.classList.remove('active');
+        }
+
+        if (btnDetails) {
+            btnDetails.addEventListener('click', () => {
+                const isHidden = blockDetails.style.display === 'none' || blockDetails.style.display === '';
+                closeAllDescTabs();
+                if (isHidden) {
+                    blockDetails.style.display = 'block';
+                    btnDetails.classList.add('active');
                 }
             });
         }
 
-        // --- НАЧАЛО: КНОПКИ AI ИСТОРИИ ---
-        const toggleAiBtn = document.getElementById('btn-toggle-ai');
-        if (toggleAiBtn) {
-            toggleAiBtn.addEventListener('click', function() {
-                const block = document.getElementById('ai-story-block');
-                this.classList.toggle('open');
-                block.style.display = block.style.display === 'block' ? 'none' : 'block';
+        if (btnExtrinsic) {
+            btnExtrinsic.addEventListener('click', () => {
+                const isHidden = blockExtrinsic.style.display === 'none' || blockExtrinsic.style.display === '';
+                closeAllDescTabs();
+                if (isHidden) {
+                    blockExtrinsic.style.display = 'block';
+                    btnExtrinsic.classList.add('active');
+                }
+            });
+        }
+
+        if (btnAi) {
+            btnAi.addEventListener('click', () => {
+                const isHidden = blockAi.style.display === 'none' || blockAi.style.display === '';
+                closeAllDescTabs();
+                if (isHidden) {
+                    blockAi.style.display = 'block';
+                    btnAi.classList.add('active');
+                }
             });
         }
 
