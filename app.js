@@ -163,27 +163,42 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
         }
 
-        function mixFlavorColors(text, defaultHex) {
-            // НАСТРОЙКА "ПЫЛЬНОГО" ОТТЕНКА
-            // RGB [200, 200, 200] - это нейтральный светло-серый.
-            const greyRgb = [200, 200, 200]; 
-            const colorWeight = 0.9; // 60% основного яркого цвета
-            const greyWeight = 0.1;  // 40% серого для приглушения
-
-            if (!text) {
-                // Если нет описания, приглушаем базовый цвет категории
-                const catRgb = hexToRgbArr(defaultHex);
-                const mutedCatR = Math.round((catRgb[0] * colorWeight) + (greyRgb[0] * greyWeight));
-                const mutedCatG = Math.round((catRgb[1] * colorWeight) + (greyRgb[1] * greyWeight));
-                const mutedCatB = Math.round((catRgb[2] * colorWeight) + (greyRgb[2] * greyWeight));
-                return rgbArrToHex([mutedCatR, mutedCatG, mutedCatB]);
-            }
+        // ============================================================================
+        // НАСТРОЙКИ ЦВЕТОВОЙ ПАЛИТРЫ (УПРАВЛЕНИЕ "ПЫЛЬНОСТЬЮ" И ПАСТЕЛЬЮ)
+        // ============================================================================
+        const PALETTE_CONFIG = {
+            greyRgb: [200, 200, 200], // Тот самый нейтральный светло-серый
             
-            // 1. Разбиваем текст на дескрипторы по запятой
+            // Настройки для КАТЕГОРИЙ (Эспрессо, Фильтр - Внутренний круг и стикеры)
+            catWeight: 0.95, // 60% исходного яркого цвета
+            catGrey:   0.05, // 40% серого
+            
+            // Настройки для ЛОТОВ (Лепестки с дескрипторами - Внешний круг)
+            lotWeight: 0.9, // 60% цвета вкуса
+            lotGrey:   0.1  // 40% серого
+        };
+
+        // Универсальная функция подмешивания серого к любому цвету
+        function muteColor(hex, weightColor, weightGrey) {
+            if (!hex) return hex;
+            const rgb = hexToRgbArr(hex);
+            if (!rgb) return hex;
+            const r = Math.round((rgb[0] * weightColor) + (PALETTE_CONFIG.greyRgb[0] * weightGrey));
+            const g = Math.round((rgb[1] * weightColor) + (PALETTE_CONFIG.greyRgb[1] * weightGrey));
+            const b = Math.round((rgb[2] * weightColor) + (PALETTE_CONFIG.greyRgb[2] * weightGrey));
+            return rgbArrToHex([r, g, b]);
+        }
+
+        // Обновленная функция смешивания для колеса
+        function mixFlavorColors(text, defaultHex) {
+            // 1. Сразу приглушаем цвет категории по её личным настройкам
+            const mutedCatHex = muteColor(defaultHex, PALETTE_CONFIG.catWeight, PALETTE_CONFIG.catGrey);
+
+            if (!text) return mutedCatHex; // Если нет описания - отдаем приглушенную категорию
+            
             const descriptors = text.split(',').map(d => d.trim().toLowerCase()).filter(d => d.length > 0);
             let foundRgbs = [];
 
-            // 2. Ищем совпадения в SCA-словарe
             descriptors.forEach(desc => {
                 for (const [key, rgb] of Object.entries(SCA_CSV_MAP)) {
                     if (desc.includes(key)) {
@@ -193,31 +208,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 }
             });
 
-            // Базовый цвет категории
+            if (foundRgbs.length === 0) return mutedCatHex;
+
+            let r = 0, g = 0, b = 0;
+            foundRgbs.forEach(col => { r += col[0]; g += col[1]; b += col[2]; });
+            const flavorR = Math.round(r / foundRgbs.length);
+            const flavorG = Math.round(g / foundRgbs.length);
+            const flavorB = Math.round(b / foundRgbs.length);
+
+            // 2. Смешиваем 50/50: цвет дескрипторов + ОРИГИНАЛЬНЫЙ ЯРКИЙ цвет категории
             const catRgb = hexToRgbArr(defaultHex);
-            let flavorR, flavorG, flavorB;
-
-            if (foundRgbs.length === 0) {
-                // Если дескрипторы не найдены, берем цвет категории
-                [flavorR, flavorG, flavorB] = catRgb;
-            } else {
-                // 3. Усредняем цвета найденных вкусов
-                let r = 0, g = 0, b = 0;
-                foundRgbs.forEach(col => { r += col[0]; g += col[1]; b += col[2]; });
-                flavorR = Math.round(r / foundRgbs.length);
-                flavorG = Math.round(g / foundRgbs.length);
-                flavorB = Math.round(b / foundRgbs.length);
-            }
-
-            // 4. "Равновесное" смешивание (50% вкуса + 50% категории)
             const midR = Math.round((flavorR + catRgb[0]) / 2);
             const midG = Math.round((flavorG + catRgb[1]) / 2);
             const midB = Math.round((flavorB + catRgb[2]) / 2);
 
-            // 5. НАНЕСЕНИЕ БЛАГОРОДНОГО СЕРОГО (Сложный пыльный цвет)
-            const finalR = Math.round((midR * colorWeight) + (greyRgb[0] * greyWeight));
-            const finalG = Math.round((midG * colorWeight) + (greyRgb[1] * greyWeight));
-            const finalB = Math.round((midB * colorWeight) + (greyRgb[2] * greyWeight));
+            // 3. Приглушаем получившийся микс ЛОТА по его личным настройкам
+            const finalR = Math.round((midR * PALETTE_CONFIG.lotWeight) + (PALETTE_CONFIG.greyRgb[0] * PALETTE_CONFIG.lotGrey));
+            const finalG = Math.round((midG * PALETTE_CONFIG.lotWeight) + (PALETTE_CONFIG.greyRgb[1] * PALETTE_CONFIG.lotGrey));
+            const finalB = Math.round((midB * PALETTE_CONFIG.lotWeight) + (PALETTE_CONFIG.greyRgb[2] * PALETTE_CONFIG.lotGrey));
 
             return rgbArrToHex([finalR, finalG, finalB]);
         }
@@ -1520,7 +1528,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                     typeText = 'ЭСПРЕССО';
                                     typeColor = '#B66A58';
                                 }
-                                
+                                typeColor = muteColor(typeColor, PALETTE_CONFIG.catWeight, PALETTE_CONFIG.catGrey);
                                 const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block;">${typeText}</span>`;
                                 const isBlend = r.sample.toLowerCase().includes('blend') || r.sample.toLowerCase().includes('смесь');
                                 const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; color:var(--locus-dark);">BLEND</span>` : '';
@@ -2432,7 +2440,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             typeText = 'ЭСПРЕССО';
                             typeColor = '#B66A58';
                         }
-                        
+                        typeColor = muteColor(typeColor, PALETTE_CONFIG.catWeight, PALETTE_CONFIG.catGrey);
                         const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block; margin-bottom:4px;">${typeText}</span>`;
                         const isBlend = i.sample.toLowerCase().includes('blend') || i.sample.toLowerCase().includes('смесь');
                         const blendLabel = isBlend ? `<span style="font-size:9px; border:1px solid #ccc; border-radius:3px; padding:0 2px; margin-right:5px; vertical-align:middle; display:inline-block; margin-bottom:4px;">BLEND</span>` : '';
