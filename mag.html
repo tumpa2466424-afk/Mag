@@ -100,47 +100,22 @@
                 </div>
             </div>
             
-            <div class="features-tabs-row">
-                
-                <button id="btn-toggle-details" class="feature-tab-btn" title="Сенсорный профиль лота">
-                    <div class="f-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M7 3h10a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
-                            <line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="11" y2="15"/>
-                            <path d="M16 16.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" fill="currentColor" stroke="none" opacity="0.3"/>
-                            <path d="M15.5 17c0-1.1-.9-2-2-2m2 2c0 1.1-.9 2-2 2" stroke-width="1"/>
-                        </svg>
-                    </div>
-                    <span class="f-label">Вкус</span>
-                    <svg class="details-icon" style="display:none;"></svg> 
-                </button>
-
-                <button id="btn-toggle-extrinsic" class="feature-tab-btn" title="Происхождение и обработка">
-                    <div class="f-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 21S8 7 21 3"/>
-                            <path d="M13 5c-3-1.5-4 1.5-1.5 4 2.5-2.5 4.5 1 1.5-4z" stroke-width="1"/>
-                            <path d="M11 11c1.5-3-1.5-4-4-1.5 2.5 2.5 4 4.5 4 1.5z" stroke-width="1"/>
-                            <circle cx="7" cy="18" r="1.5" fill="currentColor" stroke="none" opacity="0.4"/>
-                            <circle cx="9" cy="17" r="1.5" fill="currentColor" stroke="none" opacity="0.8"/>
-                        </svg>
-                    </div>
-                    <span class="f-label">Ферма</span>
-                    <svg class="details-icon" style="display:none;"></svg>
-                </button>
-
-                <button id="btn-toggle-ai" class="feature-tab-btn" title="История лота от Аины">
-                    <div class="f-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 17V3h12a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6.5z"/><path d="M4 19.5v-13A2.5 2.5 0 0 1 6.5 4"/>
-                            <path d="M9 7l2 3-2 3m4-6l-2 3 2 3m-4-6h4m-4 6h4" stroke-width="1"/>
-                            <line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="17" x2="13" y2="17"/>
-                        </svg>
-                    </div>
-                    <span class="f-label">История</span>
-                    <svg class="details-icon" style="display:none;"></svg>
-                </button>
-
+            <div style="margin-top: 25px;">
+                <div class="grind-label" style="margin-bottom: 10px;">Описание лота:</div>
+                <div class="grind-options-row" style="margin-bottom: 15px;">
+                    <button id="btn-toggle-details" class="grind-btn" style="flex: 1;">
+                        Подробное
+                        <svg class="details-icon" style="display:none;"></svg> 
+                    </button>
+                    <button id="btn-toggle-extrinsic" class="grind-btn" style="flex: 1;">
+                        Внешнее
+                        <svg class="details-icon" style="display:none;"></svg>
+                    </button>
+                    <button id="btn-toggle-ai" class="grind-btn" style="flex: 1;">
+                        История
+                        <svg class="details-icon" style="display:none;"></svg>
+                    </button>
+                </div>
             </div>
 
             <div id="detailed-stats-block" class="detailed-stats">
