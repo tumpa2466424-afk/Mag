@@ -1548,10 +1548,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 let typeText = 'ФИЛЬТР';
                                 let typeColor = '#7A8F7C';
                                 
-                                if (catStr.includes('эспрессо') || (!catStr.includes('фильтр') && roastVal >= 10)) {
+                                if (catStr.includes('ароматизац')) {
+                                    typeText = 'АРОМАТИЗАЦИЯ';
+                                } else if (catStr.includes('эспрессо') || (!catStr.includes('фильтр') && roastVal >= 10)) {
                                     typeText = 'ЭСПРЕССО';
-                                    typeColor = '#B66A58';
                                 }
+
+                                // Динамический цвет из колеса
+                                if (typeof SHOP_DATA !== 'undefined') {
+                                    const foundCat = SHOP_DATA.find(c => c.label === typeText);
+                                    if (foundCat && foundCat.color) typeColor = foundCat.color;
+                                }
+                                
                                 typeColor = muteColor(typeColor, PALETTE_CONFIG.catWeight, PALETTE_CONFIG.catGrey);
                                 const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block;">${typeText}</span>`;
                                 const isBlend = r.sample.toLowerCase().includes('blend') || r.sample.toLowerCase().includes('смесь');
@@ -2428,24 +2436,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 let html = '';
 
                 if (itemsList.length > 0) {
-                    let hintHtml = '';
-                    if (window.innerWidth <= 768) {
-                        hintHtml = `
-                            <div class="scroll-hint-overlay" id="ws-scroll-hint">
-                                <div class="scroll-hint-icon">
-                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="8 16 4 12 8 8"></polyline>
-                                        <line x1="4" y1="12" x2="20" y2="12"></line>
-                                        <polyline points="16 8 20 12 16 16"></polyline>
-                                    </svg>
-                                    <span>Листайте вбок</span>
-                                </div>
-                            </div>
-                        `;
-                    }
-
-                    html += `<div style="position:relative;">${hintHtml}
-                        <div style="overflow-x:auto; padding-bottom:10px;" onscroll="document.getElementById('ws-scroll-hint') ? document.getElementById('ws-scroll-hint').style.opacity='0' : null">
+                    html += `<div style="position:relative;">
+                        <div style="overflow-x:auto; padding-bottom:10px;">
                         <table class="admin-table" style="width:100%; min-width:650px;">
                         <thead><tr>
                             <th style="width: 28%;">Название</th>
@@ -2462,13 +2454,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         let typeText = 'ФИЛЬТР';
                         let typeColor = '#7A8F7C';
                         
+                        // ИСПРАВЛЕНО: Используем catName вместо ошибочного catStr
                         if (catName.includes('ароматизац')) {
                             typeText = 'АРОМАТИЗАЦИЯ';
-                            typeColor = '#C09F80';
                         } else if (catName.includes('эспрессо') || (!catName.includes('фильтр') && roastVal >= 10)) {
                             typeText = 'ЭСПРЕССО';
-                            typeColor = '#B66A58';
                         }
+
+                        // Динамический цвет из колеса
+                        if (typeof SHOP_DATA !== 'undefined') {
+                            const foundCat = SHOP_DATA.find(c => c.label === typeText);
+                            if (foundCat && foundCat.color) typeColor = foundCat.color;
+                        }
+                                
                         typeColor = muteColor(typeColor, PALETTE_CONFIG.catWeight, PALETTE_CONFIG.catGrey);
                         const typeSticker = `<span style="font-size:9px; background:${typeColor}; color:#fff; border-radius:3px; padding:2px 4px; margin-right:5px; vertical-align:middle; display:inline-block; margin-bottom:4px;">${typeText}</span>`;
                         const isBlend = i.sample.toLowerCase().includes('blend') || i.sample.toLowerCase().includes('смесь');
