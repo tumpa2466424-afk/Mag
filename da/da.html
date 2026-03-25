@@ -1,0 +1,404 @@
+<div>
+
+    <!-- ========================================== -->
+    <!-- === ФОРМА 1: ОПИСАНИЕ (CVAD) === -->
+    <!-- ========================================== -->
+    <div id="cvad-wrapper" style="display: block;">
+        <div id="cvad-scroll-container">
+          <div class="container">
+            <div class="global-header">
+              <div class="form-group">
+                <label>Имя</label>
+                <input type="text" id="taster-name" placeholder="Введите имя" />
+              </div>
+              <div class="form-group">
+                <label>Дата</label>
+                <input type="date" id="cupping-date" />
+              </div>
+              <div class="form-group">
+                <label>Цель</label>
+                <input type="text" id="cupping-purpose" placeholder="Цель каппинга" />
+              </div>
+            </div>
+
+            <div class="tabs-header" id="cvad-tabs-container">
+              <div class="tabs-top-row" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+                  <div class="app-switcher-inline" style="margin-bottom: 12px;">
+                      <button class="btn-switch-cvad active" onclick="switchApp('cvad')">Описание</button>
+                      <button class="btn-switch-cvaa" onclick="switchApp('cvaa')">Оценка</button>
+                  </div>
+                  <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                      <div class="timer-wrapper">
+                          <button class="timer-btn" id="cvad-mainTimer" onclick="window.globalToggleTimer()" title="Клик для старта/паузы">00:00</button>
+                          <button class="timer-reset-btn" onclick="window.globalResetTimer()" title="Сбросить таймер">↻</button>
+                      </div>
+                  </div>
+              </div>
+              <div class="tabs-grid">
+                <button class="tab-btn active" data-tab="1">1</button>
+                <button class="tab-btn" data-tab="2">2</button>
+                <button class="tab-btn" data-tab="3">3</button>
+                <button class="tab-btn" data-tab="4">4</button>
+                <button class="tab-btn" data-tab="5">5</button>
+                <button class="tab-btn" data-tab="6">6</button>
+                <button class="tab-btn" data-tab="7">7</button>
+                <button class="tab-btn" data-tab="8">8</button>
+              </div>
+            </div>
+
+            <div id="cvad-forms-wrapper"></div>
+
+            <div class="actions">
+              <button class="btn btn-save" id="save-btn">Сохранить результат</button>
+            </div>
+          </div>
+        </div>
+
+        <template id="cvad-sample-template">
+          <div class="sample-form" data-id="">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label>Образец №</label>
+              <textarea class="inp-sample-no" placeholder="Например А101, Эфиопия мытая и т.д." rows="3" style="font-size: 1.1em; font-weight: bold;"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label>Степень обжарки</label>
+              <div class="slider-row">
+                <div class="slider-wrapper"><input type="range" class="inp-roast" min="0" max="15" value="7" /></div>
+                <div class="slider-val">7</div>
+              </div>
+            </div>
+
+            <!-- AROMA -->
+            <fieldset data-section="aroma" class="check-limit-block" data-logic="complex" data-limit="5" data-name="Запах и Аромат">
+              <legend>Запах и Аромат (до 5)</legend>
+
+              <div class="sliders-block">
+                <div class="slider-row">
+                  <div class="slider-label">Запах</div>
+                  <div class="slider-wrapper"><input type="range" class="inp-fragrance" min="0" max="15" value="7" /></div>
+                  <div class="slider-val">7</div>
+                </div>
+                <div class="slider-row">
+                  <div class="slider-label">Аромат</div>
+                  <div class="slider-wrapper"><input type="range" class="inp-aroma" min="0" max="15" value="7" /></div>
+                  <div class="slider-val">7</div>
+                </div>
+              </div>
+
+              <div class="checkbox-container">
+                <div class="checkbox-col">
+                  <div class="cb-group"><label class="cb-parent"><input type="checkbox" value="Floral" /> <span>Цветочный</span></label></div>
+                  <div class="cb-group">
+                    <label class="cb-parent"><input type="checkbox" value="Fruity" /> <span>Фруктовый</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Berry" /> <span>Ягоды</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Dried Fruit" /> <span>Сухофрукты</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Citrus Fruit" /> <span>Цитрусовые фрукты</span></label>
+                  </div>
+                  <div class="cb-group">
+                    <label class="cb-parent"><input type="checkbox" value="Sour/Fermented" /> <span>Кислый/Ферментированный</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Sour" /> <span>Кислый</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Fermented" /> <span>Ферментированный</span></label>
+                  </div>
+                  <div class="cb-group"><label class="cb-parent"><input type="checkbox" value="Green/Vegetative" /> <span>Зелёный/Растительный</span></label></div>
+                </div>
+
+                <div class="checkbox-col">
+                  <div class="cb-group">
+                    <label class="cb-parent"><input type="checkbox" value="Roasted" /> <span>Жареный</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Cereal" /> <span>Злаки</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Burnt" /> <span>Жжёный</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Tobacco" /> <span>Табак</span></label>
+                  </div>
+                  <div class="cb-group">
+                    <label class="cb-parent"><input type="checkbox" value="Nutty/Cocoa" /> <span>Ореховый/Какао</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Nutty" /> <span>Ореховый</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Cocoa" /> <span>Какао</span></label>
+                  </div>
+                  <div class="cb-group"><label class="cb-parent"><input type="checkbox" value="Spice" /> <span>Пряности</span></label></div>
+                  <div class="cb-group">
+                    <label class="cb-parent"><input type="checkbox" value="Sweet" /> <span>Сладкий</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Vanilla/Vanillin" /> <span>Ваниль/Ванилин</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Brown Sugar" /> <span>Коричневый Сахар</span></label>
+                  </div>
+                </div>
+
+                <div class="checkbox-col">
+                  <div class="cb-group">
+                    <label class="cb-parent"><input type="checkbox" value="Other" /> <span>Другие</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Chemical" /> <span>Химический</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Musty/Earthy" /> <span>Затхлый/Землистый</span></label>
+                    <label class="cb-child"><input type="checkbox" value="Woody" /> <span>Древесный</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top:6px;">
+                <label>Заметки о Запахе и Аромате</label>
+                <textarea class="inp-aroma-notes" rows="2"></textarea>
+              </div>
+            </fieldset>
+
+            <!-- FLAVOR -->
+            <fieldset data-section="flavor">
+              <legend>Букет и Послевкусие (до 5)</legend>
+
+              <div class="sliders-block">
+                <div class="slider-row">
+                  <div class="slider-label">Букет</div>
+                  <div class="slider-wrapper"><input type="range" class="inp-flavor" min="0" max="15" value="7" /></div>
+                  <div class="slider-val">7</div>
+                </div>
+                <div class="slider-row">
+                  <div class="slider-label">Послевкусие</div>
+                  <div class="slider-wrapper"><input type="range" class="inp-aftertaste" min="0" max="15" value="7" /></div>
+                  <div class="slider-val">7</div>
+                </div>
+              </div>
+
+              <div class="checkbox-container">
+                <div class="check-limit-block" data-logic="complex" data-limit="5" data-name="Дескрипторы Букета" style="display:contents;">
+                  <div class="checkbox-col">
+                    <div class="cb-group"><label class="cb-parent"><input type="checkbox" value="Floral" /> <span>Цветочный</span></label></div>
+                    <div class="cb-group">
+                      <label class="cb-parent"><input type="checkbox" value="Fruity" /> <span>Фруктовый</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Berry" /> <span>Ягоды</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Dried Fruit" /> <span>Сухофрукты</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Citrus Fruit" /> <span>Цитрусовые фрукты</span></label>
+                    </div>
+                    <div class="cb-group">
+                      <label class="cb-parent"><input type="checkbox" value="Sour/Fermented" /> <span>Кислый/Ферментированный</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Sour" /> <span>Кислый</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Fermented" /> <span>Ферментированный</span></label>
+                    </div>
+                    <div class="cb-group"><label class="cb-parent"><input type="checkbox" value="Green/Vegetative" /> <span>Зелёный/Растительный</span></label></div>
+                  </div>
+
+                  <div class="checkbox-col">
+                    <div class="cb-group">
+                      <label class="cb-parent"><input type="checkbox" value="Roasted" /> <span>Жареный</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Cereal" /> <span>Злаки</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Burnt" /> <span>Жжёный</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Tobacco" /> <span>Табак</span></label>
+                    </div>
+                    <div class="cb-group">
+                      <label class="cb-parent"><input type="checkbox" value="Nutty/Cocoa" /> <span>Орехи/Какао</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Nutty" /> <span>Ореховый</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Cocoa" /> <span>Какао</span></label>
+                    </div>
+                    <div class="cb-group"><label class="cb-parent"><input type="checkbox" value="Spice" /> <span>Пряности</span></label></div>
+                    <div class="cb-group">
+                      <label class="cb-parent"><input type="checkbox" value="Sweet" /> <span>Сладкий</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Vanilla/Vanillin" /> <span>Ваниль/Ванилин</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Brown Sugar" /> <span>Коричневый Сахар</span></label>
+                    </div>
+                  </div>
+
+                  <div class="checkbox-col">
+                    <div class="cb-group">
+                      <label class="cb-parent"><input type="checkbox" value="Other" /> <span>Другие</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Chemical" /> <span>Химический</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Musty/Earthy" /> <span>Затхлый/Землистый</span></label>
+                      <label class="cb-child"><input type="checkbox" value="Woody" /> <span>Древесный</span></label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="checkbox-col check-limit-block" data-logic="simple" data-limit="2" data-name="Базовые вкусы">
+                  <div class="cb-group" style="border: 1px solid #eee; border-radius:6px; padding:8px;">
+                    <div style="font-weight:bold; margin-bottom:4px; color:#6b3b1e;">Базовые вкусы (2)</div>
+                    <label class="cb-child" style="margin-left:0"><input type="checkbox" class="inp-main-taste" value="Солёный" /> <span>Солёный</span></label>
+                    <label class="cb-child" style="margin-left:0"><input type="checkbox" class="inp-main-taste" value="Кислый" /> <span>Кислый</span></label>
+                    <label class="cb-child" style="margin-left:0"><input type="checkbox" class="inp-main-taste" value="Сладкий" /> <span>Сладкий</span></label>
+                    <label class="cb-child" style="margin-left:0"><input type="checkbox" class="inp-main-taste" value="Горький" /> <span>Горький</span></label>
+                    <label class="cb-child" style="margin-left:0"><input type="checkbox" class="inp-main-taste" value="Умами" /> <span>Умами</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top:6px;">
+                <label>Заметки о Букете и Послевкусии</label>
+                <textarea class="inp-flavor-notes" rows="2"></textarea>
+              </div>
+            </fieldset>
+
+            <!-- ACIDITY / SWEETNESS -->
+            <fieldset data-section="acidity-sweetness">
+              <legend>Кислотность и Сладость</legend>
+              <div class="sliders-block">
+                <div class="slider-row">
+                  <div class="slider-label">Кислотность</div>
+                  <div class="slider-wrapper"><input type="range" class="inp-acidity" min="0" max="15" value="7" /></div>
+                  <div class="slider-val">7</div>
+                </div>
+                <div class="form-group">
+                  <label>Заметки о Кислотности</label>
+                  <textarea class="inp-acidity-notes" placeholder="Заполнение обязательно..." rows="1"></textarea>
+                </div>
+
+                <div class="slider-row">
+                  <div class="slider-label">Сладость</div>
+                  <div class="slider-wrapper"><input type="range" class="inp-sweetness" min="0" max="15" value="7" /></div>
+                  <div class="slider-val">7</div>
+                </div>
+                <div class="form-group">
+                  <label>Заметки о Сладости</label>
+                  <textarea class="inp-sweetness-notes" placeholder="Заполнение обязательно..." rows="1"></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- MOUTHFEEL -->
+            <fieldset class="check-limit-block" data-section="mouthfeel" data-logic="mouthfeel" data-limit="2" data-name="Тактильность">
+              <legend>Тактильность (до 2)</legend>
+
+              <div class="slider-row">
+                <div class="slider-label">Тактильность</div>
+                <div class="slider-wrapper"><input type="range" class="inp-mouthfeel" min="0" max="15" value="7" /></div>
+                <div class="slider-val">7</div>
+              </div>
+
+              <div class="checkbox-container" style="margin-top:6px; border:1px solid #eee; background:none; border-radius:6px; padding:8px;">
+                <div class="mf-grid">
+                  <div class="mf-item mf-rough-group">
+                    <label class="cb-parent mf-rough-parent-label" style="margin-left:0;">
+                      <input type="checkbox" class="inp-mf-desc inp-mf-rough-parent" value="Rough" />
+                      <span>Грубый</span>
+                    </label>
+                    <div class="mf-rough-children">
+                      <label class="cb-child">
+                        <input type="checkbox" class="inp-mf-desc inp-mf-rough-child" value="Шершавый" />
+                        <span>Шершавый</span>
+                      </label>
+                      <label class="cb-child">
+                        <input type="checkbox" class="inp-mf-desc inp-mf-rough-child" value="Меловой" />
+                        <span>Меловой</span>
+                      </label>
+                      <label class="cb-child">
+                        <input type="checkbox" class="inp-mf-desc inp-mf-rough-child" value="Песчаный" />
+                        <span>Песчаный</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="mf-item">
+                    <label class="cb-child" style="margin-left:0">
+                      <input type="checkbox" class="inp-mf-desc" value="Oily" />
+                      <span>Маслянистый</span>
+                    </label>
+                  </div>
+
+                  <div class="mf-item mf-smooth-group">
+                    <label class="cb-parent mf-smooth-parent-label" style="margin-left:0;">
+                      <input type="checkbox" class="inp-mf-desc inp-mf-smooth-parent" value="Smooth" />
+                      <span>Гладкий</span>
+                    </label>
+                    <div class="mf-smooth-children">
+                      <label class="cb-child">
+                        <input type="checkbox" class="inp-mf-desc inp-mf-smooth-child" value="Velvety" />
+                        <span>Бархатистый</span>
+                      </label>
+                      <label class="cb-child">
+                        <input type="checkbox" class="inp-mf-desc inp-mf-smooth-child" value="Silky" />
+                        <span>Шелковистый</span>
+                      </label>
+                      <label class="cb-child">
+                        <input type="checkbox" class="inp-mf-desc inp-mf-smooth-child" value="Syrupy" />
+                        <span>Сиропистый</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="mf-item">
+                    <label class="cb-child" style="margin-left:0">
+                      <input type="checkbox" class="inp-mf-desc" value="Mouth-Drying" />
+                      <span>Сушащий</span>
+                    </label>
+                  </div>
+
+                  <div class="mf-item">
+                    <label class="cb-child" style="margin-left:0">
+                      <input type="checkbox" class="inp-mf-desc" value="Metallic" />
+                      <span>Металлический</span>
+                    </label>
+                  </div>
+
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-top:6px;">
+                <label>Заметки о Тактильности</label>
+                <textarea class="inp-mouthfeel-notes" rows="1"></textarea>
+              </div>
+            </fieldset>
+
+            <!-- CATALOG -->
+            <fieldset data-section="catalog" style="border: 1px solid #d8a46b; background: #fbf8e6; margin-bottom: 25px;">
+              <div class="cb-group" style="margin-bottom:0;">
+                <label class="cb-parent" style="cursor:pointer; margin-left:0; display: flex; align-items: center;">
+                  <input type="checkbox" class="inp-include-catalog" value="1" style="width:24px; height:24px; margin-right: 10px;" />
+                  <span style="font-size:1.1em; color:#6b3b1e; font-weight:bold;">Включить в каталог</span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+        </template>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- === ФОРМА 2: ОЦЕНКА (CVAA) === -->
+    <!-- ========================================== -->
+    <div id="cvaa-wrapper" style="display: none;">
+        <div id="cvaa-scroll-container">
+          <div class="content-max-width">
+              <h1>CVA Affective Assessment</h1>
+
+              <div class="tabs-header">
+                  <div class="tabs-top-row" style="flex-direction: column; justify-content: center; align-items: center;">
+                      <!-- ПЕРЕКЛЮЧАТЕЛЬ ЗДЕСЬ ВЫШЕ -->
+                      <div class="app-switcher-inline" style="margin-bottom: 8px;">
+                          <button class="btn-switch-cvad" onclick="switchApp('cvad')">Описание</button>
+                          <button class="btn-switch-cvaa active" onclick="switchApp('cvaa')">Оценка</button>
+                      </div>
+                      <!-- ОЦЕНКА И ТАЙМЕР В ОДНУ СТРОКУ -->
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                          <div class="score-display" id="globalScoreDisplay" title="Общая оценка по формуле CVA">--</div>
+                          <div class="timer-wrapper">
+                              <button class="timer-btn" id="cvaa-mainTimer" onclick="window.globalToggleTimer()" title="Клик для старта/паузы">00:00</button>
+                              <button class="timer-reset-btn" onclick="window.globalResetTimer()" title="Сбросить таймер">↻</button>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="tabs-btn-grid">
+                      <button class="tab-btn active" id="tab-1" onclick="window.globalSwitchTab(1)">1</button>
+                      <button class="tab-btn" id="tab-2" onclick="window.globalSwitchTab(2)">2</button>
+                      <button class="tab-btn" id="tab-3" onclick="window.globalSwitchTab(3)">3</button>
+                      <button class="tab-btn" id="tab-4" onclick="window.globalSwitchTab(4)">4</button>
+                      <button class="tab-btn" id="tab-5" onclick="window.globalSwitchTab(5)">5</button>
+                      <button class="tab-btn" id="tab-6" onclick="window.globalSwitchTab(6)">6</button>
+                      <button class="tab-btn" id="tab-7" onclick="window.globalSwitchTab(7)">7</button>
+                      <button class="tab-btn" id="tab-8" onclick="window.globalSwitchTab(8)">8</button>
+                  </div>
+              </div>
+
+              <div id="cvaa-formsWrapper"></div>
+
+              <div class="actions-panel">
+                <button class="btn-action" id="btnSend" onclick="window.cvaaSendToGoogle()">Сохранить результаты</button>
+              </div>
+          </div>
+        </div>
+
+        <div id="noteModal" class="modal" aria-hidden="true">
+          <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Оценка атрибута</div>
+            <textarea id="modalInput" placeholder="Опишите Ваше впечатление от качества атрибута применительно к цели"></textarea>
+            <div class="modal-footer">
+              <button type="button" class="btn-modal btn-cancel" onclick="window.cvaaCloseModal()">Отмена</button>
+              <button type="button" class="btn-modal btn-ok" onclick="window.cvaaSaveNote()">Сохранить</button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+</div>
