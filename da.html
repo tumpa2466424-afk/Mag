@@ -1636,25 +1636,29 @@ async function fetchWithRetry(url, options, maxRetries = 3, retryDelay = 2000) {
               const formsToSave = []; let hasErrors = false; let firstErrorTab = null;
 
               document.querySelectorAll("#cvad-wrapper .sample-form").forEach(form => {
-                const sampleNo = form.querySelector(".inp-sample-no").value.trim();
-// Проверяем, трогал ли пользователь форму (есть ли текст в заметках или выбранные галочки)
-const isTouched = Array.from(form.querySelectorAll("textarea")).some(ta => ta.value.trim() !== '') || 
-                  Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked);
+    const sampleNo = form.querySelector(".inp-sample-no").value.trim();
+    
+    // СНАЧАЛА создаем переменные
+    const tabId = form.getAttribute("data-id"); 
+    let formValid = true; 
+    const errs = [];
 
-if (!sampleNo) {
-    if (isTouched) {
-        // Форма заполнялась, но номер забыли -> выдаем ошибку
-        formValid = false;
-        form.querySelector(".inp-sample-no").classList.add("error-field");
-        errs.push("Укажите 'Образец №'");
-    } else {
-        // Форма действительно девственно пуста -> безопасно пропускаем
-        return; 
+    // ЗАТЕМ проверяем, трогал ли пользователь форму
+    const isTouched = Array.from(form.querySelectorAll("textarea")).some(ta => ta.value.trim() !== '') || 
+                      Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked);
+
+    if (!sampleNo) {
+        if (isTouched) {
+            // Теперь скрипт знает, что такое formValid и errs
+            formValid = false;
+            form.querySelector(".inp-sample-no").classList.add("error-field");
+            errs.push("Укажите 'Образец №'");
+        } else {
+            // Форма действительно девственно пуста -> безопасно пропускаем
+            return; 
+        }
     }
-}
-                const tabId = form.getAttribute("data-id"); let formValid = true; const errs = [];
-
-                const aromaBlock = form.querySelector('fieldset[data-section="aroma"]');
+    const aromaBlock = form.querySelector('fieldset[data-section="aroma"]');
                 const aromaScore = aromaBlock ? calculateScore(aromaBlock) : 0;
                 if (aromaScore === 0) { formValid = false; if (aromaBlock) aromaBlock.classList.add("error-field"); errs.push("Запах/Аромат: выберите дескрипторы"); }
 
