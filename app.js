@@ -2436,8 +2436,28 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 let html = '';
 
                 if (itemsList.length > 0) {
-                    html += `<div style="position:relative;">
-                        <div style="overflow-x:auto; padding-bottom:10px;">
+                    let hintHtml = '';
+                    if (window.innerWidth <= 768) {
+                        // ВОЗВРАЩАЕМ ВАШУ КЛАССНУЮ ПОДСКАЗКУ
+                        // Добавляем align-items: flex-start и padding-top: 80px
+                        // Это заставит иконку всегда висеть наверху (сразу под шапкой таблицы), а не в центре длинного полотна
+                        hintHtml = `
+                            <div class="scroll-hint-overlay" id="ws-scroll-hint" style="align-items: flex-start; padding-top: 80px;">
+                                <div class="scroll-hint-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="8 16 4 12 8 8"></polyline>
+                                        <line x1="4" y1="12" x2="20" y2="12"></line>
+                                        <polyline points="16 8 20 12 16 16"></polyline>
+                                    </svg>
+                                    <span>Листайте вбок</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Возвращаем onscroll, чтобы она исчезала при касании!
+                    html += `<div style="position:relative;">${hintHtml}
+                        <div style="overflow-x:auto; padding-bottom:10px;" onscroll="document.getElementById('ws-scroll-hint') ? document.getElementById('ws-scroll-hint').style.opacity='0' : null">
                         <table class="admin-table" style="width:100%; min-width:650px;">
                         <thead><tr>
                             <th style="width: 28%;">Название</th>
