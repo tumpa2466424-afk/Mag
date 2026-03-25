@@ -804,7 +804,29 @@
 
 <!-- === СКРИПТЫ === -->
 <script>
-    // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СИНХРОНИЗАЦИЯ ===
+    // === ФУНКЦИЯ АВТОМАТИЧЕСКОГО ПОВТОРА ПРИ СБОЯХ СЕТИ ===
+async function fetchWithRetry(url, options, maxRetries = 3, retryDelay = 2000) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            
+            // Если сервер ответил ошибкой 500, 502, 503 или 504, имеет смысл попробовать снова
+            if (!response.ok && response.status >= 500 && attempt < maxRetries) {
+                console.warn(`Попытка ${attempt} не удалась (статус ${response.status}). Повтор через ${retryDelay}мс...`);
+                await new Promise(res => setTimeout(res, retryDelay));
+                continue;
+            }
+            // Если все ОК или ошибка клиента (например, 400 Bad Request), возвращаем ответ
+            return response; 
+        } catch (error) {
+            // Ошибка сети (Failed to fetch). Если попытки исчерпаны — пробрасываем ошибку дальше
+            if (attempt === maxRetries) throw error; 
+            
+            console.warn(`Ошибка сети на попытке ${attempt}: ${error.message}. Повтор через ${retryDelay}мс...`);
+            await new Promise(res => setTimeout(res, retryDelay));
+        }
+    }
+}
     // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СИНХРОНИЗАЦИЯ ===
     window.globalActiveSample = 1;
 
@@ -1614,7 +1636,7 @@
               const formsToSave = []; let hasErrors = false; let firstErrorTab = null;
 
               document.querySelectorAll("#cvad-wrapper .sample-form").forEach(form => {
-                const sampleNo = form.querySelector(".inp-sample-no").value.trim(); const sampleNo = form.querySelector(".inp-sample-no").value.trim(); 
+                const sampleNo = form.querySelector(".inp-sample-no").value.trim();
 // Проверяем, трогал ли пользователь форму (есть ли текст в заметках или выбранные галочки)
 const isTouched = Array.from(form.querySelectorAll("textarea")).some(ta => ta.value.trim() !== '') || 
                   Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked);
@@ -2023,28 +2045,6 @@ const response = await fetchWithRetry(SCRIPT_URL, {
         initForms();
     })();
 </script>
-// === ФУНКЦИЯ АВТОМАТИЧЕСКОГО ПОВТОРА ПРИ СБОЯХ СЕТИ ===
-async function fetchWithRetry(url, options, maxRetries = 3, retryDelay = 2000) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            const response = await fetch(url, options);
-            
-            // Если сервер ответил ошибкой 500, 502, 503 или 504, имеет смысл попробовать снова
-            if (!response.ok && response.status >= 500 && attempt < maxRetries) {
-                console.warn(`Попытка ${attempt} не удалась (статус ${response.status}). Повтор через ${retryDelay}мс...`);
-                await new Promise(res => setTimeout(res, retryDelay));
-                continue;
-            }
-            // Если все ОК или ошибка клиента (например, 400 Bad Request), возвращаем ответ
-            return response; 
-        } catch (error) {
-            // Ошибка сети (Failed to fetch). Если попытки исчерпаны — пробрасываем ошибку дальше
-            if (attempt === maxRetries) throw error; 
-            
-            console.warn(`Ошибка сети на попытке ${attempt}: ${error.message}. Повтор через ${retryDelay}мс...`);
-            await new Promise(res => setTimeout(res, retryDelay));
-        }
-    }
-}
+
 </body>
 </html>
