@@ -311,7 +311,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 if (type.isSpecial) {
                     return product.customDesc || product.flavorDesc || '-';
                 }
-                return product.flavorDesc ? formatFlavorDesc(product.flavorDesc) : '-';
+                let desc = product.flavorDesc ? formatFlavorDesc(product.flavorDesc) : '-';
+                if (product.flavorNotes) {
+                    desc += `<div style="margin-top:4px; font-size:11px; opacity:0.8;"><b>Нюансы:</b> ${product.flavorNotes}</div>`;
+                }
+                return desc;
             }
         };
         window.ProductManager = ProductManager; // Делаем доступным глобально
@@ -547,8 +551,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         
                     } else if (isAroma) {
                         // 2. АРОМАТИЗАЦИЯ
-                        document.getElementById('p-simple-desc').innerHTML = galleryHtml + formatFlavorDesc(r.flavorDesc);
-
+                        let descHtml = galleryHtml + formatFlavorDesc(r.flavorDesc);
+                        if (r.flavorNotes) descHtml += `<div style="margin-top: 8px; font-size: 12px; opacity: 0.8;"><b>Нюансы:</b> ${r.flavorNotes}</div>`;
+                        document.getElementById('p-simple-desc').innerHTML = descHtml;
                         document.getElementById('p-mini-stats').innerHTML = ''; 
                         document.getElementById('p-mini-stats').style.display = 'none';
                         if(toggleBtn) toggleBtn.style.display = 'none';
@@ -566,7 +571,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                     } else {
                         // 3. ОБЫЧНЫЙ КОФЕ
-                        document.getElementById('p-simple-desc').innerHTML = galleryHtml + formatFlavorDesc(r.flavorDesc);
+                        let descHtml = galleryHtml + formatFlavorDesc(r.flavorDesc);
+                        if (r.flavorNotes) descHtml += `<div style="margin-top: 8px; font-size: 12px; opacity: 0.8;"><b>Нюансы:</b> ${r.flavorNotes}</div>`;
+                        document.getElementById('p-simple-desc').innerHTML = descHtml;
 
                         document.getElementById('p-mini-stats').style.display = 'grid';
                         const miniStatsHTML = `
@@ -1524,6 +1531,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
                 const appendGroupNodes = (groupsObj, container) => {
                     for (const [gName, items] of Object.entries(groupsObj)) {
+                        // Сортируем элементы группы по алфавиту перед выводом
+                        items.sort((a, b) => (a.sample || '').localeCompare(b.sample || ''));
+                        
                         if (items.length > 0) {
                             const header = document.createElement('div');
                             header.style.cssText = 'background:#f4f1ea; border:1px solid #E5E1D8; padding:8px 12px; margin: 15px 0 10px; font-weight:bold; color:var(--locus-dark); border-radius:6px; text-transform:uppercase; font-size:12px; letter-spacing:1px;';
@@ -2161,6 +2171,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         }
                     } else {
                         this.pricingSettings = { opexPerKg: 0, varPerKg: 0, volume: 100 };
+                    }
+                    
+                    // БАГФИКС: Если Оптовая таблица уже открыта, перерисовываем ее с новыми ценами
+                    if (document.getElementById('view-wholesale') && document.getElementById('view-wholesale').classList.contains('show-view')) {
+                        this.renderWholesaleTable();
                     }
                 } catch(e) { console.error('Ошибка загрузки настроек', e); }
             },
@@ -4492,9 +4507,29 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                         }, 300); // Ждем пока отрисуется таблица
                                     } else {
                                         hItem.items.forEach(i => {
-                                            const existing = this.localCart.find(cartItem => cartItem.item === i.item && cartItem.weight == i.weight && cartItem.grind === i.grind);
-                                            if(existing) existing.qty += i.qty;
-                                            else this.localCart.push({ ...i });
+                                            const product = ALL_PRODUCTS_CACHE.find(p => (p.sample || p.sample_no || "").trim() === i.item.trim());
+                                            if (!product) return; // Пропускаем лот, если он снят с продажи и его нет в каталоге
+                                            
+                                            // СЧИТАЕМ АКТУАЛЬНУЮ ЦЕНУ НА СЕГОДНЯШНИЙ ДЕНЬ
+                                            const rawGreen = parseFloat(product.rawGreenPrice || product.raw_green_price) || 0;
+                                            let currentPrice = 0;
+                                            
+                                            if (rawGreen > 0) {
+                                                const prices = this.calculateRetailPrices(rawGreen);
+                                                currentPrice = (i.weight === 1000) ? prices.p1000 : prices.p250;
+                                            } else if (product.price && parseFloat(product.price) > 0) {
+                                                const fixedPrice = parseFloat(product.price) || 0;
+                                                currentPrice = (i.weight === 1000) ? fixedPrice * 4 : fixedPrice;
+                                            }
+                                            
+                                            if (currentPrice > 0) {
+                                                const existing = this.localCart.find(cartItem => cartItem.item === i.item && cartItem.weight == i.weight && cartItem.grind === i.grind);
+                                                if(existing) {
+                                                    existing.qty += i.qty;
+                                                } else {
+                                                    this.localCart.push({ item: i.item, price: currentPrice, weight: i.weight, qty: i.qty, grind: i.grind });
+                                                }
+                                            }
                                         });
                                         this.saveCart(true);
                                         this.updateCartBadge();
@@ -4980,6 +5015,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         }
                     }
                 });
+                
+                // Сортируем лепестки по алфавиту внутри каждой категории на колесе
+                SHOP_DATA.forEach(cat => {
+                    cat.children.sort((a, b) => a.label.localeCompare(b.label));
+                });
+
                 renderWheel();
                 initWheelInteraction();
                 UserSystem.init();
