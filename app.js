@@ -167,8 +167,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             // НАСТРОЙКА "ПЫЛЬНОГО" ОТТЕНКА
             // RGB [200, 200, 200] - это нейтральный светло-серый.
             const greyRgb = [200, 200, 200]; 
-            const colorWeight = 0.8; // 60% основного яркого цвета
-            const greyWeight = 0.2;  // 40% серого для приглушения
+            const colorWeight = 0.9; // 60% основного яркого цвета
+            const greyWeight = 0.1;  // 40% серого для приглушения
 
             if (!text) {
                 // Если нет описания, приглушаем базовый цвет категории
