@@ -812,3 +812,20 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
 }
+/* ФИКСИРОВАННАЯ ПОДСКАЗКА СКРОЛЛА В ОПТЕ */
+.ws-mobile-scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--locus-accent);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 0 15px 0;
+    opacity: 0.8;
+}
+@media (min-width: 769px) {
+    .ws-mobile-scroll-hint { 
+        display: none !important; 
+    }
+}
