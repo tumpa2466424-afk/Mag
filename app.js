@@ -481,10 +481,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     document.getElementById('p-cat-desc').textContent = '';
                     
                     // Рефакторинг: используем ProductManager
+                    // Рефакторинг: используем ProductManager
                     const typeInfo = ProductManager.getTypeInfo(r);
                     const { isAroma, isInfo, isSpecial } = typeInfo;
 
-                    const toggleAiBtn = document.getElementById('btn-toggle-ai'); // Находим кнопку AI
+                    // ВОЗВРАЩАЕМ ПОТЕРЯННЫЕ ПЕРЕМЕННЫЕ КНОПОК
+                    const toggleBtn = document.getElementById('btn-toggle-details');
+                    const toggleExtBtn = document.getElementById('btn-toggle-extrinsic');
+                    const toggleAiBtn = document.getElementById('btn-toggle-ai');
 
                     // Находим кнопки и блоки для скрытия (Вес, Подписка)
                     const weightSelector = document.getElementById('weight-selector-block');
@@ -729,11 +733,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     if (extGrid) extGrid.innerHTML = '';
                     const elBuyArea = document.getElementById('p-buy-area');
                     if (elBuyArea) elBuyArea.style.display = 'none';
+                    
+                    // ВОЗВРАЩАЕМ ПЕРЕМЕННЫЕ И СЮДА
+                    const toggleBtn = document.getElementById('btn-toggle-details');
+                    const toggleExtBtn = document.getElementById('btn-toggle-extrinsic');
+                    const toggleAiBtn = document.getElementById('btn-toggle-ai');
+                    
                     if(toggleBtn) toggleBtn.style.display = 'none';
                     if(toggleExtBtn) toggleExtBtn.style.display = 'none';
-                    
-                    // ЗАДАЧА 1: Скрываем Историю Аины для общих категорий
-                    const toggleAiBtn = document.getElementById('btn-toggle-ai');
                     if(toggleAiBtn) toggleAiBtn.style.display = 'none';
                 }
                 pInfo.style.display = 'block';
