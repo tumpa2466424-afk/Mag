@@ -1629,14 +1629,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     `;
                 }
 
-                // --- ГЕНЕРАТОР НАКЛЕЙКИ ---
-                const country = r.country || 'СТРАНА НЕ УКАЗАНА';
-                const farm = r.farm || r.producer || 'ФЕРМА / КООПЕРАТИВ';
-                const notes = r.flavorNotes || 'Дескрипторы не указаны';
+                // --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР НАКЛЕЙКИ ---
+                // Ищем полные данные лота (включая внешнюю форму) в глобальном кэше
+                const fullProduct = (typeof ALL_PRODUCTS_CACHE !== 'undefined') ? ALL_PRODUCTS_CACHE.find(p => p.sample === r.sample) : null;
+                
+                const country = (fullProduct && fullProduct.country) ? fullProduct.country : 'СТРАНА НЕ УКАЗАНА';
+                const farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
+                const notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
 
                 const stickerPreview = `
                     <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--locus-border);">
-                        <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Превью наклейки на пачку</div>
+                        <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Превью наклейки (80х80 мм)</div>
                         <div class="locus-sticker-canvas">
                             <div class="s-roast-text">freshly roasted coffee</div>
                             <div class="s-name-block">
