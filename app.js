@@ -484,15 +484,17 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     document.getElementById('p-title').textContent = r.sample;
                     document.getElementById('p-cat-desc').textContent = '';
                     
-                    // Рефакторинг: используем ProductManager
+                    
                     // Рефакторинг: используем ProductManager
                     const typeInfo = ProductManager.getTypeInfo(r);
                     const { isAroma, isInfo, isSpecial } = typeInfo;
 
+                  
                     // ВОЗВРАЩАЕМ ПОТЕРЯННЫЕ ПЕРЕМЕННЫЕ КНОПОК
                     const toggleBtn = document.getElementById('btn-toggle-details');
                     const toggleExtBtn = document.getElementById('btn-toggle-extrinsic');
                     const toggleAiBtn = document.getElementById('btn-toggle-ai');
+                    const lotDescWrapper = document.getElementById('lot-desc-wrapper');
 
                     // Находим кнопки и блоки для скрытия (Вес, Подписка)
                     const weightSelector = document.getElementById('weight-selector-block');
@@ -536,6 +538,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleBtn) toggleBtn.style.display = 'none';
                         if(toggleExtBtn) toggleExtBtn.style.display = 'none';
                         if(toggleAiBtn) toggleAiBtn.style.display = 'none';
+                        if(lotDescWrapper) lotDescWrapper.style.display = 'none';
                         document.getElementById('grind-selector-block').style.display = 'none';
                         
                         // Скрываем кнопки веса и подписки
@@ -559,6 +562,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleBtn) toggleBtn.style.display = 'none';
                         if(toggleExtBtn) toggleExtBtn.style.display = 'none';
                         if(toggleAiBtn) toggleAiBtn.style.display = 'none'; // Скрываем AI историю для аромы
+                        if(lotDescWrapper) lotDescWrapper.style.display = 'none';
                         document.getElementById('grind-selector-block').style.display = 'none';
 
                        // Возвращаем кнопки веса и подписки
@@ -589,6 +593,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                         if(toggleBtn) toggleBtn.style.display = 'flex';
                         if(toggleExtBtn) toggleExtBtn.style.display = 'flex';
                         if(toggleAiBtn) toggleAiBtn.style.display = 'flex';
+                        if(lotDescWrapper) lotDescWrapper.style.display = 'block';
                         document.getElementById('grind-selector-block').style.display = 'block';
 
                         // Возвращаем кнопки веса и подписки
@@ -745,10 +750,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     const toggleBtn = document.getElementById('btn-toggle-details');
                     const toggleExtBtn = document.getElementById('btn-toggle-extrinsic');
                     const toggleAiBtn = document.getElementById('btn-toggle-ai');
+                    const lotDescWrapper = document.getElementById('lot-desc-wrapper');
                     
                     if(toggleBtn) toggleBtn.style.display = 'none';
                     if(toggleExtBtn) toggleExtBtn.style.display = 'none';
                     if(toggleAiBtn) toggleAiBtn.style.display = 'none';
+                    if(lotDescWrapper) lotDescWrapper.style.display = 'none';
                 }
                 pInfo.style.display = 'block';
                 setTimeout(() => pInfo.classList.add('active'), 50);
