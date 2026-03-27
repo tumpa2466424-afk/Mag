@@ -1615,10 +1615,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 
             getViewHtml: function(r) {
                 // Рефакторинг: используем ProductManager
-                const isSpecial = ProductManager.getTypeInfo(r).isSpecial;
+                const typeInfo = ProductManager.getTypeInfo(r);
+                const isSpecial = typeInfo.isSpecial;
+                const isAroma = typeInfo.isAroma;
 
                 if (isSpecial) {
-                    // Для Аксессуаров и Информации выводим только описание (без наклеек)
+                    // Для Аксессуаров и Информации выводим только описание
                     return `
                         <div class="cupping-grid">
                             <div class="cupping-item full-width">
@@ -1630,17 +1632,26 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 }
 
                 // --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР НАКЛЕЙКИ ---
-                // Ищем полные данные лота (включая внешнюю форму) в глобальном кэше
                 const fullProduct = (typeof ALL_PRODUCTS_CACHE !== 'undefined') ? ALL_PRODUCTS_CACHE.find(p => p.sample === r.sample) : null;
                 
-                const country = (fullProduct && fullProduct.country) ? fullProduct.country : 'СТРАНА НЕ УКАЗАНА';
-                const farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
-                const notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
+                let country, farm, notes;
+
+                // Умное разделение: Ароматизация vs Обычный кофе
+                if (isAroma) {
+                    country = r.sample || 'НАЗВАНИЕ ЛОТА';
+                    farm = ''; // У ароматизации ферма пустая
+                    notes = (fullProduct && fullProduct.flavorDesc) ? fullProduct.flavorDesc : (r.flavorDesc || 'Описание отсутствует');
+                } else {
+                    country = (fullProduct && fullProduct.country) ? fullProduct.country : 'СТРАНА НЕ УКАЗАНА';
+                    farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
+                    notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
+                }
 
                 const stickerPreview = `
                     <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--locus-border);">
                         <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Превью наклейки (80х80 мм)</div>
-                        <div class="locus-sticker-canvas">
+                        
+                        <div class="locus-sticker-canvas" id="sticker-canvas-export">
                             <div class="s-roast-text">freshly roasted coffee</div>
                             <div class="s-name-block">
                                 <div class="s-country">${country}</div>
@@ -1648,11 +1659,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             </div>
                             <div class="s-descriptors">${notes}</div>
                         </div>
+
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button type="button" onclick="window.downloadPackSticker('${r.sample}')" style="background: var(--locus-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;">Скачать PNG для печати</button>
+                        </div>
                     </div>
                 `;
                 // --------------------------
 
-                // Для Эспрессо, Фильтра и Ароматизации выводим НАКЛЕЙКУ + полную сетку характеристик
                 return stickerPreview + `
                     <div class="cupping-grid">
                         <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span><span class="cupping-value">${r.cuppingDate || '-'}</span></div>
@@ -5119,3 +5133,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         if (yearSpan) yearSpan.textContent = new Date().getFullYear();
         window.fetchExternalData = fetchExternalData; // ДЕЛАЕМ ГЛОБАЛЬНОЙ
         fetchExternalData();
+        // ==========================================
+        // ЭКСПОРТ НАКЛЕЙКИ В PNG
+        // ==========================================
+        window.downloadPackSticker = function(sampleName) {
+            const stickerEl = document.getElementById('sticker-canvas-export');
+            if (!stickerEl) return;
+            
+            if (typeof html2canvas === 'undefined') {
+                alert('Модуль генерации изображений еще загружается, попробуйте через пару секунд.');
+                return;
+            }
+
+            // Временно убираем пунктирную рамку, чтобы она не пошла на печать
+            const originalBorder = stickerEl.style.border;
+            stickerEl.style.border = 'none';
+
+            // Делаем снимок блока с 4-кратным увеличением (идеально для печати 300 dpi)
+            html2canvas(stickerEl, {
+                scale: 4, 
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                // Возвращаем пунктир в браузере
+                stickerEl.style.border = originalBorder;
+                
+                // Скачиваем файл
+                const link = document.createElement('a');
+                link.download = `Sticker_${sampleName}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        };
