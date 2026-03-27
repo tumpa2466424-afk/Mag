@@ -1629,12 +1629,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     `;
                 }
 
-                // --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР НАКЛЕЙКИ ---
+                // --- ГЕНЕРАТОР НАКЛЕЕК (ЛИЦО И ЗАДНИК) ---
                 const fullProduct = (typeof ALL_PRODUCTS_CACHE !== 'undefined') ? ALL_PRODUCTS_CACHE.find(p => p.sample === r.sample) : null;
                 
-                let country, farm, notes, roastTextLabel;
+                let roastTextLabel, country, farm, notes;
+                let region, variety, harvest, processing;
 
-                // ПУНКТ 3: Умная логика обжарки и текстов
+                // Извлекаем все данные с надежными запасными вариантами (fallbacks)
+                region = (fullProduct && (fullProduct.region || fullProduct['Регион'])) || '-';
+                variety = (fullProduct && (fullProduct.variety || fullProduct['Вид/Разновидность'])) || '-';
+                harvest = (fullProduct && (fullProduct.cropYear || fullProduct.harvest || fullProduct['Год урожая'])) || '-';
+                processing = (fullProduct && (fullProduct.processing || fullProduct.process || fullProduct['Описание обработки'])) || '-';
+
                 if (isAroma) {
                     roastTextLabel = 'АРОМАТИЗИРОВАННЫЙ';
                     country = r.sample || 'НАЗВАНИЕ ЛОТА';
@@ -1645,7 +1651,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
                     notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
                     
-                    // Определяем Эспрессо или Фильтр
                     let catStr = (r.category || '').toLowerCase();
                     let roastVal = parseInt(r.roast) || 0;
                     if (catStr.includes('эспрессо') || (!catStr.includes('фильтр') && roastVal >= 10)) {
@@ -1655,32 +1660,68 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     }
                 }
 
-                // ПУНКТ 1: Ограничиваем количество дескрипторов для одной строки
                 let formattedNotes = notes;
                 if (formattedNotes && formattedNotes.includes(',')) {
                     let parts = formattedNotes.split(',').map(s => s.trim()).filter(Boolean);
-                    // Берем первые 3 дескриптора. Это идеальное количество для эстетичной строки на 80мм.
                     formattedNotes = parts.slice(0, 3).join(', ');
                 }
 
-                // ПУНКТ 5: Создаем строго уникальный ID для каждого макета
                 const safeSampleId = r.sample ? r.sample.toString().replace(/[^a-zA-Z0-9]/g, '_') : Math.floor(Math.random() * 10000);
-                const uniqueStickerId = `sticker-${safeSampleId}`;
+                const frontStickerId = `front-${safeSampleId}`;
+                const backStickerId = `back-${safeSampleId}`;
 
+                // Выводим обе наклейки рядом (flex-контейнер)
                 const stickerPreview = `
-                    <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--locus-border);">
-                        <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Превью наклейки (80х80 мм)</div>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
                         
-                        <div class="locus-sticker-canvas" id="${uniqueStickerId}">
-                            <div class="s-roast-text">${roastTextLabel}</div>
-                            <div class="s-country">${country}</div>
-                            <div class="s-farm">${farm}</div>
-                            <div class="s-descriptors">${formattedNotes}</div>
+                        <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; border: 1px solid var(--locus-border); flex: 1; min-width: 320px; display: flex; flex-direction: column; align-items: center;">
+                            <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Лицо (80х80 мм)</div>
+                            
+                            <div class="locus-sticker-canvas" id="${frontStickerId}">
+                                <div class="s-roast-text">${roastTextLabel}</div>
+                                <div class="s-country">${country}</div>
+                                <div class="s-farm">${farm}</div>
+                                <div class="s-descriptors">${formattedNotes}</div>
+                            </div>
+
+                            <button type="button" onclick="window.downloadPackSticker('${frontStickerId}', '${r.sample}_FRONT')" style="margin-top: 15px; background: var(--locus-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;">Скачать ЛИЦО</button>
                         </div>
 
-                        <div style="text-align: center; margin-top: 15px;">
-                            <button type="button" onclick="window.downloadPackSticker('${uniqueStickerId}', '${r.sample}')" style="background: var(--locus-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;">Скачать PNG для печати</button>
+                        <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; border: 1px solid var(--locus-border); flex: 1; min-width: 320px; display: flex; flex-direction: column; align-items: center;">
+                            <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Задник (60х60 мм)</div>
+                            
+                            <div class="locus-back-sticker-canvas" id="${backStickerId}">
+                                <div class="sb-top">
+                                    <div class="sb-brand">Locus Coffee</div>
+                                    <div class="sb-sub">Свежеобжаренный кофе</div>
+                                </div>
+                                
+                                <div class="sb-grid">
+                                    <div class="sb-label">Страна:</div><div class="sb-value">${country}</div>
+                                    <div class="sb-label">Регион:</div><div class="sb-value">${region}</div>
+                                    <div class="sb-label">Ферма:</div><div class="sb-value">${farm}</div>
+                                    <div class="sb-label">Вид/Разновидность:</div><div class="sb-value">${variety}</div>
+                                    <div class="sb-label">Год урожая:</div><div class="sb-value">${harvest}</div>
+                                    <div class="sb-label">Описание обработки:</div><div class="sb-value">${processing}</div>
+                                </div>
+
+                                <div class="sb-info">
+                                    Состав: ${variety}<br>
+                                    Срок годности: 1 год<br>
+                                    Срок реализации: 1 месяц<br>
+                                    Производитель: ИП Зуева Е.В.<br>
+                                    Адрес: г. Орёл, ул. Наугорское шоссе, д. 5.<br>
+                                    Нетто: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; г.
+                                </div>
+
+                                <div class="sb-footer">
+                                    +7 906 660 4060 | locus.coffee
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="window.downloadPackSticker('${backStickerId}', '${r.sample}_BACK')" style="margin-top: 15px; background: var(--locus-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;">Скачать ЗАДНИК</button>
                         </div>
+
                     </div>
                 `;
                 // --------------------------
