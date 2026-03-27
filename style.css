@@ -888,3 +888,55 @@
     overflow: hidden;
     text-overflow: ellipsis; 
 }
+/* --- ГЕНЕРАТОР ЗАДНИКА НА ПАЧКУ (60х60 мм) --- */
+.locus-back-sticker-canvas {
+    position: relative;
+    width: 60mm;
+    height: 60mm;
+    background: #FFFFFF;
+    border: 1px dashed #000000;
+    box-sizing: border-box;
+    color: #000000;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0 auto;
+    text-transform: uppercase;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 3mm 4mm; /* Внутренние отступы от краев */
+}
+
+/* Шапка задника */
+.sb-top { text-align: center; margin-bottom: 3mm; }
+.sb-brand { font-size: 3.5mm; font-weight: 900; line-height: 1.1; letter-spacing: 0.5px; }
+.sb-sub { font-size: 2.2mm; font-weight: 700; line-height: 1; letter-spacing: 0.5px; }
+
+/* Двухколоночная таблица характеристик */
+.sb-grid {
+    display: grid;
+    grid-template-columns: 22mm 1fr; /* Левая колонка 22мм, правая занимает остаток */
+    gap: 0.5mm 1.5mm;
+    font-size: 1.8mm;
+    line-height: 1.1;
+    margin-bottom: 3mm;
+}
+.sb-label { text-align: right; font-weight: 600; }
+.sb-value { text-align: left; font-weight: 900; }
+
+/* Информационный блок ниже */
+.sb-info {
+    font-size: 1.6mm;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: left;
+    margin-bottom: auto; /* Авто-отступ прижимает футер к самому низу */
+}
+
+/* Футер с телефоном */
+.sb-footer {
+    text-align: center;
+    font-size: 2mm;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 2mm;
+}
