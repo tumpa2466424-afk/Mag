@@ -1614,13 +1614,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             getViewHtml: function(r) {
-                // Рефакторинг: используем ProductManager
                 const typeInfo = ProductManager.getTypeInfo(r);
                 const isSpecial = typeInfo.isSpecial;
                 const isAroma = typeInfo.isAroma;
 
                 if (isSpecial) {
-                    // Для Аксессуаров и Информации выводим только описание
                     return `
                         <div class="cupping-grid">
                             <div class="cupping-item full-width">
@@ -1634,34 +1632,46 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 // --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР НАКЛЕЙКИ ---
                 const fullProduct = (typeof ALL_PRODUCTS_CACHE !== 'undefined') ? ALL_PRODUCTS_CACHE.find(p => p.sample === r.sample) : null;
                 
-                let country, farm, notes;
+                let country, farm, notes, roastTextLabel;
 
-                // Умное разделение: Ароматизация vs Обычный кофе
+                // ПУНКТ 3: Умная логика обжарки и текстов
                 if (isAroma) {
+                    roastTextLabel = 'АРОМАТИЗИРОВАННЫЙ';
                     country = r.sample || 'НАЗВАНИЕ ЛОТА';
-                    farm = ''; // У ароматизации ферма пустая
+                    farm = ''; 
                     notes = (fullProduct && fullProduct.flavorDesc) ? fullProduct.flavorDesc : (r.flavorDesc || 'Описание отсутствует');
                 } else {
                     country = (fullProduct && fullProduct.country) ? fullProduct.country : 'СТРАНА НЕ УКАЗАНА';
                     farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
                     notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
+                    
+                    // Определяем Эспрессо или Фильтр (как в колесе каталога)
+                    let catStr = (r.category || '').toLowerCase();
+                    let roastVal = parseInt(r.roast) || 0;
+                    if (catStr.includes('эспрессо') || (!catStr.includes('фильтр') && roastVal >= 10)) {
+                        roastTextLabel = 'ЭСПРЕССО-ОБЖАРКА';
+                    } else {
+                        roastTextLabel = 'ФИЛЬТР-ОБЖАРКА';
+                    }
                 }
+
+                // ПУНКТ 5: Создаем строго уникальный ID для каждого макета
+                const safeSampleId = r.sample ? r.sample.toString().replace(/[^a-zA-Z0-9]/g, '_') : Math.floor(Math.random() * 10000);
+                const uniqueStickerId = `sticker-${safeSampleId}`;
 
                 const stickerPreview = `
                     <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--locus-border);">
                         <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Превью наклейки (80х80 мм)</div>
                         
-                        <div class="locus-sticker-canvas" id="sticker-canvas-export">
-                            <div class="s-roast-text">freshly roasted coffee</div>
-                            <div class="s-name-block">
-                                <div class="s-country">${country}</div>
-                                <div class="s-farm">${farm}</div>
-                            </div>
+                        <div class="locus-sticker-canvas" id="${uniqueStickerId}">
+                            <div class="s-roast-text">${roastTextLabel}</div>
+                            <div class="s-country">${country}</div>
+                            <div class="s-farm">${farm}</div>
                             <div class="s-descriptors">${notes}</div>
                         </div>
 
                         <div style="text-align: center; margin-top: 15px;">
-                            <button type="button" onclick="window.downloadPackSticker('${r.sample}')" style="background: var(--locus-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;">Скачать PNG для печати</button>
+                            <button type="button" onclick="window.downloadPackSticker('${uniqueStickerId}', '${r.sample}')" style="background: var(--locus-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px;">Скачать PNG для печати</button>
                         </div>
                     </div>
                 `;
@@ -5136,28 +5146,27 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
         // ==========================================
         // ЭКСПОРТ НАКЛЕЙКИ В PNG
         // ==========================================
-        window.downloadPackSticker = function(sampleName) {
-            const stickerEl = document.getElementById('sticker-canvas-export');
-            if (!stickerEl) return;
+        window.downloadPackSticker = function(stickerId, sampleName) {
+            const stickerEl = document.getElementById(stickerId); // Ищем строго нужный макет
+            if (!stickerEl) {
+                alert('Ошибка: макет наклейки не найден на странице.');
+                return;
+            }
             
             if (typeof html2canvas === 'undefined') {
                 alert('Модуль генерации изображений еще загружается, попробуйте через пару секунд.');
                 return;
             }
 
-            // Временно убираем пунктирную рамку, чтобы она не пошла на печать
             const originalBorder = stickerEl.style.border;
             stickerEl.style.border = 'none';
 
-            // Делаем снимок блока с 4-кратным увеличением (идеально для печати 300 dpi)
             html2canvas(stickerEl, {
                 scale: 4, 
                 backgroundColor: '#ffffff'
             }).then(canvas => {
-                // Возвращаем пунктир в браузере
                 stickerEl.style.border = originalBorder;
                 
-                // Скачиваем файл
                 const link = document.createElement('a');
                 link.download = `Sticker_${sampleName}.png`;
                 link.href = canvas.toDataURL('image/png');
