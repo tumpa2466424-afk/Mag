@@ -1618,7 +1618,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 const isSpecial = ProductManager.getTypeInfo(r).isSpecial;
 
                 if (isSpecial) {
-                    // Для Аксессуаров и Информации выводим только описание
+                    // Для Аксессуаров и Информации выводим только описание (без наклеек)
                     return `
                         <div class="cupping-grid">
                             <div class="cupping-item full-width">
@@ -1629,8 +1629,31 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     `;
                 }
 
-                // Для Эспрессо, Фильтра и Ароматизации выводим полную сетку
-                return `
+                // --- ИСПРАВЛЕННЫЙ ГЕНЕРАТОР НАКЛЕЙКИ ---
+                // Ищем полные данные лота (включая внешнюю форму) в глобальном кэше
+                const fullProduct = (typeof ALL_PRODUCTS_CACHE !== 'undefined') ? ALL_PRODUCTS_CACHE.find(p => p.sample === r.sample) : null;
+                
+                const country = (fullProduct && fullProduct.country) ? fullProduct.country : 'СТРАНА НЕ УКАЗАНА';
+                const farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
+                const notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
+
+                const stickerPreview = `
+                    <div style="background: #f4f1ea; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--locus-border);">
+                        <div style="text-align:center; font-size:12px; font-weight:bold; color:var(--locus-accent); margin-bottom:15px; text-transform:uppercase;">Превью наклейки (80х80 мм)</div>
+                        <div class="locus-sticker-canvas">
+                            <div class="s-roast-text">freshly roasted coffee</div>
+                            <div class="s-name-block">
+                                <div class="s-country">${country}</div>
+                                <div class="s-farm">${farm}</div>
+                            </div>
+                            <div class="s-descriptors">${notes}</div>
+                        </div>
+                    </div>
+                `;
+                // --------------------------
+
+                // Для Эспрессо, Фильтра и Ароматизации выводим НАКЛЕЙКУ + полную сетку характеристик
+                return stickerPreview + `
                     <div class="cupping-grid">
                         <div class="cupping-item full-width"><span class="cupping-label">Дата каппинга</span><span class="cupping-value">${r.cuppingDate || '-'}</span></div>
                         <div class="cupping-item full-width"><span class="cupping-label">Степень обжарки</span>${getScale(r.roast)}</div>
