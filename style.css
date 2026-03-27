@@ -849,7 +849,7 @@
 /* 2. СТРАНА (Высота букв ~5 мм -> font-size: 7mm) */
 .s-country {
     position: absolute;
-    bottom: 25mm; /* Отступ от низа: ровно 25 мм */
+    bottom: 29.5mm; /* ИСПРАВЛЕНО: Макушка фермы (25.5мм) + зазор (4мм) = 29.5мм */
     left: 0;
     right: 0;
     text-align: center;
