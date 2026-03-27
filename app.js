@@ -1655,17 +1655,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     }
                 }
 
-                // НОВОЕ: Умный перенос дескрипторов (3 слова в первой строке)
+                // ПУНКТ 1: Ограничиваем количество дескрипторов для одной строки
                 let formattedNotes = notes;
                 if (formattedNotes && formattedNotes.includes(',')) {
-                    // Разбиваем строку по запятым и убираем лишние пробелы
                     let parts = formattedNotes.split(',').map(s => s.trim()).filter(Boolean);
-                    if (parts.length > 3) {
-                        // Если дескрипторов больше трех, берем первые три, ставим запятую с переносом <br>, и склеиваем остатки
-                        formattedNotes = parts.slice(0, 3).join(', ') + ',<br>' + parts.slice(3).join(', ');
-                    } else {
-                        formattedNotes = parts.join(', ');
-                    }
+                    // Берем первые 3 дескриптора. Это идеальное количество для эстетичной строки на 80мм.
+                    formattedNotes = parts.slice(0, 3).join(', ');
                 }
 
                 // ПУНКТ 5: Создаем строго уникальный ID для каждого макета
