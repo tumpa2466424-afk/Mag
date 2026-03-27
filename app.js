@@ -1645,13 +1645,26 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     farm = (fullProduct && fullProduct.farm) ? fullProduct.farm : ((fullProduct && fullProduct.producer) ? fullProduct.producer : 'ФЕРМА / КООПЕРАТИВ');
                     notes = (fullProduct && fullProduct.flavorNotes) ? fullProduct.flavorNotes : (r.flavorNotes || 'Дескрипторы не указаны');
                     
-                    // Определяем Эспрессо или Фильтр (как в колесе каталога)
+                    // Определяем Эспрессо или Фильтр
                     let catStr = (r.category || '').toLowerCase();
                     let roastVal = parseInt(r.roast) || 0;
                     if (catStr.includes('эспрессо') || (!catStr.includes('фильтр') && roastVal >= 10)) {
                         roastTextLabel = 'ЭСПРЕССО-ОБЖАРКА';
                     } else {
                         roastTextLabel = 'ФИЛЬТР-ОБЖАРКА';
+                    }
+                }
+
+                // НОВОЕ: Умный перенос дескрипторов (3 слова в первой строке)
+                let formattedNotes = notes;
+                if (formattedNotes && formattedNotes.includes(',')) {
+                    // Разбиваем строку по запятым и убираем лишние пробелы
+                    let parts = formattedNotes.split(',').map(s => s.trim()).filter(Boolean);
+                    if (parts.length > 3) {
+                        // Если дескрипторов больше трех, берем первые три, ставим запятую с переносом <br>, и склеиваем остатки
+                        formattedNotes = parts.slice(0, 3).join(', ') + ',<br>' + parts.slice(3).join(', ');
+                    } else {
+                        formattedNotes = parts.join(', ');
                     }
                 }
 
@@ -1667,7 +1680,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             <div class="s-roast-text">${roastTextLabel}</div>
                             <div class="s-country">${country}</div>
                             <div class="s-farm">${farm}</div>
-                            <div class="s-descriptors">${notes}</div>
+                            <div class="s-descriptors">${formattedNotes}</div>
                         </div>
 
                         <div style="text-align: center; margin-top: 15px;">
