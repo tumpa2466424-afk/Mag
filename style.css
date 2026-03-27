@@ -1,4 +1,5 @@
  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap');
 
 /* --- LOCUS BRAND COLORS & LAYOUT --- */
 :root {
@@ -821,47 +822,49 @@
 /* --- ГЕНЕРАТОР НАКЛЕЕК НА ПАЧКУ (80х80 мм) --- */
 .locus-sticker-canvas {
     position: relative; 
-    width: 80mm;  /* Строго 80 мм */
-    height: 80mm; /* Строго 80 мм */
+    width: 80mm;  
+    height: 80mm; 
     background: #FFFFFF;
-    border: 1px dashed #000000; /* Временная рамка для тестов */
+    border: 1px dashed #000000;
     box-sizing: border-box;
     color: #000000;
-    font-family: var(--locus-font), sans-serif;
+    /* ПУНКТ 3: Включаем дорогой премиальный шрифт */
+    font-family: 'Montserrat', sans-serif;
     margin: 0 auto;
     text-transform: uppercase;
     overflow: hidden;
 }
 
-/* 1. Верхняя надпись (Высота букв ~2 мм -> font-size: 2.8mm) */
 .s-roast-text {
     position: absolute;
-    top: 5mm; /* Отступ от верха: ровно 5 мм */
+    top: 5mm; 
     left: 0;
     right: 0;
     text-align: center;
     font-size: 2.8mm; 
     font-weight: 800;
-    letter-spacing: 0.5px;
-    line-height: 1; /* Жестко обрезаем невидимые отступы */
+    letter-spacing: 1px; /* Увеличенная разрядка для эстетики */
+    line-height: 1; 
 }
 
-/* 2. СТРАНА (Высота букв ~5 мм -> font-size: 7mm) */
+/* ПУНКТ 2: Расстояние от Фермы до Страны 4мм */
+/* Расчет: 18мм (низ фермы) + 5.5мм (высота фермы) + 4мм (зазор) = 27.5мм */
 .s-country {
     position: absolute;
-    bottom: 29.5mm; /* ИСПРАВЛЕНО: Макушка фермы (25.5мм) + зазор (4мм) = 29.5мм */
+    bottom: 27.5mm; 
     left: 0;
     right: 0;
     text-align: center;
     font-size: 7mm; 
-    font-weight: 900;
+    font-weight: 900; /* Максимальная толщина для названия */
     line-height: 1;
 }
 
-/* 3. ФЕРМА (Высота букв ~4 мм -> font-size: 5.5mm) */
+/* ПУНКТ 2: Расстояние от Дескрипторов до Фермы 10мм */
+/* Расчет: 5мм (низ дескр.) + 3мм (высота дескр.) + 10мм (зазор) = 18мм */
 .s-farm {
     position: absolute;
-    bottom: 20mm; /* Отступ от низа: ровно 20 мм */
+    bottom: 18mm; 
     left: 0;
     right: 0;
     text-align: center;
@@ -870,15 +873,18 @@
     line-height: 1;
 }
 
-/* 4. Дескрипторы (Высота букв ~2 мм -> font-size: 2.8mm) */
 .s-descriptors {
     position: absolute;
-    bottom: 5mm; /* Отступ от низа: ровно 5 мм */
+    bottom: 5mm; 
     left: 5%;
     right: 5%;
     text-align: center;
     font-size: 2.8mm; 
-    font-weight: 600;
-    line-height: 1.3; /* Здесь оставляем 1.3, так как текст может быть в две строки */
+    font-weight: 700;
+    line-height: 1; 
     border: none;
+    /* ПУНКТ 1: Страховка на уровне CSS - строго одна строка, лишнее обрежется */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
 }
