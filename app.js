@@ -1639,7 +1639,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 region = (fullProduct && (fullProduct.region || fullProduct['Регион'])) || '-';
                 variety = (fullProduct && (fullProduct.variety || fullProduct['Вид/Разновидность'])) || '-';
                 harvest = (fullProduct && (fullProduct.cropYear || fullProduct.harvest || fullProduct['Год урожая'])) || '-';
-                processing = (fullProduct && (fullProduct['Process Description'] || fullProduct.processing || fullProduct.process || fullProduct['Описание обработки'])) || '-';
+                // Берем Описание обработки из правильной переменной кэша
+                processing = (fullProduct && fullProduct.processDesc) ? fullProduct.processDesc : '-';
 
                 if (isAroma) {
                     roastTextLabel = 'АРОМАТИЗИРОВАННЫЙ';
