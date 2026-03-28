@@ -1594,7 +1594,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <path d="M11 20A7 7 0 0 1 4 13V4h9a7 7 0 0 1 7 7v9h-9Z"></path>
                                                     <path d="M11 20v-6"></path>
-                                                    <path d="M20.5 3.5a2.12 2.12 0 0 1 0 3L16 11l-3-3 4.5-4.5a2.12 2.12 0 0 1 3 0z"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                 </svg>
                                             </button>
                                             <button class="cat-btn-icon" title="Дублировать лот" onclick="CatalogSystem.duplicateRow('${r.id}', event)">
@@ -1719,7 +1719,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 </div>
 
                                 <div class="sb-info">
-                                    Состав: ${varietyFirstWord}<br>
+                                    Состав: Кофе ${varietyFirstWord}<br>
                                     Срок годности: 1 год<br>
                                     Срок реализации: 1 месяц<br>
                                     Производитель: ИП Зуева Е.В.<br>
@@ -5213,7 +5213,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             otherProcessType: getE('Other_Process_Type'),
                             otherTrading: getE('Other_Trading'),
                             awards: getE('Awards'),
-                            extFormData: extData // НОВАЯ СТРОКА: сохраняем оригинал для админки
+                            extFormData: e // ИСПРАВЛЕНО: переменная в вашем коде называется 'e'
                         };
 
                         ALL_PRODUCTS_CACHE.push(raw);
