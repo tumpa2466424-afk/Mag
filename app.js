@@ -5097,8 +5097,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             otherProcessor: getE('Other_Processor'),
                             otherProcessType: getE('Other_Process_Type'),
                             otherTrading: getE('Other_Trading'),
-                            awards: getE('Awards'),
-                            extFormData: item.extData || {} // СОХРАНЯЕМ СЛЕПОК ДЛЯ РЕДАКТОРА
+                            awards: getE('Awards')
                         };
 
                         ALL_PRODUCTS_CACHE.push(raw);
