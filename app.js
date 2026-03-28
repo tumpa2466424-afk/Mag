@@ -1641,6 +1641,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 harvest = (fullProduct && (fullProduct.cropYear || fullProduct.harvest || fullProduct['Год урожая'])) || '-';
                 // Берем Описание обработки из правильной переменной кэша
                 processing = (fullProduct && fullProduct.processDesc) ? fullProduct.processDesc : '-';
+                // Выделяем только ПЕРВОЕ слово для строки "Состав" на заднике
+                let varietyFirstWord = '-';
+                if (variety && variety !== '-') {
+                    varietyFirstWord = variety.split(/[\s,]+/)[0];
+                }
 
                 if (isAroma) {
                     roastTextLabel = 'АРОМАТИЗИРОВАННЫЙ';
@@ -1707,7 +1712,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 </div>
 
                                 <div class="sb-info">
-                                    Состав: ${variety}<br>
+                                    Состав: Кофе ${variety}<br>
                                     Срок годности: 1 год<br>
                                     Срок реализации: 1 месяц<br>
                                     Производитель: ИП Зуева Е.В.<br>
@@ -5097,7 +5102,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             otherProcessor: getE('Other_Processor'),
                             otherProcessType: getE('Other_Process_Type'),
                             otherTrading: getE('Other_Trading'),
-                            awards: getE('Awards')
+                            awards: getE('Awards'),
+                            extFormData: item.extData || {} // СОХРАНЯЕМ СЛЕПОК ДЛЯ РЕДАКТОРА
                         };
 
                         ALL_PRODUCTS_CACHE.push(raw);
