@@ -1872,12 +1872,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             cancelEdit: function(id) {
+                const item = document.getElementById(`cat-item-row-${id}`);
                 const contentDiv = document.getElementById(`cat-content-${id}`);
-                const product = this.ALL_PRODUCTS.find(p => p.id === id);
-                contentDiv.innerHTML = this.getViewHtml(product);
-            },
+                if (item && contentDiv) {
+                    contentDiv.innerHTML = this.getViewHtml(this.ALL_PRODUCTS.find(p => p.id === id));
+                }
+            }, // <--- ЭТА ЗАПЯТАЯ ВЕРНЕТ ВАШ МАГАЗИН К ЖИЗНИ!
 
-            // --- НОВЫЕ ФУНКЦИИ ДЛЯ РЕДАКТИРОВАНИЯ EXTRINSIC ФОРМЫ ---
+            // --- ФУНКЦИИ ДЛЯ РЕДАКТИРОВАНИЯ EXTRINSIC ФОРМЫ ---
             openExtEditMode: function(id, event) {
                 event.stopPropagation();
                 const item = document.getElementById(`cat-item-row-${id}`);
@@ -1894,43 +1896,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                     <div class="cupping-grid" style="border: 1px dashed var(--locus-success); padding: 15px; border-radius: 8px; background: #fdfcf9;">
                         <div class="cupping-item full-width" style="margin-bottom: 10px;">
                             <span class="cupping-label" style="color: var(--locus-success); font-weight: bold; font-size: 14px; text-transform: uppercase;">
-                                Редактирование внешней формы (Extrinsic)
+                                Редактирование внешней формы
                             </span>
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Страна</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Страна</span>
                             <input type="text" id="ext-edit-country-${r.id}" class="edit-input" value="${ext['Country'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Регион</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Регион</span>
                             <input type="text" id="ext-edit-region-${r.id}" class="edit-input" value="${ext['Region'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Ферма / Кооператив</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Ферма / Кооператив</span>
                             <input type="text" id="ext-edit-farm-${r.id}" class="edit-input" value="${ext['Name of farm or Co-op'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Производитель</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Производитель</span>
                             <input type="text" id="ext-edit-producer-${r.id}" class="edit-input" value="${ext['Name of Producer(s)'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Вид / Разновидность</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Вид / Разновидность</span>
                             <input type="text" id="ext-edit-variety-${r.id}" class="edit-input" value="${ext['Species Variety or Varieties'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Год урожая</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Год урожая</span>
                             <input type="text" id="ext-edit-harvest-${r.id}" class="edit-input" value="${ext['Harvest Date/Year'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Тип обработки</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Тип обработки</span>
                             <input type="text" id="ext-edit-processType-${r.id}" class="edit-input" value="${ext['Process Type'] || ''}">
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Описание обработки</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Описание обработки</span>
                             <textarea id="ext-edit-processDesc-${r.id}" class="edit-textarea">${ext['Process Description'] || ''}</textarea>
                         </div>
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label">Цена Farm Gate (влияет на оптовый расчет!)</span>
+                        <div class="cupping-item full-width"><span class="cupping-label">Цена Farm Gate (влияет на опт!)</span>
                             <input type="text" id="ext-edit-farmGatePrice-${r.id}" class="edit-input" value="${ext['Farm Gate Price'] || ''}">
                         </div>
                     </div>
@@ -1946,11 +1939,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 btn.disabled = true; btn.textContent = "Сохранение...";
                 const product = this.ALL_PRODUCTS.find(p => p.id === id);
                 
-                // Копируем все старые данные, чтобы не затереть скрытые сертификаты и прочее
                 const updatedExtData = { ...(product.extFormData || {}) };
                 
-                // Записываем обновленные поля
-                updatedExtData['Sample No'] = product.sample; // Обязательный ключ для бэкенда
+                updatedExtData['Sample No'] = product.sample; 
                 updatedExtData['Country'] = document.getElementById(`ext-edit-country-${id}`).value;
                 updatedExtData['Region'] = document.getElementById(`ext-edit-region-${id}`).value;
                 updatedExtData['Name of farm or Co-op'] = document.getElementById(`ext-edit-farm-${id}`).value;
@@ -1962,20 +1953,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 updatedExtData['Farm Gate Price'] = document.getElementById(`ext-edit-farmGatePrice-${id}`).value;
 
                 try {
-                    // Отправляем как форму типа 'cvaext' - бэкенд YDB сам обновит данные
                     const response = await fetch(YANDEX_FUNCTION_URL + "?type=cvaext", {
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' }, 
                         body: JSON.stringify(updatedExtData)
                     });
                     const result = await response.json();
-                    if (!result.success) throw new Error("Сервер вернул ошибку");
+                    if (!result.success) throw new Error("Ошибка сервера");
                     
-                    alert('Внешние данные успешно обновлены!');
+                    alert('Внешние данные обновлены!');
                     this.cancelEdit(id);
-                    if (window.fetchExternalData) window.fetchExternalData(); // Обновляем глобальный кэш
+                    if (window.fetchExternalData) window.fetchExternalData(); 
                 } catch (error) {
-                    alert("Ошибка сети при сохранении внешних данных.");
+                    alert("Ошибка сети при сохранении.");
                     btn.disabled = false; btn.textContent = "Сохранить";
                 }
             },
@@ -5213,7 +5203,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             otherProcessType: getE('Other_Process_Type'),
                             otherTrading: getE('Other_Trading'),
                             awards: getE('Awards'),
-                            extFormData: e // ИСПРАВЛЕНО: переменная в вашем коде называется 'e'
+                            extFormData: item.extData || {} // ИСПРАВЛЕНО: железно берем данные внешней формы из базы
                         };
 
                         ALL_PRODUCTS_CACHE.push(raw);
