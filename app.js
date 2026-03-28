@@ -1641,11 +1641,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 harvest = (fullProduct && (fullProduct.cropYear || fullProduct.harvest || fullProduct['Год урожая'])) || '-';
                 // Берем Описание обработки из правильной переменной кэша
                 processing = (fullProduct && fullProduct.processDesc) ? fullProduct.processDesc : '-';
-                // Выделяем только ПЕРВОЕ слово для строки "Состав" на заднике
-                let varietyFirstWord = '-';
-                if (variety && variety !== '-') {
-                    varietyFirstWord = variety.split(/[\s,]+/)[0];
-                }
 
                 if (isAroma) {
                     roastTextLabel = 'АРОМАТИЗИРОВАННЫЙ';
@@ -1712,7 +1707,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 </div>
 
                                 <div class="sb-info">
-                                    Состав: Кофе ${variety}<br>
+                                    Состав: ${variety}<br>
                                     Срок годности: 1 год<br>
                                     Срок реализации: 1 месяц<br>
                                     Производитель: ИП Зуева Е.В.<br>
