@@ -1590,13 +1590,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                             <button class="cat-btn-icon" title="Редактировать лот" onclick="CatalogSystem.openEditMode('${r.id}', event)">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                             </button>
-                                            <button class="cat-btn-icon" title="Редактировать внешние данные" onclick="CatalogSystem.openExtEditMode('${r.id}', event)">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M11 20A7 7 0 0 1 4 13V4h9a7 7 0 0 1 7 7v9h-9Z"></path>
-                                                    <path d="M11 20v-6"></path>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                                </svg>
-                                            </button>
                                             <button class="cat-btn-icon" title="Дублировать лот" onclick="CatalogSystem.duplicateRow('${r.id}', event)">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                             </button>
@@ -1648,11 +1641,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                 harvest = (fullProduct && (fullProduct.cropYear || fullProduct.harvest || fullProduct['Год урожая'])) || '-';
                 // Берем Описание обработки из правильной переменной кэша
                 processing = (fullProduct && fullProduct.processDesc) ? fullProduct.processDesc : '-';
-                // Выделяем только ПЕРВОЕ слово для строки "Состав" на заднике
-                let varietyFirstWord = '-';
-                if (variety && variety !== '-') {
-                    varietyFirstWord = variety.split(/[\s,]+/)[0];
-                }
 
                 if (isAroma) {
                     roastTextLabel = 'АРОМАТИЗИРОВАННЫЙ';
@@ -1719,7 +1707,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                                 </div>
 
                                 <div class="sb-info">
-                                    Состав: Кофе ${varietyFirstWord}<br>
+                                    Состав: ${variety}<br>
                                     Срок годности: 1 год<br>
                                     Срок реализации: 1 месяц<br>
                                     Производитель: ИП Зуева Е.В.<br>
@@ -1872,112 +1860,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
             },
 
             cancelEdit: function(id) {
-                const item = document.getElementById(`cat-item-row-${id}`);
-                const contentDiv = document.getElementById(`cat-content-${id}`);
-                if (item && contentDiv) {
-                    contentDiv.innerHTML = this.getViewHtml(this.ALL_PRODUCTS.find(p => p.id === id));
-                }
-            },
-
-            // =========================================================
-            // НОВЫЕ ФУНКЦИИ: УМНАЯ ДИНАМИЧЕСКАЯ EXTRINSIC ФОРМА
-            // =========================================================
-            openExtEditMode: function(id, event) {
-                event.stopPropagation();
-                const item = document.getElementById(`cat-item-row-${id}`);
                 const contentDiv = document.getElementById(`cat-content-${id}`);
                 const product = this.ALL_PRODUCTS.find(p => p.id === id);
-                if (!item.classList.contains('open')) item.classList.add('open');
-                contentDiv.innerHTML = this.getExtEditHtml(product);
-            },
-
-            getExtEditHtml: function(r) {
-                const ext = r.extFormData || {};
-                let inputsHtml = '';
-                
-                // Получаем все ключи, которые реально есть в базе для этого лота
-                let keys = Object.keys(ext);
-                
-                // Если лот вообще пустой (внешней формы еще нет), даем базовый набор
-                if (keys.length === 0) {
-                    keys = ['Country', 'Region', 'Name of farm or Co-op', 'Name of Producer(s)', 'Species Variety or Varieties', 'Harvest Date/Year', 'Process Type', 'Process Description', 'Farm Gate Price'];
-                }
-
-                // Исключаем системные поля, чтобы не мешались в админке
-                keys = keys.filter(k => k !== 'Timestamp' && k !== 'Sample No' && k !== 'id');
-
-                // АВТОГЕНЕРАЦИЯ ПОЛЕЙ ИЗ БАЗЫ
-                keys.forEach(key => {
-                    let val = ext[key] || '';
-                    // Экранируем кавычки, чтобы верстка не ломалась
-                    let safeVal = typeof val === 'string' ? val.replace(/"/g, '&quot;') : val;
-                    
-                    // Если текста много — делаем большое поле (textarea), иначе обычный input
-                    if (typeof val === 'string' && (val.length > 50 || key.toLowerCase().includes('description') || key.toLowerCase().includes('notes'))) {
-                        inputsHtml += `
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label" style="color:#693a05;">${key}</span>
-                            <textarea class="edit-textarea ext-dynamic-field" data-key="${key}" style="min-height: 60px;">${safeVal}</textarea>
-                        </div>`;
-                    } else {
-                        inputsHtml += `
-                        <div class="cupping-item full-width">
-                            <span class="cupping-label" style="color:#693a05;">${key}</span>
-                            <input type="text" class="edit-input ext-dynamic-field" data-key="${key}" value="${safeVal}">
-                        </div>`;
-                    }
-                });
-
-                return `
-                    <div class="cupping-grid" style="border: 1px dashed var(--locus-success); padding: 15px; border-radius: 8px; background: #fdfcf9;">
-                        <div class="cupping-item full-width" style="margin-bottom: 15px;">
-                            <span class="cupping-label" style="color: var(--locus-success); font-weight: bold; font-size: 14px; text-transform: uppercase;">
-                                Редактирование внешней формы (Динамическое)
-                            </span>
-                            <div style="font-size: 11px; opacity: 0.7; font-weight: normal; margin-top: 5px;">Показаны абсолютно все поля, найденные в YDB для этого лота.</div>
-                        </div>
-                        ${inputsHtml}
-                    </div>
-                    <div class="edit-actions" style="margin-top: 15px;">
-                        <button class="lc-btn btn-del-cat" onclick="CatalogSystem.cancelEdit('${r.id}')">Отмена</button>
-                        <button class="lc-btn btn-save-cat" id="ext-btn-save-${r.id}" style="background-color: var(--locus-success);" onclick="CatalogSystem.saveExtEdit('${r.id}')">Сохранить</button>
-                    </div>
-                `;
-            },
-
-            saveExtEdit: async function(id) {
-                const btn = document.getElementById(`ext-btn-save-${id}`);
-                btn.disabled = true; btn.textContent = "Сохранение...";
-                const product = this.ALL_PRODUCTS.find(p => p.id === id);
-                
-                const updatedExtData = { ...(product.extFormData || {}) };
-                updatedExtData['Sample No'] = product.sample; 
-                
-                // СОБИРАЕМ ДАННЫЕ СО ВСЕХ ДИНАМИЧЕСКИХ ПОЛЕЙ
-                const inputs = document.querySelectorAll(`#cat-content-${id} .ext-dynamic-field`);
-                inputs.forEach(input => {
-                    const key = input.getAttribute('data-key');
-                    if (key) {
-                        updatedExtData[key] = input.value;
-                    }
-                });
-
-                try {
-                    const response = await fetch(YANDEX_FUNCTION_URL + "?type=cvaext", {
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify(updatedExtData)
-                    });
-                    const result = await response.json();
-                    if (!result.success) throw new Error("Ошибка сервера");
-                    
-                    alert('Внешние данные обновлены!');
-                    this.cancelEdit(id);
-                    if (window.fetchExternalData) window.fetchExternalData(); 
-                } catch (error) {
-                    alert("Ошибка сети при сохранении.");
-                    btn.disabled = false; btn.textContent = "Сохранить";
-                }
+                contentDiv.innerHTML = this.getViewHtml(product);
             },
 
             saveEdit: async function(id) {
@@ -5212,8 +5097,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
                             otherProcessor: getE('Other_Processor'),
                             otherProcessType: getE('Other_Process_Type'),
                             otherTrading: getE('Other_Trading'),
-                            awards: getE('Awards'),
-                            extFormData: item.extData || {}
+                            awards: getE('Awards')
                         };
 
                         ALL_PRODUCTS_CACHE.push(raw);
